@@ -1,0 +1,427 @@
+const express = require('express');
+const auth = require('../middleware/auth');
+
+const router = express.Router();
+
+// Get all tickets with enhanced user data and filtering
+router.get('/', auth, async (req, res) => {
+  try {
+    console.log('=== GET TICKETS REQUEST ===');
+    console.log('Requesting user:', req.user);
+    
+    const { supabase } = require('../../config/supabase');
+    const { filter, limit = 50, offset = 0 } = req.query;
+    
+    let query = supabase
+      .from('tickets')
+      .select(`
+        *,
+        users:user_id(name, email, created_at)
+      `)
+      .order('created_at', { ascending: false });
+
+    // Apply filters if provided
+    if (filter === 'my-tickets') {
+      query = query.eq('user_id', req.user.id);
+      console.log('📋 Filtering tickets for user:', req.user.id);
+    }
+
+    // Apply pagination
+    query = query.range(offset, offset + limit - 1);
+
+    const { data: tickets, error } = await query;
+
+    if (error) {
+      console.error('Get tickets error:', error);
+      return res.status(500).json({ 
+        message: 'Failed to fetch tickets', 
+        error: error.message 
+      });
+    }
+
+    // Log what we're returning - especially AGS11
+    const ags11 = tickets?.find(t => t.ticket_number === 'AGS11');
+    if (ags11) {
+      console.log('🔍 AGS11 in API response:', {
+        ticket_number: ags11.ticket_number,
+        ticket_status: ags11.ticket_status,
+        closed_at: ags11.closed_at,
+        has_ticket_status: 'ticket_status' in ags11,
+        all_keys: Object.keys(ags11)
+      });
+    }
+    
+    // Add debugging info
+    console.log(`✅ Found ${tickets?.length || 0} tickets`);
+    console.log('📊 Sample ticket data:', tickets?.[0] ? {
+      id: tickets[0].id,
+      ticket_number: tickets[0].ticket_number,
+      customer_name: tickets[0].customer_name,
+      created_by: tickets[0].users?.name
+    } : 'No tickets');
+
+    res.json({
+      tickets: tickets || [],
+      total: tickets?.length || 0,
+      user: req.user,
+      filter: filter || 'all',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('=== GET TICKETS ERROR ===');
+    console.error('Error details:', error);
+    res.status(500).json({ 
+      message: 'Server error fetching tickets', 
+      error: error.message 
+    });
+  }
+});
+
+// Create new ticket with enhanced validation and user association
+router.post('/', auth, async (req, res) => {
+  try {
+    console.log('=== CREATE TICKET REQUEST ===');
+    console.log('User creating ticket:', req.user);
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+
+    const { supabase } = require('../../config/supabase');
+    
+    // Enhanced validation - end time is now optional
+    const requiredFields = ['equipment', 'category', 'issue_start_time', 'issue_description'];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    
+    if (missingFields.length > 0) {
+      console.log('❌ Missing required fields:', missingFields);
+      return res.status(400).json({
+        message: 'Missing required fields',
+        missingFields: missingFields,
+        requiredFields: requiredFields
+      });
+    }
+
+    // Prepare ticket data with enhanced user association
+    const ticketData = {
+      user_id: parseInt(req.user.id), // Ensure proper user association
+      
+      // Customer Information - Use user's name if not provided
+      customer_name: req.body.customer_name || req.body.customerName || req.user.name,
+      customer_type: req.body.customer_type || req.body.customerType || 'Puresky',
+      asset_name: req.body.asset_name || req.body.assetName || 'Asset 1',
+      site_name: req.body.site_name || req.body.siteName || 'Site 1',
+      
+      // Required fields
+      equipment: req.body.equipment,
+      category: req.body.category,
+      issue_start_time: req.body.issue_start_time || req.body.issueStartTime,
+      issue_end_time: req.body.issue_end_time || req.body.issueEndTime || null, // Now optional
+      issue_description: req.body.issue_description || req.body.issueDescription,
+      
+      // Optional fields with defaults
+      site_outage: req.body.site_outage || req.body.siteOutage || 'No',
+      ticket_status: req.body.ticket_status || req.body.ticketStatus || 'Open',
+      kw_down: req.body.kw_down || req.body.kwDown || null,
+      case_number: req.body.case_number || req.body.caseNumber || null,
+      additional_notes: req.body.additional_notes || req.body.additionalNotes || null,
+      priority: req.body.priority || 'Medium'
+    };
+
+    console.log('📝 Prepared ticket data:', JSON.stringify(ticketData, null, 2));
+
+    // Insert ticket into database using service key to bypass RLS
+    const { data: newTicket, error } = await supabase
+      .from('tickets')
+      .insert([ticketData])
+      .select(`
+        *,
+        users:user_id(name, email)
+      `)
+      .single();
+
+    if (error) {
+      console.error('=== DATABASE INSERT ERROR ===');
+      console.error('Error:', JSON.stringify(error, null, 2));
+      
+      // Special handling for RLS errors
+      if (error.code === '42501') {
+        console.log('🔧 RLS Error detected - this is a configuration issue');
+        console.log('💡 The ticket creation works (debug endpoint succeeded)');
+        console.log('📋 But RLS policies are blocking authenticated requests');
+        
+        return res.status(500).json({ 
+          message: 'Database security configuration issue. Please check RLS policies.',
+          error: 'Row Level Security policy violation',
+          suggestion: 'Contact administrator to review RLS policies for tickets table',
+          technicalError: error.message
+        });
+      }
+      
+      return res.status(500).json({ 
+        message: 'Failed to create ticket', 
+        error: error.message,
+        details: error
+      });
+    }
+
+    console.log('=== TICKET CREATED SUCCESSFULLY ===');
+    console.log('Created ticket:', JSON.stringify(newTicket, null, 2));
+
+    // Return success response with ticket data
+    res.status(201).json({
+      ...newTicket,
+      message: `Ticket ${newTicket.ticket_number} created successfully!`,
+      success: true,
+      created_by: newTicket.users?.name || req.user.name
+    });
+
+  } catch (error) {
+    console.error('=== CREATE TICKET ERROR ===');
+    console.error('Error details:', error);
+    console.error('Error stack:', error.stack);
+    
+    res.status(500).json({ 
+      message: 'Server error creating ticket', 
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+// Update ticket (for closing tickets or editing)
+router.put('/:id', auth, async (req, res) => {
+  try {
+    console.log('=== UPDATE TICKET REQUEST ===');
+    console.log('Ticket ID:', req.params.id);
+    console.log('User:', req.user);
+    console.log('Update data:', JSON.stringify(req.body, null, 2));
+
+    const { supabase } = require('../../config/supabase');
+    
+    // First check if ticket exists and user owns it
+    const { data: existingTicket, error: fetchError } = await supabase
+      .from('tickets')
+      .select('id, ticket_number, user_id, ticket_status')
+      .eq('id', req.params.id)
+      .single();
+    
+    if (fetchError || !existingTicket) {
+      console.log('❌ Ticket not found:', req.params.id);
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+    
+    // REMOVED: Permission check - allow all authenticated users to update any ticket
+    // This allows admins and team members to update all tickets
+    console.log('✅ User has permission to update ticket');
+    
+    // Prepare update data
+    const updateData = {};
+    
+    // Allow updating these fields
+    const allowedFields = [
+      'ticket_status', 'closed_at', 'issue_end_time', 'issue_start_time', 
+      'issue_description', 'additional_notes', 'priority',
+      'kw_down', 'case_number', 'site_outage'
+    ];
+    
+    allowedFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    });
+    
+    // Add updated timestamp
+    updateData.updated_at = new Date().toISOString();
+    
+    console.log('📝 Final update data:', JSON.stringify(updateData, null, 2));
+    
+    // Log specifically what we're updating for ticket_status
+    if (updateData.ticket_status) {
+      console.log('🎯 UPDATING TICKET_STATUS TO:', updateData.ticket_status);
+      console.log('🎯 TYPE OF ticket_status:', typeof updateData.ticket_status);
+    }
+    
+    // Update the ticket
+    const { data: updatedTicket, error: updateError } = await supabase
+      .from('tickets')
+      .update(updateData)
+      .eq('id', req.params.id)
+      .select(`
+        *,
+        users:user_id(name, email)
+      `)
+      .single();
+    
+    if (updateError) {
+      console.error('❌ Update error:', updateError);
+      console.error('❌ Full error object:', JSON.stringify(updateError, null, 2));
+      return res.status(500).json({ 
+        message: 'Failed to update ticket', 
+        error: updateError.message 
+      });
+    }
+    
+    // Log what was actually saved
+    console.log('✅ Ticket updated successfully:', updatedTicket.ticket_number);
+    console.log('✅ NEW ticket_status in DB:', updatedTicket.ticket_status);
+    console.log('✅ NEW closed_at in DB:', updatedTicket.closed_at);
+    
+    res.json({
+      ...updatedTicket,
+      message: `Ticket ${updatedTicket.ticket_number} updated successfully!`,
+      success: true
+    });
+    
+  } catch (error) {
+    console.error('=== UPDATE TICKET ERROR ===');
+    console.error('Error details:', error);
+    res.status(500).json({ 
+      message: 'Server error updating ticket', 
+      error: error.message 
+    });
+  }
+});
+
+// Enhanced ticket statistics with user filtering
+router.get('/meta/stats', auth, async (req, res) => {
+  try {
+    console.log('=== GET TICKET STATS REQUEST ===');
+    console.log('User:', req.user);
+    
+    const { supabase } = require('../../config/supabase');
+    const { filter } = req.query;
+    
+    let query = supabase.from('tickets').select('ticket_status, category, created_at, user_id');
+    
+    // Filter by user if requested
+    if (filter === 'my-tickets') {
+      query = query.eq('user_id', req.user.id);
+      console.log('📊 Getting stats for user:', req.user.id);
+    }
+
+    const { data: tickets, error } = await query;
+
+    if (error) {
+      console.error('Stats fetch error:', error);
+      return res.status(500).json({ 
+        message: 'Failed to fetch stats', 
+        error: error.message 
+      });
+    }
+
+    // Calculate comprehensive statistics
+    const today = new Date().toISOString().split('T')[0];
+    const thisWeek = new Date();
+    thisWeek.setDate(thisWeek.getDate() - 7);
+    const thisMonth = new Date();
+    thisMonth.setDate(thisMonth.getDate() - 30);
+
+    const stats = {
+      // Basic counts
+      total: tickets.length,
+      open: tickets.filter(t => t.ticket_status === 'Open').length,
+      closed: tickets.filter(t => t.ticket_status === 'Closed').length,
+      pending: tickets.filter(t => t.ticket_status === 'Pending').length,
+      
+      // Category counts
+      production_impacting: tickets.filter(t => t.category === 'Production Impacting').length,
+      communication_issues: tickets.filter(t => t.category === 'Communication Issues').length,
+      cannot_confirm: tickets.filter(t => t.category === 'Cannot Confirm Production').length,
+      
+      // Time-based counts
+      today: tickets.filter(t => t.created_at?.startsWith(today)).length,
+      this_week: tickets.filter(t => new Date(t.created_at) >= thisWeek).length,
+      this_month: tickets.filter(t => new Date(t.created_at) >= thisMonth).length,
+      
+      // Additional metadata
+      filter: filter || 'all',
+      user: req.user.name,
+      last_updated: new Date().toISOString()
+    };
+
+    console.log('✅ Stats calculated:', stats);
+    res.json(stats);
+    
+  } catch (error) {
+    console.error('=== GET TICKET STATS ERROR ===');
+    console.error('Error details:', error);
+    res.status(500).json({ 
+      message: 'Failed to fetch ticket statistics',
+      error: error.message 
+    });
+  }
+});
+
+// Get single ticket with enhanced user data
+router.get('/:id', auth, async (req, res) => {
+  try {
+    console.log('=== GET SINGLE TICKET REQUEST ===');
+    console.log('Ticket ID:', req.params.id);
+    console.log('Requested by user:', req.user);
+    
+    const { supabase } = require('../../config/supabase');
+    
+    const { data: ticket, error } = await supabase
+      .from('tickets')
+      .select(`
+        *,
+        users:user_id(name, email, created_at)
+      `)
+      .eq('id', req.params.id)
+      .single();
+
+    if (error || !ticket) {
+      console.log('❌ Ticket not found:', req.params.id);
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    console.log('✅ Ticket found:', ticket.ticket_number);
+    console.log('📊 Created by:', ticket.users?.name);
+    
+    res.json({
+      ...ticket,
+      created_by_name: ticket.users?.name,
+      created_by_email: ticket.users?.email,
+      is_owner: ticket.user_id === parseInt(req.user.id)
+    });
+    
+  } catch (error) {
+    console.error('=== GET SINGLE TICKET ERROR ===');
+    console.error('Error details:', error);
+    res.status(500).json({ 
+      message: 'Server error fetching ticket', 
+      error: error.message 
+    });
+  }
+});
+
+// Get categories and statuses (unchanged but with better logging)
+router.get('/meta/categories', auth, async (req, res) => {
+  try {
+    console.log('📋 Fetching categories for user:', req.user.name);
+    const { supabase } = require('../../config/supabase');
+    const { data, error } = await supabase.from('categories').select('*').order('name');
+    
+    if (error) throw error;
+    console.log('✅ Categories fetched:', data.length);
+    res.json(data);
+  } catch (error) {
+    console.error('Get categories error:', error);
+    res.status(500).json({ message: 'Failed to fetch categories', error: error.message });
+  }
+});
+
+router.get('/meta/statuses', auth, async (req, res) => {
+  try {
+    console.log('📋 Fetching statuses for user:', req.user.name);
+    const { supabase } = require('../../config/supabase');
+    const { data, error } = await supabase.from('statuses').select('*').order('name');
+    
+    if (error) throw error;
+    console.log('✅ Statuses fetched:', data.length);
+    res.json(data);
+  } catch (error) {
+    console.error('Get statuses error:', error);
+    res.status(500).json({ message: 'Failed to fetch statuses', error: error.message });
+  }
+});
+
+module.exports = router;

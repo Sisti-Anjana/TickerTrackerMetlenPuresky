@@ -1,0 +1,61 @@
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+
+const router = express.Router();
+
+// Enhanced registration with detailed debugging
+router.post('/register', async (req, res) => {
+  try {
+    console.log('=== REGISTRATION REQUEST START ===');
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('Content-Type:', req.headers['content-type']);
+
+    const { name, email, password } = req.body;
+
+    // Detailed validation logging
+    console.log('Validation check:');
+    console.log('- name:', name, 'exists:', !!name);
+    console.log('- email:', email, 'exists:', !!email);  
+    console.log('- password:', password ? '[PROVIDED]' : '[MISSING]', 'length:', password?.length);
+
+    if (!name) {
+      console.log('❌ Name is missing');
+      return res.status(400).json({ message: 'Name is required', field: 'name' });
+    }
+
+    if (!email) {
+      console.log('❌ Email is missing');
+      return res.status(400).json({ message: 'Email is required', field: 'email' });
+    }
+
+    if (!password) {
+      console.log('❌ Password is missing');
+      return res.status(400).json({ message: 'Password is required', field: 'password' });
+    }
+
+    if (password.length < 6) {
+      console.log('❌ Password too short:', password.length);
+      return res.status(400).json({ message: 'Password must be at least 6 characters', field: 'password' });
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      console.log('❌ Invalid email format:', email);
+      return res.status(400).json({ message: 'Please enter a valid email address', field: 'email' });
+    }
+
+    console.log('✅ All validations passed');
+
+    // Database operations
+    const { supabase } = require('../../config/supabase');
+
+    // Check if user exists
+    console.log('🔍 Checking if user exists with email:', email);
+    const { data: existingUser, error: checkError } = await supabase
+      .from('users')
+      .select('id, email')
+      .eq('email', email)
+      .single();

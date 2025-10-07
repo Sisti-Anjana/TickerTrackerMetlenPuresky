@@ -1,0 +1,36 @@
+{
+  "name": "ticket-tracker",
+  "version": "1.0.0",
+  "description": "A comprehensive ticket tracking system with authentication and commenting",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "nodemon server/index.js",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "install-all": "npm install && cd client && npm install"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.5.0",
+    "nodemailer": "^7.0.9"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "nodemon": "^3.1.10"
+  },
+  "keywords": [
+    "ticket",
+    "tracking",
+    "authentication",
+    "dashboard"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
