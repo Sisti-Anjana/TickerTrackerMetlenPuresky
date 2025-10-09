@@ -1,0 +1,74 @@
+═══════════════════════════════════════════════════════════════
+        YOUR SINGLE URL FOR FRONTEND + BACKEND
+═══════════════════════════════════════════════════════════════
+
+🌐 MAIN URL:
+https://frabjous-fairy-9be454.netlify.app
+
+═══════════════════════════════════════════════════════════════
+
+✅ This ONE URL gives you access to:
+   • Frontend (React App)
+   • Backend API (through /api/* routes)
+   • All features of your application
+
+═══════════════════════════════════════════════════════════════
+
+📍 HOW TO USE:
+
+1. Visit: https://frabjous-fairy-9be454.netlify.app
+2. Login to your application
+3. All API calls automatically work through proxy
+
+═══════════════════════════════════════════════════════════════
+
+🔗 URL BREAKDOWN:
+
+Main App:     https://frabjous-fairy-9be454.netlify.app/
+User Login:   https://frabjous-fairy-9be454.netlify.app/login
+Admin Login:  https://frabjous-fairy-9be454.netlify.app/admin-login
+Dashboard:    https://frabjous-fairy-9be454.netlify.app/dashboard
+
+API Endpoints (automatic proxy):
+https://frabjous-fairy-9be454.netlify.app/api/auth/user-login
+https://frabjous-fairy-9be454.netlify.app/api/tickets
+https://frabjous-fairy-9be454.netlify.app/api/comments
+... all your API routes work!
+
+═══════════════════════════════════════════════════════════════
+
+⚙️ TECHNICAL DETAILS:
+
+Frontend:  Hosted on Netlify
+Backend:   Running on ngrok (https://5360dbaf0288.ngrok-free.app)
+Proxy:     Netlify redirects /api/* → ngrok automatically
+Status:    ✅ ACTIVE
+
+═══════════════════════════════════════════════════════════════
+
+🎯 ADVANTAGES:
+
+✓ One URL for everything
+✓ No CORS issues
+✓ Professional appearance
+✓ Easy to share
+✓ Frontend and backend work seamlessly together
+
+═══════════════════════════════════════════════════════════════
+
+📝 NOTES:
+
+• When ngrok URL changes, update the redirect in:
+  client/public/_redirects
+
+• Then redeploy using: deploy-to-netlify.bat
+
+• For permanent solution, deploy backend to production server
+
+═══════════════════════════════════════════════════════════════
+
+💡 BOOKMARK THIS URL FOR EASY ACCESS!
+
+https://frabjous-fairy-9be454.netlify.app
+
+═══════════════════════════════════════════════════════════════

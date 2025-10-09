@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Application - Single URL Access</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .url-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .url-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .url-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .url-text {
+            font-size: 24px;
+            font-weight: bold;
+            word-break: break-all;
+            position: relative;
+            text-decoration: none;
+            color: white;
+        }
+        
+        .url-text:hover {
+            text-decoration: underline;
+        }
+        
+        .button {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 10px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .button.secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .button.secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .info-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .info-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .info-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .info-section li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #555;
+        }
+        
+        .info-section li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 5px;
+        }
+        
+        .copy-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.5);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+            color: #999;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 Your Application</h1>
+        <p class="subtitle">Single URL for Frontend + Backend</p>
+        
+        <div>
+            <span class="badge">Frontend + Backend</span>
+            <span class="badge">Unified Access</span>
+        </div>
+        
+        <div class="url-box">
+            <div class="url-label">🌐 YOUR SINGLE URL</div>
+            <a href="https://frabjous-fairy-9be454.netlify.app" target="_blank" class="url-text">
+                frabjous-fairy-9be454.netlify.app
+            </a>
+            <button class="copy-btn" onclick="copyUrl()">📋 Copy URL</button>
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <a href="https://frabjous-fairy-9be454.netlify.app" target="_blank" class="button">
+                🚀 Open Application
+            </a>
+            <button onclick="showDetails()" class="button secondary">
+                ℹ️ How It Works
+            </button>
+        </div>
+        
+        <div class="info-section" id="details" style="display: none;">
+            <h3>📊 How This Single URL Works:</h3>
+            <ul>
+                <li><strong>Frontend:</strong> Served directly from Netlify</li>
+                <li><strong>Backend API:</strong> Proxied through <code>/api/*</code> routes</li>
+                <li><strong>No CORS Issues:</strong> Everything on same domain</li>
+                <li><strong>Professional:</strong> One URL for everything</li>
+            </ul>
+            
+            <h3 style="margin-top: 20px;">🔗 URL Structure:</h3>
+            <ul>
+                <li><strong>Home:</strong> https://frabjous-fairy-9be454.netlify.app/</li>
+                <li><strong>Login:</strong> https://frabjous-fairy-9be454.netlify.app/login</li>
+                <li><strong>API:</strong> https://frabjous-fairy-9be454.netlify.app/api/*</li>
+            </ul>
+            
+            <h3 style="margin-top: 20px;">⚙️ Technical Details:</h3>
+            <ul>
+                <li><strong>Frontend:</strong> React app on Netlify</li>
+                <li><strong>Backend:</strong> Node.js via ngrok tunnel</li>
+                <li><strong>Proxy:</strong> Netlify redirects /api/* to ngrok</li>
+                <li><strong>Status:</strong> <span style="color: #4CAF50; font-weight: bold;">✅ Active</span></li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>💡 <strong>Tip:</strong> Bookmark this URL for easy access!</p>
+            <p style="margin-top: 10px; font-size: 12px;">
+                Backend: ngrok tunnel → API calls seamlessly proxied
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        function copyUrl() {
+            const url = 'https://frabjous-fairy-9be454.netlify.app';
+            navigator.clipboard.writeText(url).then(() => {
+                const btn = event.target;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Copied!';
+                btn.style.background = 'rgba(76, 175, 80, 0.3)';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = 'rgba(255,255,255,0.2)';
+                }, 2000);
+            });
+        }
+        
+        function showDetails() {
+            const details = document.getElementById('details');
+            if (details.style.display === 'none') {
+                details.style.display = 'block';
+                event.target.innerHTML = '▲ Hide Details';
+            } else {
+                details.style.display = 'none';
+                event.target.innerHTML = 'ℹ️ How It Works';
+            }
+        }
+    </script>
+</body>
+</html>

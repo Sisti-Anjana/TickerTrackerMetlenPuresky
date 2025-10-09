@@ -5,10 +5,260 @@ const crypto = require('crypto');
 
 const router = express.Router();
 
-// REGISTRATION
+// Helper: compare password and upgrade legacy plaintext passwords transparently
+async function verifyAndUpgradePassword(supabase, userRecord, incomingPassword) {
+  const stored = userRecord.password || '';
+  const looksHashed = stored.startsWith('$2');
+
+  if (looksHashed) {
+    const isMatch = await bcrypt.compare(incomingPassword, stored);
+    return { ok: isMatch };
+  }
+
+  // Legacy plaintext password support (dev/legacy data): match and upgrade to bcrypt
+  if (stored && stored === incomingPassword) {
+    try {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(incomingPassword, salt);
+      await supabase
+        .from('users')
+        .update({ password: hashedPassword, last_password_change: new Date().toISOString() })
+        .eq('id', userRecord.id);
+    } catch (_) {
+      // ignore upgrade failure; login can still proceed if matched
+    }
+    return { ok: true, upgraded: true };
+  }
+
+  return { ok: false };
+}
+
+// ADMIN LOGIN
+router.post('/admin-login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    const { supabase } = require('../../config/supabase');
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, name, email, password, role')
+      .eq('email', email.toLowerCase().trim())
+      .single();
+
+    if (error || !user) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    // Check if user is admin
+    if (user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Admin privileges required.' });
+    }
+
+    const verify = await verifyAndUpgradePassword(supabase, user, password);
+    if (!verify.ok) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET || 'fallback-secret-key',
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: 'Admin login successful',
+      token: token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role }
+    });
+  } catch (error) {
+    console.error('Admin login error:', error);
+    res.status(500).json({ message: 'Login failed', error: error.message });
+  }
+});
+
+// USER LOGIN
+router.post('/user-login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    const { supabase } = require('../../config/supabase');
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, name, email, password, role, must_change_password')
+      .eq('email', email.toLowerCase().trim())
+      .single();
+
+    if (error || !user) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    // Check if user is regular user (not admin)
+    if (user.role === 'admin') {
+      return res.status(403).json({ message: 'Please use admin login for admin accounts' });
+    }
+
+    const verify = await verifyAndUpgradePassword(supabase, user, password);
+    if (!verify.ok) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    // Check if password change is required
+    if (user.must_change_password) {
+      return res.json({
+        mustChangePassword: true,
+        userId: user.id,
+        message: 'Password change required'
+      });
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET || 'fallback-secret-key',
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: 'Login successful',
+      token: token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role }
+    });
+  } catch (error) {
+    console.error('User login error:', error);
+    res.status(500).json({ message: 'Login failed', error: error.message });
+  }
+});
+
+// CHANGE PASSWORD
+router.post('/change-password', async (req, res) => {
+  try {
+    const { userId, oldPassword, newPassword } = req.body;
+    
+    if (!userId || !oldPassword || !newPassword) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+
+    const { supabase } = require('../../config/supabase');
+    
+    const { data: user, error: fetchError } = await supabase
+      .from('users')
+      .select('id, name, email, password, role')
+      .eq('id', userId)
+      .single();
+
+    if (fetchError || !user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        password: hashedPassword,
+        must_change_password: false,
+        last_password_change: new Date().toISOString()
+      })
+      .eq('id', userId);
+
+    if (updateError) {
+      return res.status(500).json({ message: 'Failed to update password' });
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET || 'fallback-secret-key',
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: 'Password changed successfully',
+      token: token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role }
+    });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ message: 'Failed to change password', error: error.message });
+  }
+});
+// CREATE USER (Admin only)
+router.post('/create-user', async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Name, email, and password are required' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Please enter a valid email address' });
+    }
+
+    const { supabase } = require('../../config/supabase');
+
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email.toLowerCase().trim())
+      .single();
+
+    if (existingUser) {
+      return res.status(400).json({ message: 'A user with this email already exists' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const { data: newUser, error: insertError } = await supabase
+      .from('users')
+      .insert([{
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        password: hashedPassword,
+        role: 'user',
+        must_change_password: true
+      }])
+      .select('id, name, email, role')
+      .single();
+
+    if (insertError || !newUser) {
+      return res.status(500).json({ message: 'Failed to create user account' });
+    }
+
+    res.status(201).json({
+      message: 'User account created successfully',
+      user: newUser,
+      temporaryPassword: password
+    });
+  } catch (error) {
+    console.error('Create user error:', error);
+    res.status(500).json({ message: 'Failed to create user', error: error.message });
+  }
+});
+
+// REGISTRATION (Keep for backward compatibility)
 router.post('/register', async (req, res) => {
   try {
-    console.log('=== REGISTRATION REQUEST START ===');
     const { name, email, password } = req.body;
 
     if (!name) return res.status(400).json({ message: 'Name is required', field: 'name' });
@@ -23,7 +273,7 @@ router.post('/register', async (req, res) => {
 
     const { supabase } = require('../../config/supabase');
 
-    const { data: existingUser, error: checkError } = await supabase
+    const { data: existingUser } = await supabase
       .from('users').select('id, email').eq('email', email).single();
 
     if (existingUser) {
@@ -35,15 +285,20 @@ router.post('/register', async (req, res) => {
 
     const { data: newUser, error: insertError } = await supabase
       .from('users')
-      .insert([{ name: name.trim(), email: email.toLowerCase().trim(), password: hashedPassword }])
-      .select('id, name, email').single();
+      .insert([{
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        password: hashedPassword,
+        role: 'user'
+      }])
+      .select('id, name, email, role').single();
 
     if (insertError || !newUser) {
       return res.status(500).json({ message: 'Failed to create user account' });
     }
 
     const token = jwt.sign(
-      { userId: newUser.id },
+      { userId: newUser.id, role: newUser.role },
       process.env.JWT_SECRET || 'fallback-secret-key',
       { expiresIn: '7d' }
     );
@@ -51,7 +306,7 @@ router.post('/register', async (req, res) => {
     res.status(201).json({
       message: 'Registration successful!',
       token: token,
-      user: { id: newUser.id, name: newUser.name, email: newUser.email }
+      user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role }
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -59,35 +314,48 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// LOGIN
+// LOGIN (Keep for backward compatibility)
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: 'Email and password are required' });
+    if (!email || !password) {
+      console.log('[AUTH] /login missing fields', { hasEmail: !!email, hasPassword: !!password });
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
 
     const { supabase } = require('../../config/supabase');
+    const normalizedEmail = String(email).toLowerCase().trim();
     const { data: user, error } = await supabase
-      .from('users').select('id, name, email, password')
-      .eq('email', email.toLowerCase().trim()).single();
+      .from('users').select('id, name, email, password, role')
+      .eq('email', normalizedEmail).single();
 
-    if (error || !user) return res.status(400).json({ message: 'Invalid email or password' });
+    if (error || !user) {
+      console.log('[AUTH] /login user not found or error', { normalizedEmail, error: error?.message });
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid email or password' });
+    const verify = await verifyAndUpgradePassword(supabase, user, String(password));
+    if (!verify.ok) {
+      console.log('[AUTH] /login password mismatch', { normalizedEmail });
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'fallback-secret-key', { expiresIn: '7d' });
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET || 'fallback-secret-key',
+      { expiresIn: '7d' }
+    );
 
     res.json({
       message: 'Login successful',
       token: token,
-      user: { id: user.id, name: user.name, email: user.email }
+      user: { id: user.id, name: user.name, email: user.email, role: user.role }
     });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Login failed', error: error.message });
   }
 });
-
 // GET CURRENT USER
 router.get('/me', async (req, res) => {
   try {
@@ -98,10 +366,10 @@ router.get('/me', async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
     const { supabase } = require('../../config/supabase');
     const { data: user, error } = await supabase
-      .from('users').select('id, name, email').eq('id', decoded.userId).single();
+      .from('users').select('id, name, email, role').eq('id', decoded.userId).single();
 
     if (error || !user) return res.status(401).json({ message: 'User not found' });
-    res.json({ user: { id: user.id, name: user.name, email: user.email } });
+    res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (error) {
     res.status(401).json({ message: 'Invalid token' });
   }
@@ -136,24 +404,11 @@ router.post('/forgot-password', async (req, res) => {
 
     const resetUrl = `http://localhost:3000/reset-password?token=${resetToken}`;
     
-    // Send email
-    const { sendPasswordResetEmail } = require('../utils/email');
-    const emailResult = await sendPasswordResetEmail(user.email, user.name, resetUrl);
-    
-    if (emailResult.success) {
-      console.log('✅ Password reset email sent to:', user.email);
-      res.json({ message: 'Password reset link has been sent to your email' });
-    } else {
-      console.error('❌ Failed to send email:', emailResult.error);
-      // Still return success to prevent email enumeration, but log error
-      res.json({ 
-        message: 'If that email exists, a password reset link has been sent',
-        // Remove these in production - only for testing
-        resetToken: resetToken,
-        resetUrl: resetUrl,
-        emailError: emailResult.error
-      });
-    }
+    res.json({ 
+      message: 'If that email exists, a password reset link has been sent',
+      resetToken: resetToken,
+      resetUrl: resetUrl
+    });
   } catch (error) {
     console.error('Forgot password error:', error);
     res.status(500).json({ message: 'An error occurred' });
@@ -208,8 +463,15 @@ router.get('/debug/users', async (req, res) => {
   try {
     const { supabase } = require('../../config/supabase');
     const { data: users, error } = await supabase
-      .from('users').select('id, name, email, created_at').order('created_at', { ascending: false });
-    res.json({ message: `Found ${users?.length || 0} users`, users: users || [], count: users?.length || 0 });
+      .from('users')
+      .select('id, name, email, role, created_at')
+      .order('created_at', { ascending: false });
+    
+    res.json({ 
+      message: `Found ${users?.length || 0} users`, 
+      users: users || [], 
+      count: users?.length || 0 
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

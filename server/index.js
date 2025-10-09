@@ -9,7 +9,30 @@ const commentRoutes = require('./routes/comments');
 const app = express();
 
 // Middleware
-app.use(cors());
+const explicitAllowedOrigins = [
+  process.env.CLIENT_URL || 'http://localhost:3000',
+  process.env.ADDITIONAL_CLIENT_URL || '',
+  'http://localhost:3001',
+  'http://localhost:3000'
+].filter(Boolean);
+
+const allowedPatternMatchers = [
+  /https?:\/\/([a-z0-9-]+)\.netlify\.app(:\d+)?$/i, // any Netlify subdomain
+  /https?:\/\/([a-z0-9-]+)\.ngrok(-free)?\.app(:\d+)?$/i // ngrok URLs
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // allow server-to-server / curl
+
+    const isExplicit = explicitAllowedOrigins.includes(origin);
+    const matchesPattern = allowedPatternMatchers.some((re) => re.test(origin));
+
+    if (isExplicit || matchesPattern) return callback(null, true);
+    return callback(new Error(`Not allowed by CORS: ${origin}`));
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 // Enhanced logging middleware
@@ -156,6 +179,16 @@ app.use('/api/comments', commentRoutes);
 app.get('/api/health', (req, res) => {
   res.json({ message: 'Server is running!' });
 });
+
+// Serve client build in production for single-port hosting
+if (process.env.NODE_ENV === 'production') {
+  const path = require('path');
+  const clientBuildPath = path.join(__dirname, '..', 'client', 'build');
+  app.use(express.static(clientBuildPath));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
