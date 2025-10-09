@@ -180,6 +180,23 @@ app.get('/api/health', (req, res) => {
   res.json({ message: 'Server is running!' });
 });
 
+// Root route for ngrok access
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Ticket Management System Backend',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      test: '/api/test',
+      auth: '/api/auth/*',
+      tickets: '/api/tickets/*',
+      comments: '/api/comments/*'
+    },
+    frontend: 'https://frabjous-fairy-9be454.netlify.app'
+  });
+});
+
 // Serve client build in production for single-port hosting
 if (process.env.NODE_ENV === 'production') {
   const path = require('path');
