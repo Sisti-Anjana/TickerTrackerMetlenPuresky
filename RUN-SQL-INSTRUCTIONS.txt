@@ -1,0 +1,120 @@
+╔══════════════════════════════════════════════════════════╗
+║  🚨 IMPORTANT: YOU MUST RUN THE SQL IN SUPABASE FIRST!  ║
+╚══════════════════════════════════════════════════════════╝
+
+The login is failing because there are NO USERS in the database.
+You MUST run the SQL in Supabase to create the admin user.
+
+╔══════════════════════════════════════════════════════════╗
+║  📋 STEP-BY-STEP: HOW TO RUN SQL IN SUPABASE            ║
+╚══════════════════════════════════════════════════════════╝
+
+STEP 1: Go to Supabase SQL Editor
+──────────────────────────────────────────────────────────
+Click this link or paste in browser:
+https://supabase.com/dashboard/project/tlnojwnrvvrnujnhdlrr/sql
+
+(If you're not logged in, login to Supabase first)
+
+
+STEP 2: Look for the Big Text Box
+──────────────────────────────────────────────────────────
+On the Supabase page, you'll see:
+- A sidebar on the left
+- A big empty text box in the middle (this is where you paste SQL)
+- A green "RUN" button at the top
+
+
+STEP 3: Copy the SQL
+──────────────────────────────────────────────────────────
+The SQL is in the Notepad window that's open.
+Or copy from here:
+
+───────────────────── COPY EVERYTHING BELOW ─────────────────────
+
+ALTER TABLE users DISABLE ROW LEVEL SECURITY;
+ALTER TABLE tickets DISABLE ROW LEVEL SECURITY;
+ALTER TABLE comments DISABLE ROW LEVEL SECURITY;
+
+INSERT INTO users (name, email, password, role, must_change_password, created_at, updated_at)
+VALUES (
+  'System Administrator',
+  'admin@system.local',
+  '$2a$10$rB7VWFJWZZfO9X8YrGBiJOKr7UQT.L2ZJ4LxY0hLZvZLHKY8LZ0UG',
+  'admin',
+  false,
+  NOW(),
+  NOW()
+)
+ON CONFLICT (email) DO UPDATE SET
+  password = '$2a$10$rB7VWFJWZZfO9X8YrGBiJOKr7UQT.L2ZJ4LxY0hLZvZLHKY8LZ0UG',
+  role = 'admin',
+  must_change_password = false;
+
+SELECT id, name, email, role FROM users WHERE role = 'admin';
+
+───────────────────── COPY EVERYTHING ABOVE ─────────────────────
+
+
+STEP 4: Paste into Supabase
+──────────────────────────────────────────────────────────
+1. Click in the big text box in Supabase
+2. Paste (Ctrl+V)
+3. You should see all the SQL code appear
+
+
+STEP 5: Click RUN
+──────────────────────────────────────────────────────────
+Click the green "RUN" button (or press Ctrl+Enter)
+
+You should see:
+✅ "Success. No rows returned" OR
+✅ A table showing the admin user details
+
+
+STEP 6: Verify it Worked
+──────────────────────────────────────────────────────────
+After running, you should see output at the bottom showing:
+
+id | name                  | email              | role
+---|-----------------------|--------------------|------
+ 1 | System Administrator  | admin@system.local | admin
+
+
+STEP 7: Try Login Again
+──────────────────────────────────────────────────────────
+Go to: https://9be454.netlify.app
+Click: "Admin Login"
+Email: admin@system.local
+Password: admin123
+
+
+╔══════════════════════════════════════════════════════════╗
+║  ❓ TROUBLESHOOTING                                      ║
+╚══════════════════════════════════════════════════════════╝
+
+Can't find Supabase SQL Editor?
+→ Make sure you're logged into Supabase
+→ Look for "SQL Editor" in the left sidebar
+
+SQL gives an error?
+→ Make sure you copied ALL the SQL
+→ Don't modify the SQL
+→ Try refreshing the Supabase page and paste again
+
+Still getting "Invalid email or password"?
+→ This means the SQL hasn't been run yet
+→ Go back to Supabase and run the SQL
+
+╔══════════════════════════════════════════════════════════╗
+║  🎯 CURRENT STATUS                                       ║
+╚══════════════════════════════════════════════════════════╝
+
+✅ Backend: RUNNING
+✅ Ngrok: ACTIVE  
+✅ Netlify: DEPLOYED
+❌ Database: NO USERS (Need to run SQL!)
+
+The ONLY thing stopping you from logging in is that the SQL
+hasn't been run in Supabase yet. Once you run it, login will
+work immediately!

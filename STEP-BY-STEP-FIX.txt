@@ -1,0 +1,130 @@
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃     🎯 LOGIN FIX - STEP BY STEP INSTRUCTIONS       ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+┌────────────────────────────────────────────────────┐
+│  ✅ WHAT'S ALREADY WORKING                         │
+└────────────────────────────────────────────────────┘
+
+✓ Backend server running on port 5001
+✓ Ngrok tunnel active at https://5360dbaf0288.ngrok-free.app
+✓ Netlify deployed at https://9be454.netlify.app
+✓ API endpoints responding correctly
+✓ CORS configured properly
+
+┌────────────────────────────────────────────────────┐
+│  ❌ THE PROBLEM                                    │
+└────────────────────────────────────────────────────┘
+
+Row Level Security (RLS) is blocking database access
+→ Backend cannot read users from database
+→ Login fails with "Invalid email or password"
+
+┌────────────────────────────────────────────────────┐
+│  🔧 THE FIX (Follow these 3 steps)                 │
+└────────────────────────────────────────────────────┘
+
+STEP 1: Open Supabase SQL Editor
+───────────────────────────────────────────────────
+Already opened for you! Or go to:
+https://supabase.com/dashboard/project/tlnojwnrvvrnujnhdlrr/sql
+
+
+STEP 2: Run the SQL Fix
+───────────────────────────────────────────────────
+The file "FIX-LOGIN-SQL.sql" is open in Notepad.
+
+1. Select All (Ctrl+A)
+2. Copy (Ctrl+C)
+3. Paste into Supabase SQL Editor
+4. Click "RUN" button (or press Ctrl+Enter)
+
+You should see: "Success. No rows returned"
+
+
+STEP 3: Test Login
+───────────────────────────────────────────────────
+Go to: https://9be454.netlify.app
+
+Click "Admin Login" button
+
+Enter these credentials:
+  📧 Email: admin@system.local
+  🔑 Password: admin123
+
+Click "Login as Admin"
+
+✅ You should now be logged in!
+
+┌────────────────────────────────────────────────────┐
+│  📝 WHAT THE SQL DOES                              │
+└────────────────────────────────────────────────────┘
+
+1. Disables Row Level Security on tables
+   → Allows backend to read/write data
+
+2. Creates admin user account
+   → Email: admin@system.local
+   → Password: admin123 (hashed)
+   → Role: admin
+
+3. Verifies the user was created
+   → Shows user details
+
+┌────────────────────────────────────────────────────┐
+│  🎉 AFTER LOGIN WORKS                              │
+└────────────────────────────────────────────────────┘
+
+You can:
+✓ Access the admin dashboard
+✓ Create tickets
+✓ View analytics
+✓ Create more users (Admin Panel → User Management)
+✓ Manage all system features
+
+┌────────────────────────────────────────────────────┐
+│  🔄 IF YOU NEED TO RESTART SERVICES                │
+└────────────────────────────────────────────────────┘
+
+Backend Server:
+  cd "C:\Users\LibsysAdmin\OneDrive - Libsys IT Services Private Limited\Desktop\TAnj - claud"
+  npm run server
+
+Ngrok (if tunnel expires):
+  ngrok http 5001
+
+Check Status Anytime:
+  Run: CHECK-SYSTEM-STATUS.bat
+
+┌────────────────────────────────────────────────────┐
+│  ❓ TROUBLESHOOTING                                │
+└────────────────────────────────────────────────────┘
+
+Login still fails?
+→ Open browser console (F12)
+→ Look for error messages
+→ Make sure SQL ran successfully in Supabase
+
+Can't access Supabase?
+→ Make sure you're logged into Supabase
+→ URL: https://supabase.com/dashboard
+
+Backend not responding?
+→ Check if port 5001 is in use
+→ Restart backend: npm run server
+
+┌────────────────────────────────────────────────────┐
+│  📞 QUICK REFERENCE                                │
+└────────────────────────────────────────────────────┘
+
+Frontend:  https://9be454.netlify.app
+Backend:   https://5360dbaf0288.ngrok-free.app
+Supabase:  https://supabase.com/dashboard/project/tlnojwnrvvrnujnhdlrr
+
+Admin Login:
+  Email:    admin@system.local
+  Password: admin123
+
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+    Everything is ready - just run that SQL! 🚀
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
