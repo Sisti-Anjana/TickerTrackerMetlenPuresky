@@ -1,0 +1,25 @@
+# Backend Dockerfile for Google Cloud Run
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy server files
+COPY server ./server
+COPY config ./config
+
+# Expose port (Cloud Run will override this)
+EXPOSE 8080
+
+# Set environment to production
+ENV NODE_ENV=production
+ENV PORT=8080
+
+# Start the application
+CMD ["node", "server/index.js"]
