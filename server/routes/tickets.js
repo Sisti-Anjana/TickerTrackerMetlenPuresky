@@ -3,6 +3,129 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+// Get client types and sites (for CreateTicket form) - Available to all authenticated users
+// IMPORTANT: This route must be defined BEFORE router.get('/') to avoid route conflicts
+router.get('/client-types', auth, async (req, res) => {
+  try {
+    console.log('✅ /api/tickets/client-types route hit');
+    console.log('Request path:', req.path);
+    console.log('Request method:', req.method);
+    const { supabase } = require('../../config/supabase');
+    
+    // Get all client types (not just active) - same as admin endpoint
+    const { data: clientTypes, error: clientError } = await supabase
+      .from('client_types')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    // If there's any error with client_types, log it but continue with empty array
+    if (clientError) {
+      console.error('Get client types error:', clientError);
+      console.error('Error code:', clientError.code);
+      console.error('Error message:', clientError.message);
+      console.error('Error details:', clientError.details);
+      // Return empty array instead of error to prevent client-side loop
+      console.warn('Returning empty array due to error. Tables may not exist yet.');
+      return res.json({ client_types: [] });
+    }
+
+    // Log what we found (only if there are client types, to reduce console spam)
+    if (clientTypes && clientTypes.length > 0) {
+      // Only log on first request or if count changed significantly
+      console.log(`Found ${clientTypes.length} client type(s)`);
+    }
+
+    // Get all sites (not just active) - same as admin endpoint
+    const { data: sites, error: sitesError } = await supabase
+      .from('sites')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    // If there's any error with sites, log it but continue with empty sites array
+    if (sitesError) {
+      console.error('Get sites error:', sitesError);
+      console.error('Error code:', sitesError.code);
+      console.error('Error message:', sitesError.message);
+      // Continue with empty sites array
+      const clientTypesWithSites = (clientTypes || []).map(client => ({
+        id: client.id,
+        name: client.name,
+        sites: []
+      }));
+      return res.json({ client_types: clientTypesWithSites });
+    }
+
+    // Combine client types with their sites - same structure as admin endpoint
+    // Handle missing status column gracefully
+    const clientTypesWithSites = (clientTypes || []).map(client => {
+      const clientSites = (sites || []).filter(site => {
+        // Handle both UUID (string) and number comparisons
+        // Convert both to strings for comparison to handle UUIDs correctly
+        const siteClientTypeId = String(site.client_type_id || '');
+        const clientId = String(client.id || '');
+        const matches = siteClientTypeId === clientId;
+        
+        // Debug: Log the matching process for mismatches (only first few to avoid spam)
+        if (!matches && sites.length > 0 && sites.indexOf(site) < 3) {
+          console.log(`🔍 Site "${site.name}" (client_type_id: ${site.client_type_id}, type: ${typeof site.client_type_id}) does NOT match client "${client.name}" (id: ${client.id}, type: ${typeof client.id})`);
+        }
+        return matches;
+      }).map(site => ({
+        id: site.id,
+        name: site.name,
+        location: site.location || null,
+        client_type_id: site.client_type_id,
+        status: site.status || 'active', // Default to 'active' if status column doesn't exist
+        created_at: site.created_at,
+        updated_at: site.updated_at
+      }));
+      
+      if (clientSites.length === 0 && sites && sites.length > 0) {
+        console.warn(`⚠️ Client "${client.name}" (ID: ${client.id}) has no matching sites. Available site client_type_ids:`, sites.map(s => s.client_type_id));
+      }
+      
+      return {
+        id: client.id,
+        name: client.name,
+        status: client.status || 'active', // Default to 'active' if status column doesn't exist
+        created_at: client.created_at,
+        updated_at: client.updated_at,
+        sites: clientSites
+      };
+    });
+
+    // Log for debugging sync issues
+    if (clientTypesWithSites.length === 0) {
+      console.log('⚠️ Tickets: No client types found. Make sure client types exist in the database.');
+    } else {
+      console.log(`✅ Tickets: Returning ${clientTypesWithSites.length} client type(s) with sites`);
+      // Log all client types and their site counts
+      clientTypesWithSites.forEach(ct => {
+        console.log(`   - ${ct.name} (ID: ${ct.id}): ${ct.sites.length} site(s)`);
+        if (ct.sites.length > 0) {
+          ct.sites.forEach(site => {
+            console.log(`     • ${site.name}${site.location ? ` (${site.location})` : ''}`);
+          });
+        }
+      });
+    }
+
+    // Always return a valid response structure
+    if (!clientTypesWithSites || !Array.isArray(clientTypesWithSites)) {
+      console.warn('⚠️ Invalid client types data structure, returning empty array');
+      return res.json({ client_types: [] });
+    }
+
+    res.json({ client_types: clientTypesWithSites });
+  } catch (error) {
+    console.error('❌ Get client types catch error:', error);
+    console.error('❌ Error stack:', error.stack);
+    // Always return empty array instead of error to prevent client-side loop
+    console.warn('⚠️ Returning empty array due to exception. Check server logs for details.');
+    return res.json({ client_types: [] });
+  }
+});
+
 // Get all tickets with enhanced user data and filtering
 router.get('/', auth, async (req, res) => {
   try {
@@ -74,6 +197,48 @@ router.get('/', auth, async (req, res) => {
       message: 'Server error fetching tickets', 
       error: error.message 
     });
+  }
+});
+
+// Delete ticket
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const ticketId = parseInt(req.params.id, 10);
+    if (Number.isNaN(ticketId)) {
+      return res.status(400).json({ message: 'Invalid ticket ID' });
+    }
+
+    const { supabase } = require('../../config/supabase');
+
+    // Ensure ticket exists and belongs to user
+    const { data: ticket, error: ticketError } = await supabase
+      .from('tickets')
+      .select('id, user_id')
+      .eq('id', ticketId)
+      .single();
+
+    if (ticketError || !ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    if (ticket.user_id !== req.user.id) {
+      return res.status(403).json({ message: 'You can only delete tickets you created' });
+    }
+
+    const { error: deleteError } = await supabase
+      .from('tickets')
+      .delete()
+      .eq('id', ticketId);
+
+    if (deleteError) {
+      console.error('Delete ticket error:', deleteError);
+      return res.status(500).json({ message: 'Failed to delete ticket', error: deleteError.message });
+    }
+
+    res.json({ message: 'Ticket deleted successfully' });
+  } catch (error) {
+    console.error('Delete ticket catch error:', error);
+    res.status(500).json({ message: 'Failed to delete ticket', error: error.message });
   }
 });
 

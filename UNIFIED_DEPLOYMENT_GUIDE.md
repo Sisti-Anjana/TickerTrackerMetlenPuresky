@@ -97,3 +97,4 @@ For production deployment to services like Heroku, Railway, or DigitalOcean:
 - JWT_SECRET
 - PORT (optional, defaults to 5001)
 - NODE_ENV=production
+

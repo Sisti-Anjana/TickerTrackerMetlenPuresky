@@ -43,3 +43,4 @@ echo Press Ctrl+C to stop the server
 echo.
 
 node server/index.js
+

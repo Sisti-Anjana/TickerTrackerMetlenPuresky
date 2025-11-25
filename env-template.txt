@@ -24,3 +24,4 @@ EMAIL_PASS=your_app_password
 
 # Additional Configuration
 ADDITIONAL_CLIENT_URL=
+

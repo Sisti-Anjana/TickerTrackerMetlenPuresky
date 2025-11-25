@@ -60,3 +60,4 @@ CLIENT_URL=https://your-app-name.up.railway.app
 ✅ Easy environment management  
 ✅ Automatic deployments from Git  
 ✅ Built-in monitoring  
+

@@ -26,3 +26,4 @@ Write-Host "Press Ctrl+C to stop the server" -ForegroundColor Gray
 Write-Host ""
 
 node server/index.js
+

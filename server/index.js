@@ -5,6 +5,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const ticketRoutes = require('./routes/tickets');
 const commentRoutes = require('./routes/comments');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 
@@ -13,7 +14,8 @@ const explicitAllowedOrigins = [
   process.env.CLIENT_URL || 'http://localhost:3000',
   process.env.ADDITIONAL_CLIENT_URL || '',
   'http://localhost:3001',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'http://localhost:5002'
 ].filter(Boolean);
 
 const allowedPatternMatchers = [
@@ -174,6 +176,7 @@ app.get('/api/debug/database', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
