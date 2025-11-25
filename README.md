@@ -1,158 +1,67 @@
-# Ticket Tracking System
+# Google Cloud Platform Deployment Files
 
-A comprehensive ticket tracking system built with Node.js, Express, MongoDB, and React. Users can register, login, create tickets, manage ticket status, and add comments.
+This folder contains everything you need to deploy your Ticket Tracking System to Google Cloud Platform.
 
-## Features
+## 📁 Files Overview
 
-- **User Authentication**: Register and login with JWT tokens
-- **Dashboard**: View all tickets with filtering and statistics
-- **Ticket Management**: Create, view, update, and delete tickets
-- **Status Management**: Track ticket status (Open, In Progress, Resolved, Closed)
-- **Priority System**: Set ticket priority (Low, Medium, High, Urgent)
-- **Categories**: Organize tickets by type (Bug, Feature, Support, Other)
-- **Comments**: Add comments to tickets for collaboration
-- **Responsive Design**: Modern UI that works on all devices
+| File | Description |
+|------|-------------|
+| `QUICK_START.md` | **START HERE** - Simple step-by-step guide |
+| `DEPLOYMENT_GUIDE.md` | Comprehensive deployment documentation |
+| `deploy-to-gcp.ps1` | Automated PowerShell deployment script |
+| `nginx.conf` | Nginx configuration for frontend |
+| `Dockerfile.backend` | Docker configuration for backend (in root) |
+| `Dockerfile.frontend` | Docker configuration for frontend (in root) |
 
-## Tech Stack
+## 🚀 Quick Deployment
 
-### Backend
-- Node.js & Express.js
-- MongoDB with Mongoose
-- JWT for authentication
-- bcryptjs for password hashing
-- Express Validator for input validation
+1. **Install Google Cloud CLI**: https://cloud.google.com/sdk/docs/install
 
-### Frontend
-- React 18 with TypeScript
-- React Router for navigation
-- Axios for API calls
-- Modern CSS with responsive design
-
-## Prerequisites
-
-- Node.js (v14 or higher)
-- MongoDB (local installation or MongoDB Atlas)
-- npm or yarn
-
-## Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd tracker
+2. **Login to Google Cloud**:
+   ```powershell
+   gcloud auth login
    ```
 
-2. **Install dependencies**
-   ```bash
-   # Install backend dependencies
-   npm install
-   
-   # Install frontend dependencies
-   cd client
-   npm install
-   cd ..
+3. **Create Project**:
+   ```powershell
+   gcloud projects create your-project-id
+   gcloud config set project your-project-id
    ```
 
-3. **Set up environment variables**
-   Create a `.env` file in the root directory:
-   ```env
-   PORT=5000
-   MONGODB_URI=mongodb://localhost:27017/ticket-tracker
-   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-   NODE_ENV=development
+4. **Run Deployment Script**:
+   ```powershell
+   .\gcp-deployment\deploy-to-gcp.ps1 -ProjectId "your-project-id"
    ```
 
-4. **Start MongoDB**
-   Make sure MongoDB is running on your system.
+## 📖 Documentation
 
-## Running the Application
+- **For beginners**: Read `QUICK_START.md`
+- **For advanced users**: Read `DEPLOYMENT_GUIDE.md`
 
-### Development Mode (Recommended)
+## 💰 Estimated Costs
 
-Run both backend and frontend concurrently:
-```bash
-npm run dev
-```
+- **Free Tier**: First 2 million requests/month FREE
+- **Low-Medium Traffic**: $7-23/month
+- **Enterprise Scale**: Custom pricing
 
-This will start:
-- Backend server on http://localhost:5000
-- Frontend development server on http://localhost:3000
+## 🆘 Need Help?
 
-### Manual Setup
+1. Check the documentation files in this folder
+2. Visit: https://cloud.google.com/run/docs
+3. Check logs: `gcloud run logs read service-name`
 
-**Backend only:**
-```bash
-npm run server
-```
+## ✅ What's Included
 
-**Frontend only:**
-```bash
-cd client
-npm start
-```
+- ✅ Automated deployment scripts
+- ✅ Docker configurations
+- ✅ Nginx setup for frontend
+- ✅ Environment variable management
+- ✅ Security best practices
+- ✅ Cost optimization tips
+- ✅ Monitoring and logging setup
+- ✅ CI/CD examples
+- ✅ Troubleshooting guide
 
-## API Endpoints
+---
 
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-- `GET /api/auth/me` - Get current user info
-
-### Tickets
-- `GET /api/tickets` - Get all tickets (with filtering)
-- `GET /api/tickets/:id` - Get single ticket
-- `POST /api/tickets` - Create new ticket
-- `PUT /api/tickets/:id` - Update ticket
-- `DELETE /api/tickets/:id` - Delete ticket
-
-### Comments
-- `GET /api/comments/ticket/:ticketId` - Get comments for ticket
-- `POST /api/comments` - Add comment to ticket
-- `PUT /api/comments/:id` - Update comment
-- `DELETE /api/comments/:id` - Delete comment
-
-## Usage
-
-1. **Register/Login**: Create an account or login with existing credentials
-2. **Dashboard**: View all tickets with filtering options
-3. **Create Ticket**: Click "New Ticket" to create a new support ticket
-4. **View Ticket**: Click on any ticket to view details and add comments
-5. **Update Status**: Change ticket status from the ticket detail page
-6. **Add Comments**: Collaborate by adding comments to tickets
-
-## Project Structure
-
-```
-tracker/
-├── server/                 # Backend code
-│   ├── models/            # MongoDB models
-│   ├── routes/            # API routes
-│   ├── middleware/        # Custom middleware
-│   └── index.js          # Server entry point
-├── client/                # Frontend code
-│   ├── public/           # Static files
-│   ├── src/
-│   │   ├── components/   # React components
-│   │   ├── pages/        # Page components
-│   │   ├── contexts/     # React contexts
-│   │   ├── services/     # API services
-│   │   └── App.tsx       # Main app component
-│   └── package.json
-├── package.json          # Root package.json
-└── README.md
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License.
-
-
-
+**Ready to deploy? Start with `QUICK_START.md`! 🎉**
