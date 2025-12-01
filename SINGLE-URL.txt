@@ -3,7 +3,7 @@
 ═══════════════════════════════════════════════════════════════
 
 🌐 MAIN URL:
-https://frabjous-fairy-9be454.netlify.app
+https://metlenpuresky.netlify.app
 
 ═══════════════════════════════════════════════════════════════
 
@@ -16,7 +16,7 @@ https://frabjous-fairy-9be454.netlify.app
 
 📍 HOW TO USE:
 
-1. Visit: https://frabjous-fairy-9be454.netlify.app
+1. Visit: https://metlenpuresky.netlify.app
 2. Login to your application
 3. All API calls automatically work through proxy
 
@@ -24,15 +24,15 @@ https://frabjous-fairy-9be454.netlify.app
 
 🔗 URL BREAKDOWN:
 
-Main App:     https://frabjous-fairy-9be454.netlify.app/
-User Login:   https://frabjous-fairy-9be454.netlify.app/login
-Admin Login:  https://frabjous-fairy-9be454.netlify.app/admin-login
-Dashboard:    https://frabjous-fairy-9be454.netlify.app/dashboard
+Main App:     https://metlenpuresky.netlify.app/
+User Login:   https://metlenpuresky.netlify.app/login
+Admin Login:  https://metlenpuresky.netlify.app/admin-login
+Dashboard:    https://metlenpuresky.netlify.app/dashboard
 
 API Endpoints (automatic proxy):
-https://frabjous-fairy-9be454.netlify.app/api/auth/user-login
-https://frabjous-fairy-9be454.netlify.app/api/tickets
-https://frabjous-fairy-9be454.netlify.app/api/comments
+https://metlenpuresky.netlify.app/api/auth/user-login
+https://metlenpuresky.netlify.app/api/tickets
+https://metlenpuresky.netlify.app/api/comments
 ... all your API routes work!
 
 ═══════════════════════════════════════════════════════════════
@@ -40,8 +40,8 @@ https://frabjous-fairy-9be454.netlify.app/api/comments
 ⚙️ TECHNICAL DETAILS:
 
 Frontend:  Hosted on Netlify
-Backend:   Running on ngrok (https://5360dbaf0288.ngrok-free.app)
-Proxy:     Netlify redirects /api/* → ngrok automatically
+Backend:   Render (https://pureskymetlen.onrender.com)
+Proxy:     Netlify redirects /api/* → Render automatically
 Status:    ✅ ACTIVE
 
 ═══════════════════════════════════════════════════════════════
@@ -58,17 +58,17 @@ Status:    ✅ ACTIVE
 
 📝 NOTES:
 
-• When ngrok URL changes, update the redirect in:
+• When the Render URL changes, update the redirect in:
   client/public/_redirects
 
 • Then redeploy using: deploy-to-netlify.bat
 
-• For permanent solution, deploy backend to production server
+• Optional: configure a custom domain so both are served from your brand URL
 
 ═══════════════════════════════════════════════════════════════
 
 💡 BOOKMARK THIS URL FOR EASY ACCESS!
 
-https://frabjous-fairy-9be454.netlify.app
+https://metlenpuresky.netlify.app
 
 ═══════════════════════════════════════════════════════════════

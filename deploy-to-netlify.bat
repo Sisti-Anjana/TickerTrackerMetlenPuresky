@@ -4,7 +4,7 @@ echo   DEPLOYING TO NETLIFY
 echo ========================================
 echo.
 
-cd client
+pushd client
 
 echo Step 1: Installing dependencies...
 call npm install
@@ -25,6 +25,7 @@ echo 1. Push changes to GitHub
 echo 2. Netlify will auto-deploy
 echo.
 echo OR manually deploy:
-echo - Run: netlify deploy --prod
+echo - From project root, run: netlify deploy --prod
 echo.
 pause
+popd

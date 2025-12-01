@@ -1,13 +1,12 @@
 [build]
   publish = "client/build"
-  command = "cd client && npm run build"
-  functions = "netlify/functions"
+  command = "npm run build --prefix client"
 
 # Redirect API calls to Render backend
 # Replace YOUR_RENDER_URL with your actual Render URL (e.g., https://metlen-api.onrender.com)
 [[redirects]]
   from = "/api/*"
-  to = "https://YOUR_RENDER_URL.onrender.com/api/:splat"
+  to = "https://pureskymetlen.onrender.com/api/:splat"
   status = 200
   force = true
 
