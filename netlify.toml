@@ -1,6 +1,6 @@
 [build]
   publish = "client/build"
-  command = "npm run build --prefix client"
+  command = "npm install --prefix client && npm run build --prefix client"
 
 # Redirect API calls to Render backend
 # Replace YOUR_RENDER_URL with your actual Render URL (e.g., https://metlen-api.onrender.com)
