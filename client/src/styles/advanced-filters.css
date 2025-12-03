@@ -1,0 +1,648 @@
+/* Professional Structured Row Filters for Dashboard */
+
+.search-and-filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 24px;
+  min-height: 44px;
+}
+
+.search-container {
+  flex: 0 1 450px;
+  min-width: 280px;
+  max-width: 500px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 44px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0 16px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.search-container:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.search-container:focus-within {
+  border-color: #76AB3F;
+  box-shadow: 0 0 0 3px rgba(118, 171, 63, 0.1);
+}
+
+.inline-filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  height: auto;
+  min-height: 44px;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 44px;
+}
+
+.date-filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  height: 44px;
+}
+
+.date-separator-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  margin: 0;
+  padding: 0 8px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.filter-select {
+  padding: 10px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 150px;
+  max-width: 180px;
+  height: 44px;
+  color: #1f2937;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.filter-select:hover {
+  border-color: #76AB3F;
+  background: #f9fafb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #76AB3F;
+  box-shadow: 0 0 0 3px rgba(118, 171, 63, 0.1);
+}
+
+.filter-input.date-input {
+  padding: 10px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  width: 170px;
+  max-width: 170px;
+  height: 44px;
+  color: #1f2937;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.filter-input.date-input:hover {
+  border-color: #76AB3F;
+  background: #f9fafb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.filter-input.date-input:focus {
+  outline: none;
+  border-color: #76AB3F;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(118, 171, 63, 0.1);
+}
+
+/* Style the date input to look better */
+.filter-input.date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.filter-input.date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  background: #f3f4f6;
+}
+
+/* Show placeholder when empty */
+.filter-input.date-input::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+.filter-input.date-input::-webkit-datetime-edit-text {
+  padding: 0 2px;
+  color: #374151;
+}
+
+.filter-input.date-input::-webkit-datetime-edit-month-field,
+.filter-input.date-input::-webkit-datetime-edit-day-field,
+.filter-input.date-input::-webkit-datetime-edit-year-field {
+  padding: 2px;
+  border-radius: 2px;
+}
+
+.filter-input.date-input::-webkit-datetime-edit-month-field:focus,
+.filter-input.date-input::-webkit-datetime-edit-day-field:focus,
+.filter-input.date-input::-webkit-datetime-edit-year-field:focus {
+  background: #dbeafe;
+  outline: none;
+}
+
+/* Add a visual hint for the format */
+.date-filters {
+  position: relative;
+}
+
+.filter-input.date-input::before {
+  content: 'MM/DD/YYYY';
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+  font-size: 14px;
+}
+
+.filter-input.date-input:focus::before,
+.filter-input.date-input:not(:placeholder-shown)::before,
+.filter-input.date-input[value]:not([value=""])::before {
+  display: none;
+}
+
+.clear-all-filters {
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+  height: 38px;
+  display: flex;
+  align-items: center;
+}
+
+.clear-all-filters:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.clear-all-filters:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.search-results-count {
+  font-size: 12px;
+  color: #1a365d;
+  white-space: nowrap;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-left: 8px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+}
+
+/* Search input styles */
+.search-icon {
+  color: #9ca3af;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  height: 100%;
+  padding: 0;
+  border: none;
+  font-size: 14px;
+  font-weight: 400;
+  background: transparent;
+  color: #1f2937;
+  outline: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.search-input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.search-container:hover {
+  border-color: #d1d5db;
+}
+
+.search-container:focus-within {
+  border-color: #76AB3F;
+  box-shadow: 0 0 0 1px #76AB3F;
+}
+
+/* Clear search button removed - using simple design */
+
+/* Responsive design for tablets */
+@media (max-width: 1200px) {
+  .search-and-filters-container {
+    gap: 12px;
+    padding: 0;
+  }
+  
+  .search-container {
+    flex: 0 1 400px;
+    min-width: 260px;
+    max-width: 450px;
+  }
+  
+  .inline-filters {
+    justify-content: flex-start;
+    gap: 10px;
+  }
+  
+  .filter-select {
+    min-width: 140px;
+    max-width: 160px;
+    font-size: 13px;
+  }
+  
+  .filter-input.date-input {
+    width: 160px;
+    max-width: 160px;
+    font-size: 13px;
+  }
+  
+  .search-results-count {
+    margin-left: 0;
+    margin-top: 8px;
+    width: 100%;
+    text-align: left;
+    font-size: 12px;
+  }
+}
+
+/* Tablet landscape and smaller desktops */
+@media (max-width: 1024px) {
+  .search-and-filters-container {
+    gap: 10px;
+  }
+  
+  .search-container {
+    flex: 0 1 380px;
+    max-width: 400px;
+    height: 42px;
+  }
+  
+  .search-icon {
+    font-size: 18px;
+  }
+  
+  .search-input {
+    font-size: 13px;
+  }
+  
+  .inline-filters {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .filter-select {
+    min-width: 130px;
+    max-width: 150px;
+    height: 42px;
+    padding: 8px 14px;
+  }
+  
+  .filter-input.date-input {
+    width: 150px;
+    max-width: 150px;
+    height: 42px;
+  }
+  
+  .filter-group,
+  .date-filters {
+    height: 42px;
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .search-and-filters-container {
+    padding: 0;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  
+  .search-container {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    margin-bottom: 0;
+    height: 44px;
+  }
+  
+  .search-icon {
+    font-size: 18px;
+    margin-right: 10px;
+  }
+  
+  .search-input {
+    font-size: 14px;
+  }
+  
+  .search-input::placeholder {
+    font-size: 13px;
+  }
+  
+  .inline-filters {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 10px;
+  }
+  
+  .filter-group {
+    flex: 1 1 calc(50% - 5px);
+    min-width: 140px;
+    height: 44px;
+  }
+  
+  .filter-select {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    height: 44px;
+    font-size: 14px;
+  }
+  
+  .date-separator-label {
+    flex: 0 0 100%;
+    width: 100%;
+    text-align: left;
+    padding: 8px 0;
+    height: auto;
+    font-size: 11px;
+  }
+  
+  .date-filters {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .filter-input.date-input {
+    flex: 1 1 calc(50% - 6px);
+    width: 100%;
+    min-width: 140px;
+    max-width: 100%;
+    height: 44px;
+    font-size: 14px;
+  }
+  
+  .clear-all-filters {
+    width: 100%;
+    margin-top: 0;
+    height: 44px;
+    font-size: 13px;
+  }
+  
+  .search-results-count {
+    text-align: left;
+    width: 100%;
+    margin-top: 0;
+    font-size: 12px;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .search-and-filters-container {
+    padding: 0;
+    gap: 10px;
+  }
+  
+  .search-container {
+    height: 42px;
+    padding: 0 12px;
+  }
+  
+  .search-icon {
+    font-size: 16px;
+    margin-right: 8px;
+  }
+  
+  .search-input {
+    font-size: 13px;
+  }
+  
+  .search-input::placeholder {
+    font-size: 12px;
+  }
+  
+  .filter-select {
+    padding: 8px 12px;
+    font-size: 13px;
+    height: 42px;
+  }
+  
+  .filter-input.date-input {
+    height: 42px;
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+  
+  .filter-group {
+    flex: 1 1 100%;
+    min-width: 100%;
+    height: 42px;
+  }
+  
+  .date-separator-label {
+    font-size: 10px;
+    padding: 6px 0;
+  }
+  
+  .clear-all-filters {
+    height: 42px;
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+  
+  .search-results-count {
+    font-size: 11px;
+  }
+}
+
+/* Professional styling enhancements */
+.filter-select option {
+  padding: 8px;
+  color: #374151;
+}
+
+.filter-select:hover,
+.filter-input.date-input:hover {
+  border-color: #9ca3af;
+}
+
+/* Ensure consistent alignment */
+.search-and-filters-container > * {
+  align-self: center;
+}
+
+/* Clean focus states */
+.filter-select:focus,
+.filter-input:focus,
+.search-input:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+}
+
+/* Grid layout helper for large screens */
+@media (min-width: 1201px) {
+  .search-and-filters-container {
+    grid-template-areas: "search status priority date-start date-end clear results";
+  }
+  
+  .search-container {
+    grid-area: search;
+  }
+  
+  .filter-group:nth-of-type(1) {
+    grid-area: status;
+  }
+  
+  .filter-group:nth-of-type(2) {
+    grid-area: priority;
+  }
+  
+  .date-filters {
+    grid-area: date-start / date-start / date-end / date-end;
+    display: flex;
+    gap: 8px;
+  }
+  
+  .clear-all-filters {
+    grid-area: clear;
+  }
+  
+  .search-results-count {
+    grid-area: results;
+  }
+}
+
+/* Additional responsive improvements for filters */
+@media (max-width: 1024px) {
+  .search-and-filters-container {
+    gap: 10px;
+  }
+  
+  .search-container {
+    flex: 0 1 350px;
+    max-width: 400px;
+  }
+  
+  .inline-filters {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .filter-select {
+    min-width: 130px;
+    max-width: 140px;
+  }
+  
+  .filter-input.date-input {
+    width: 135px;
+    max-width: 135px;
+  }
+}
+
+/* Medium screens - search takes more space */
+@media (max-width: 900px) {
+  .search-container {
+    flex: 1 1 100%;
+    min-width: 100%;
+    max-width: 100%;
+    margin-bottom: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-and-filters-container {
+    padding: 0;
+  }
+  
+  .search-container {
+    padding: 0;
+  }
+  
+  .search-input {
+    font-size: 12px;
+    padding: 0 110px 0 38px;
+  }
+  
+  .search-icon {
+    left: 10px;
+    font-size: 16px;
+  }
+  
+  .search-input::placeholder {
+    font-size: 11px;
+  }
+  
+  .filter-select {
+    padding: 10px;
+    font-size: 14px;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .filter-input.date-input {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .filter-group {
+    flex: 1 1 100%;
+  }
+}

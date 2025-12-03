@@ -1,0 +1,72 @@
+/* SMART TEXT TRUNCATION: Badges stay compact, descriptions expand on click */
+
+/* Badges and buttons should NEVER wrap - keep on one line */
+.priority-badge,
+.status-badge,
+.category-badge,
+.badge,
+[class*="-badge"],
+button,
+.btn,
+span[class*="badge"] {
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+/* Description fields: Truncate by default, expand on hover/click */
+.description-text,
+.ticket-description,
+.description,
+[class*="description"],
+.description-cell div {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 300px !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Show full description on hover */
+.description-text:hover,
+.ticket-description:hover,
+.description:hover,
+[class*="description"]:hover,
+.description-cell div:hover {
+  white-space: pre-wrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  max-width: none !important;
+  background: #f9fafb !important;
+  padding: 8px !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  z-index: 999 !important;
+  position: relative !important;
+}
+
+/* Ensure table cells accommodate hover expansion */
+.description-cell {
+  position: relative !important;
+}
+
+/* Keep other text normal */
+.stat-label,
+.ticket-title,
+.ticket-info,
+.table-user-name,
+.table-user-email,
+.stat-text,
+.user-name,
+.user-email,
+td,
+th {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+}
+
+/* Remove global truncation override */
+* {
+  text-overflow: inherit !important;
+}

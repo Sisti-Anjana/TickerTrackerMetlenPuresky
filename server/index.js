@@ -15,12 +15,14 @@ const explicitAllowedOrigins = [
   process.env.ADDITIONAL_CLIENT_URL || '',
   'http://localhost:3001',
   'http://localhost:3000',
-  'http://localhost:5002'
+  'http://localhost:5002',
+  'http://localhost:5003'
 ].filter(Boolean);
 
 const allowedPatternMatchers = [
   /https?:\/\/([a-z0-9-]+)\.netlify\.app(:\d+)?$/i, // any Netlify subdomain
-  /https?:\/\/([a-z0-9-]+)\.ngrok(-free)?\.app(:\d+)?$/i // ngrok URLs
+  /https?:\/\/([a-z0-9-]+)\.ngrok(-free)?\.app(:\d+)?$/i, // ngrok URLs
+  /https?:\/\/192\.168\.\d+\.\d+(:\d+)?$/i // local LAN IPs like http://192.168.x.x:5003
 ];
 
 app.use(cors({

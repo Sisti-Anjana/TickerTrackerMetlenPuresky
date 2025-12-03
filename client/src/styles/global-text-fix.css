@@ -1,0 +1,100 @@
+/* Make all text black and visible */
+* {
+  color: #000 !important;
+}
+
+.admin-login-container *,
+.user-login-container *,
+.change-password-container * {
+  color: #000 !important;
+}
+
+/* EXCEPT BUTTONS - Keep button text white */
+.user-login-container button.user-login-button,
+.user-login-container button.user-login-button *,
+.user-login-container button.user-login-button span,
+.user-login-container .user-login-button,
+.user-login-container .user-login-button *,
+.user-login-container .user-login-button span,
+.admin-login-container button.admin-login-button,
+.admin-login-container button.admin-login-button *,
+.admin-login-container .admin-login-button,
+.admin-login-container .admin-login-button * {
+  color: #fff !important;
+}
+
+/* Keep white text on colored backgrounds */
+.admin-login-card h1,
+.user-login-card h1,
+.change-password-header h1,
+.admin-icon-large,
+.user-icon-large,
+.header-icon {
+  color: #000 !important;
+}
+
+/* Card content text should be black */
+.admin-login-card p,
+.user-login-card p,
+.admin-login-form label,
+.user-login-form label,
+.change-password-form label {
+  color: #000 !important;
+}
+
+/* Input text should be black */
+input {
+  color: #000 !important;
+}
+
+/* Button text white for contrast (except btn-add-client and btn-submit) */
+button.admin-login-button,
+button.admin-login-button *,
+button.user-login-button,
+button.user-login-button *,
+button.user-login-button span,
+.btn-submit-small,
+.btn-submit-small *,
+.user-login-container button.user-login-button,
+.user-login-container button.user-login-button *,
+.user-login-container button.user-login-button span,
+.admin-login-container button.admin-login-button,
+.admin-login-container button.admin-login-button *,
+.user-login-button,
+.user-login-button *,
+.user-login-button span,
+.admin-login-button,
+.admin-login-button * {
+  color: #fff !important;
+}
+
+/* Buttons with black text */
+.btn-add-client,
+.btn-add-client *,
+.btn-submit,
+.btn-submit *,
+.modal-actions .btn-submit,
+.modal-actions .btn-submit *,
+.modal-content .btn-submit,
+.modal-content .btn-submit * {
+  color: #1e293b !important;
+}
+
+/* Error and success messages */
+.error-message,
+.alert-error {
+  color: #c33 !important;
+}
+
+.alert-success {
+  color: #2a7 !important;
+}
+
+/* Back button */
+.back-button {
+  color: #667eea !important;
+}
+
+.back-button:hover {
+  color: #764ba2 !important;
+}

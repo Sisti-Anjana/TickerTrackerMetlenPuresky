@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Configuration Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-box {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+        .test-box.error {
+            border-left-color: #f44336;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .error-text {
+            color: #f44336;
+            font-weight: bold;
+        }
+        .info {
+            background: rgba(33, 150, 243, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 API Configuration Tester</h1>
+        
+        <div class="info">
+            <strong>📍 Current Environment:</strong><br>
+            <span id="currentEnv">Loading...</span>
+        </div>
+
+        <div class="test-box">
+            <h3>Test 1: Check Environment Variable</h3>
+            <button onclick="checkEnv()">Check API Base URL</button>
+            <div id="envResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-box">
+            <h3>Test 2: Test API Connection</h3>
+            <button onclick="testConnection()">Test Connection</button>
+            <div id="connectionResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-box">
+            <h3>Test 3: Test Login Endpoint</h3>
+            <input type="text" id="testEmail" placeholder="Email" style="width:100%; padding:10px; margin:5px 0; border-radius:5px; border:none;">
+            <input type="password" id="testPassword" placeholder="Password" style="width:100%; padding:10px; margin:5px 0; border-radius:5px; border:none;">
+            <button onclick="testLogin()">Test Login</button>
+            <div id="loginResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Display current environment
+        document.getElementById('currentEnv').innerHTML = 
+            `Location: ${window.location.href}<br>` +
+            `Protocol: ${window.location.protocol}<br>` +
+            `Host: ${window.location.host}`;
+
+        function checkEnv() {
+            const result = document.getElementById('envResult');
+            result.style.display = 'block';
+            
+            const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || '/api';
+            
+            result.innerHTML = `
+                <span class="success">✅ Environment Check</span><br><br>
+                REACT_APP_API_BASE_URL: ${apiBaseUrl}<br><br>
+                <strong>Expected:</strong> /api<br>
+                <strong>Status:</strong> ${apiBaseUrl === '/api' ? 
+                    '<span class="success">✅ CORRECT</span>' : 
+                    '<span class="error-text">❌ INCORRECT - Should be /api</span>'}
+            `;
+        }
+
+        async function testConnection() {
+            const result = document.getElementById('connectionResult');
+            result.style.display = 'block';
+            result.innerHTML = 'Testing connection...';
+            
+            try {
+                const response = await fetch('/api/auth/debug/users', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                result.innerHTML = `
+                    <span class="success">✅ Connection Test</span><br><br>
+                    Status: ${response.status} ${response.statusText}<br>
+                    URL Called: ${response.url}<br><br>
+                    ${response.ok ? 
+                        '<span class="success">✅ API is reachable!</span>' : 
+                        '<span class="error-text">⚠️ API returned an error (may need authentication)</span>'}
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <span class="error-text">❌ Connection Failed</span><br><br>
+                    Error: ${error.message}<br><br>
+                    This usually means:<br>
+                    1. Backend is not running<br>
+                    2. ngrok tunnel is down<br>
+                    3. Proxy not configured correctly
+                `;
+            }
+        }
+
+        async function testLogin() {
+            const result = document.getElementById('loginResult');
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+            
+            if (!email || !password) {
+                result.style.display = 'block';
+                result.innerHTML = '<span class="error-text">❌ Please enter email and password</span>';
+                return;
+            }
+            
+            result.style.display = 'block';
+            result.innerHTML = 'Testing login...';
+            
+            try {
+                const response = await fetch('/api/auth/user-login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                result.innerHTML = `
+                    <span class="${response.ok ? 'success' : 'error-text'}">${response.ok ? '✅' : '❌'} Login Test</span><br><br>
+                    Status: ${response.status} ${response.statusText}<br>
+                    URL Called: ${response.url}<br><br>
+                    Response:<br>
+                    ${JSON.stringify(data, null, 2)}
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <span class="error-text">❌ Login Test Failed</span><br><br>
+                    Error: ${error.message}<br><br>
+                    Check console for more details.
+                `;
+                console.error('Login test error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

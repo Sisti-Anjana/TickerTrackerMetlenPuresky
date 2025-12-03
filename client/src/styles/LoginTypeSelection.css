@@ -1,0 +1,225 @@
+.login-type-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8faf7; /* Light greenish-white background */
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-type-content {
+  max-width: 1000px;
+  width: 100%;
+}
+
+.login-type-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.login-type-title {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  font-weight: 800;
+  color: #000000 !important;
+  text-shadow: none;
+}
+
+.login-type-subtitle {
+  font-size: 1.2rem;
+  color: #000000 !important;
+  font-weight: 600;
+  opacity: 1;
+}
+
+.login-type-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+  margin-bottom: 30px;
+}
+
+.login-type-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 40px 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8faf7;
+  border: 1px solid #e2f0d9;
+}
+
+.admin-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #84cc16 0%, #65a30d 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.user-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #65a30d 0%, #4d7c0f 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.login-type-card:hover::before {
+  opacity: 1;
+}
+
+.login-type-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  border-color: #d1e7c3;
+  background-color: #ffffff;
+}
+
+.card-icon {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 25px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s ease;
+  font-size: 50px;
+}
+
+.admin-card .card-icon {
+  background: linear-gradient(135deg, #84cc16 0%, #65a30d 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(132, 204, 22, 0.3);
+}
+
+.user-card .card-icon {
+  background: linear-gradient(135deg, #65a30d 0%, #4d7c0f 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(101, 163, 13, 0.3);
+}
+
+.login-type-card:hover .card-icon {
+  transform: scale(1.15) rotate(5deg);
+}
+
+.login-type-card h2 {
+  font-size: 1.75rem;
+  margin: 20px 0 10px;
+  color: #1a202c !important;
+  font-weight: 700;
+  text-shadow: none;
+}
+
+.login-type-card p {
+  color: #4a5568 !important;
+  margin-bottom: 25px;
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 500;
+  max-width: 300px;
+}
+
+.select-button {
+  width: 80%;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #FFFFFF !important;
+  text-transform: none;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-top: auto;
+}
+
+.admin-button {
+  background: #84cc16;
+}
+
+.admin-button:hover {
+  background: #65a30d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(132, 204, 22, 0.3);
+}
+
+.user-button {
+  background: #65a30d;
+}
+
+.user-button:hover {
+  background: #4d7c0f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(101, 163, 13, 0.3);
+}
+
+.login-type-footer {
+  text-align: center;
+  color: #FFFFFF !important;
+  font-size: 1rem;
+}
+
+.login-type-footer p {
+  color: #4a5568 !important;
+  opacity: 0.8 !important;
+  font-weight: 500;
+  font-size: 0.95rem;
+  margin-top: 30px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .login-type-title {
+    font-size: 2rem;
+  }
+  
+  .login-type-subtitle {
+    font-size: 1rem;
+  }
+  
+  .login-type-cards {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+  
+  .login-type-card {
+    padding: 40px 30px;
+  }
+
+  .card-icon {
+    width: 80px;
+    height: 80px;
+    font-size: 40px;
+  }
+
+  .login-type-card h2 {
+    font-size: 1.75rem;
+  }
+
+  .login-type-card p {
+    font-size: 1rem;
+  }
+}

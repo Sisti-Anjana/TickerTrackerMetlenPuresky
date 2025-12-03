@@ -1,0 +1,143 @@
+/* Global Color Theme - Green (#76AB3F) */
+/* This file contains color overrides for the entire application */
+
+:root {
+  /* Primary Green Shades */
+  --primary-green: #76AB3F;
+  --primary-green-dark: #5d8a31;
+  --primary-green-light: #8bc34a;
+  --primary-green-lighter: #a5d165;
+  --primary-green-pale: #e8f5e9;
+  
+  /* Background Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  
+  /* Text Colors */
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-tertiary: #94a3b8;
+  
+  /* Border Colors */
+  --border-light: #e2e8f0;
+  --border-medium: #cbd5e1;
+  --border-dark: #94a3b8;
+  
+  /* Status Colors */
+  --status-success: #16a34a;
+  --status-warning: #f59e0b;
+  --status-error: #dc2626;
+  --status-info: #76AB3F;
+}
+
+/* Override all blue buttons with green */
+.btn-primary,
+button.btn-primary,
+a.btn-primary {
+  background: var(--primary-green) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.btn-primary:hover {
+  background: var(--primary-green-dark) !important;
+}
+
+.btn-primary:active {
+  background: #4a7028 !important;
+}
+
+/* Outline buttons */
+.btn-outline {
+  border: 1px solid var(--primary-green) !important;
+  color: var(--primary-green) !important;
+  background: white !important;
+}
+
+.btn-outline:hover {
+  background: var(--primary-green) !important;
+  color: white !important;
+}
+
+/* Links */
+a {
+  color: var(--primary-green);
+}
+
+a:hover {
+  color: var(--primary-green-dark);
+}
+
+/* Focus states */
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+  outline: none !important;
+  border-color: var(--primary-green) !important;
+  box-shadow: 0 0 0 3px rgba(118, 171, 63, 0.1) !important;
+}
+
+/* Active/Selected states */
+.active,
+.selected {
+  color: var(--primary-green) !important;
+  border-color: var(--primary-green) !important;
+}
+
+/* Badges */
+.badge-primary {
+  background: var(--primary-green) !important;
+  color: white !important;
+}
+
+/* Loading spinners */
+.spinner,
+.loading-spinner {
+  border-top-color: var(--primary-green) !important;
+}
+
+/* Stat cards */
+.stat-card:hover {
+  border-color: var(--primary-green) !important;
+}
+
+/* Navigation active states */
+.nav-item.active {
+  color: white !important;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0%, transparent 100%) !important;
+  border-right: 3px solid white !important;
+}
+
+/* Tab buttons */
+.tab-button.active {
+  color: var(--primary-green) !important;
+  border-bottom: 2px solid var(--primary-green) !important;
+}
+
+/* Progress bars */
+.progress-bar {
+  background: var(--primary-green) !important;
+}
+
+/* Checkbox and radio */
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+  background: var(--primary-green) !important;
+  border-color: var(--primary-green) !important;
+}
+
+/* Remove all emojis globally */
+.nav-icon,
+.stat-icon,
+.card-icon,
+.section-icon {
+  font-family: 'Font Awesome 5 Free', 'Font Awesome 5 Pro', sans-serif;
+}
+
+/* Hide emoji spans if they exist */
+span[role="img"],
+.emoji {
+  display: none !important;
+}

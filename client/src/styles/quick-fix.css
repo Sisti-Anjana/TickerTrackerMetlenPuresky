@@ -1,0 +1,61 @@
+/* Emergency Fix for Green Overlay Issue */
+
+/* Hard reset for any background overlays */
+html, body {
+  background: #f5f7fa !important;
+  background-image: none !important;
+}
+
+body::before,
+body::after,
+html::before,
+html::after {
+  display: none !important;
+  content: none !important;
+}
+
+#root {
+  background: transparent !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+#root::before,
+#root::after {
+  display: none !important;
+  content: none !important;
+}
+
+.App {
+  background: transparent !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.App::before,
+.App::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Remove any absolute positioned overlays */
+/* Ensure main content is visible and on top */
+.main-content {
+  position: relative !important;
+  z-index: 10 !important;
+  background-color: #f5f7fa !important;
+  min-height: 100vh !important;
+}
+
+.app-layout {
+  background: transparent !important;
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+/* Force visibility for dashboard */
+.page {
+  position: relative !important;
+  z-index: 15 !important;
+  background: transparent !important;
+}
