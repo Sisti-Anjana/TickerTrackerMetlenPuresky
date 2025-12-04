@@ -210,7 +210,7 @@ router.delete('/:id', auth, async (req, res) => {
 
     const { supabase } = require('../../config/supabase');
 
-    // Ensure ticket exists and belongs to user
+    // Ensure ticket exists and get owner
     const { data: ticket, error: ticketError } = await supabase
       .from('tickets')
       .select('id, user_id')
@@ -221,8 +221,22 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Ticket not found' });
     }
 
-    if (ticket.user_id !== req.user.id) {
-      return res.status(403).json({ message: 'You can only delete tickets you created' });
+    // Fetch current user's role from Supabase
+    const { data: currentUser, error: userError } = await supabase
+      .from('users')
+      .select('id, role')
+      .eq('id', req.user.id)
+      .single();
+
+    if (userError || !currentUser) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+
+    const isOwner = ticket.user_id === req.user.id;
+    const isAdmin = currentUser.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: 'Only the ticket creator or an admin can delete this ticket' });
     }
 
     const { error: deleteError } = await supabase

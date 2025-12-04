@@ -21,6 +21,12 @@ interface ClientType {
   sites?: Site[];
 }
 
+interface Equipment {
+  id: number;
+  name: string;
+  is_active: boolean;
+}
+
 const ClientSiteManagement: React.FC = () => {
   const { user } = useAuth();
   const [clientTypes, setClientTypes] = useState<ClientType[]>([]);
@@ -46,9 +52,15 @@ const ClientSiteManagement: React.FC = () => {
     client_type_id: 0
   });
 
+  // Equipment management
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [equipmentName, setEquipmentName] = useState('');
+  const [loadingEquipment, setLoadingEquipment] = useState(false);
+
   useEffect(() => {
     if (user && (user as any).role === 'admin') {
       fetchClientTypes();
+      fetchEquipment();
     }
   }, [user]);
 
@@ -62,6 +74,55 @@ const ClientSiteManagement: React.FC = () => {
       setError(err.response?.data?.message || 'Failed to load client types');
     } finally {
       setLoading(false);
+    }
+  };
+
+
+  const fetchEquipment = async () => {
+    try {
+      setLoadingEquipment(true);
+      const response = await api.get('/equipment');
+      setEquipment(response.data.equipment || []);
+    } catch (err: any) {
+      console.error('Error fetching equipment:', err);
+      // Don't surface as main error; equipment is auxiliary
+    } finally {
+      setLoadingEquipment(false);
+    }
+  };
+
+  const handleEquipmentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!equipmentName.trim()) return;
+
+    try {
+      setError('');
+      setSuccess('');
+      const response = await api.post('/equipment', { name: equipmentName.trim() });
+      const newEq = response.data.equipment;
+      setEquipment((prev) => [...prev, newEq]);
+      setEquipmentName('');
+      setSuccess('Equipment added successfully');
+    } catch (err: any) {
+      console.error('Error adding equipment:', err);
+      setError(err.response?.data?.message || 'Failed to add equipment');
+    }
+  };
+
+  const handleDeleteEquipment = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this equipment option?')) {
+      return;
+    }
+
+    try {
+      setError('');
+      setSuccess('');
+      await api.delete(`/equipment/${id}`);
+      setEquipment((prev) => prev.filter((eq) => eq.id !== id));
+      setSuccess('Equipment deleted successfully');
+    } catch (err: any) {
+      console.error('Error deleting equipment:', err);
+      setError(err.response?.data?.message || 'Failed to delete equipment');
     }
   };
 
@@ -493,6 +554,54 @@ const ClientSiteManagement: React.FC = () => {
           ))}
         </div>
       )}
+
+      {/* Equipment management section */}
+      <div className="equipment-management">
+        <h2>Equipment Library</h2>
+        <p className="equipment-subtitle">
+          Manage the list of equipment options shown in the ticket creation form.
+        </p>
+
+        <form onSubmit={handleEquipmentSubmit} className="equipment-form">
+          <input
+            type="text"
+            className="equipment-input"
+            placeholder="Add new equipment (e.g., Inverter Room 2)"
+            value={equipmentName}
+            onChange={(e) => setEquipmentName(e.target.value)}
+            disabled={loadingEquipment}
+          />
+          <button
+            type="submit"
+            className="btn-add-equipment"
+            disabled={loadingEquipment || !equipmentName.trim()}
+          >
+            {loadingEquipment ? 'Saving...' : 'Add Equipment'}
+          </button>
+        </form>
+
+        <div className="equipment-list">
+          {equipment.length === 0 ? (
+            <p className="empty-equipment">No equipment added yet.</p>
+          ) : (
+            <ul>
+              {equipment.map((eq) => (
+                <li key={eq.id}>
+                  <span className="equipment-name">{eq.name}</span>
+                  <button
+                    type="button"
+                    className="equipment-delete-btn"
+                    onClick={() => handleDeleteEquipment(eq.id)}
+                    title="Delete equipment"
+                  >
+                    ✖
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
 
       {/* Client Type Modal */}
       {showClientForm && (

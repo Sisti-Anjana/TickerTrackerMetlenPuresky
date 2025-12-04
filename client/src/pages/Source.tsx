@@ -324,22 +324,21 @@ const Source: React.FC = () => {
     <>
       <TopHeader />
       <div className="source-container">
-        <div className="navigation-header" style={{ marginTop: '0', paddingTop: '0' }}>
-          <BackButton
-            label="Back to Client Selection"
-            onClick={() => {
-              setSelectedClient(null);
-              setSelectedSite(null);
-              setDateFilter({ startDate: '', endDate: '' });
-              setSearchQuery('');
-            }}
-            className="back-button-primary"
-          />
-        </div>
-
         <div className="site-header">
           <h1 className="site-title">{selectedClient} - Site Overview</h1>
           <p className="site-subtitle">Select a site to view detailed ticket information</p>
+          <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center' }}>
+            <BackButton
+              label="Back to Client Selection"
+              onClick={() => {
+                setSelectedClient(null);
+                setSelectedSite(null);
+                setDateFilter({ startDate: '', endDate: '' });
+                setSearchQuery('');
+              }}
+              className="back-button-primary"
+            />
+          </div>
         </div>
 
         {/* Date Filters */}
@@ -443,6 +442,20 @@ const Source: React.FC = () => {
             </div>
           ))
           )}
+        </div>
+
+        {/* Bottom back button to return to client selection */}
+        <div style={{ marginTop: '24px', marginBottom: '24px', display: 'flex', justifyContent: 'center' }}>
+          <BackButton
+            label="Back to Client Selection"
+            onClick={() => {
+              setSelectedClient(null);
+              setSelectedSite(null);
+              setDateFilter({ startDate: '', endDate: '' });
+              setSearchQuery('');
+            }}
+            className="back-button-primary"
+          />
         </div>
 
         {/* Detailed View */}

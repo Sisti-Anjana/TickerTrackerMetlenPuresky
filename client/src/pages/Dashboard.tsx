@@ -650,7 +650,7 @@ const Dashboard = (): JSX.Element => {
       'Category',
       'Description',
       'Priority',
-      'Outage',
+      'Site Outage',
       'Status',
       'Requestor'
     ];
@@ -1271,7 +1271,7 @@ const Dashboard = (): JSX.Element => {
                   <th>Category</th>
                   <th>Description</th>
                   <th>Priority</th>
-                  <th>Outage</th>
+                  <th>Site Outage</th>
                   <th>Status</th>
                   <th>Requestor</th>
                   <th>Actions</th>
@@ -1355,7 +1355,7 @@ const Dashboard = (): JSX.Element => {
                       >
                           View
                       </Link>
-                        {ticket.is_owner && (
+                        {(ticket.is_owner || (user as any)?.role === 'admin') && (
                           <button
                             className="btn btn-small btn-danger"
                             onClick={() => handleDeleteTicket(ticket.id, ticket.ticket_number || 'Unknown')}
@@ -1486,7 +1486,7 @@ const Dashboard = (): JSX.Element => {
                     >
                           View
                     </Link>
-                        {ticket.is_owner && (
+                        {(ticket.is_owner || (user as any)?.role === 'admin') && (
                           <button
                             className="btn btn-small btn-danger"
                             style={{ flex: 1 }}
@@ -1618,7 +1618,7 @@ const Dashboard = (): JSX.Element => {
                       <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Category</th>
                       <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Description</th>
                       <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Priority</th>
-                      <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Outage</th>
+                      <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Site Outage</th>
                       <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Status</th>
                       <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Requestor</th>
                     </tr>

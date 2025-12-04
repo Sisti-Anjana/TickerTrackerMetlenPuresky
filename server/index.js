@@ -6,36 +6,14 @@ const authRoutes = require('./routes/auth');
 const ticketRoutes = require('./routes/tickets');
 const commentRoutes = require('./routes/comments');
 const adminRoutes = require('./routes/admin');
+const equipmentRoutes = require('./routes/equipment');
 
 const app = express();
 
 // Middleware
-const explicitAllowedOrigins = [
-  process.env.CLIENT_URL || 'http://localhost:3000',
-  process.env.ADDITIONAL_CLIENT_URL || '',
-  'http://localhost:3001',
-  'http://localhost:3000',
-  'http://localhost:5002',
-  'http://localhost:5003'
-].filter(Boolean);
-
-const allowedPatternMatchers = [
-  /https?:\/\/([a-z0-9-]+)\.netlify\.app(:\d+)?$/i, // any Netlify subdomain
-  /https?:\/\/([a-z0-9-]+)\.ngrok(-free)?\.app(:\d+)?$/i, // ngrok URLs
-  /https?:\/\/192\.168\.\d+\.\d+(:\d+)?$/i // local LAN IPs like http://192.168.x.x:5003
-];
-
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // allow server-to-server / curl
-
-    const isExplicit = explicitAllowedOrigins.includes(origin);
-    const matchesPattern = allowedPatternMatchers.some((re) => re.test(origin));
-
-    if (isExplicit || matchesPattern) return callback(null, true);
-    return callback(new Error(`Not allowed by CORS: ${origin}`));
-  },
-  credentials: true,
+  origin: true,       // Allow all origins (Netlify, localhost, LAN, etc.)
+  credentials: true,  // Allow cookies / auth headers
 }));
 app.use(express.json());
 
@@ -179,6 +157,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/equipment', equipmentRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

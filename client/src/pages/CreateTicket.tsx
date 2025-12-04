@@ -83,14 +83,17 @@ const CreateTicket: React.FC = () => {
     }
   }, [formData.issueStartTime, formData.issueEndTime]); // Include issueEndTime in dependencies
   
-  // Equipment Options
-  const equipmentOptions = [
+  // Equipment Options (default list, can be overridden by API)
+  const [equipmentOptions, setEquipmentOptions] = useState<string[]>([
+    'Entire Site / Site Level',
+    'BESS Side',
+    'PV Side',
     'Production Meter',
-    'Inverter', 
+    'Inverter',
     'Combining Box/String Box',
     'Weather Station',
-    'Tracker'
-  ];
+    'Solar Trackers'
+  ]);
 
   // Category Options
   const categoryOptions = [
@@ -100,13 +103,32 @@ const CreateTicket: React.FC = () => {
   ];
 
   // Priority Options
-  const priorityOptions = ['High', 'Medium', 'Low'];
+  const priorityOptions = ['Urgent', 'High', 'Medium', 'Low'];
 
   // Site Outage Options
   const siteOutageOptions = ['Yes', 'No', 'TBD (To be decided)'];
 
   // Ticket Status Options
   const ticketStatusOptions = ['Open', 'Resolved', 'Pending', 'Closed'];
+
+  // Load equipment options from API (if table exists)
+  useEffect(() => {
+    const fetchEquipment = async () => {
+      try {
+        const response = await api.get('/equipment');
+        const apiEquipment = (response.data?.equipment || []) as Array<{ name: string }>;
+        const names = apiEquipment
+          .map((e) => e.name)
+          .filter((n) => !!n && typeof n === 'string');
+        if (names.length > 0) {
+          setEquipmentOptions(names);
+        }
+      } catch (err) {
+        console.warn('Equipment API not available, using default list.', err);
+      }
+    };
+    fetchEquipment();
+  }, []);
 
   // Update customer name when user changes
   useEffect(() => {
