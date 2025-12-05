@@ -103,13 +103,13 @@ router.post('/admin-login', async (req, res) => {
 
     // Add timeout protection for password verification
     const verifyPromise = verifyAndUpgradePassword(supabase, user, password);
-    const timeoutPromise = new Promise((_, reject) => 
+    const verifyTimeoutPromise = new Promise((_, reject) => 
       setTimeout(() => reject(new Error('Password verification timeout')), 10000)
     );
 
     let verify;
     try {
-      verify = await Promise.race([verifyPromise, timeoutPromise]);
+      verify = await Promise.race([verifyPromise, verifyTimeoutPromise]);
     } catch (timeoutError) {
       console.error('Password verification timeout:', timeoutError);
       return res.status(500).json({ 
@@ -224,13 +224,13 @@ router.post('/user-login', async (req, res) => {
 
     // Add timeout protection for password verification
     const verifyPromise = verifyAndUpgradePassword(supabase, user, password);
-    const timeoutPromise = new Promise((_, reject) => 
+    const verifyTimeoutPromise = new Promise((_, reject) => 
       setTimeout(() => reject(new Error('Password verification timeout')), 10000)
     );
 
     let verify;
     try {
-      verify = await Promise.race([verifyPromise, timeoutPromise]);
+      verify = await Promise.race([verifyPromise, verifyTimeoutPromise]);
     } catch (timeoutError) {
       console.error('Password verification timeout:', timeoutError);
       return res.status(500).json({ 
@@ -518,13 +518,13 @@ router.post('/login', async (req, res) => {
 
     // Add timeout protection for password verification
     const verifyPromise = verifyAndUpgradePassword(supabase, user, String(password));
-    const verifyTimeoutPromise = new Promise((_, reject) => 
+    const verifyTimeoutPromise2 = new Promise((_, reject) => 
       setTimeout(() => reject(new Error('Password verification timeout')), 10000)
     );
 
     let verify;
     try {
-      verify = await Promise.race([verifyPromise, verifyTimeoutPromise]);
+      verify = await Promise.race([verifyPromise, verifyTimeoutPromise2]);
     } catch (timeoutError) {
       console.error('Password verification timeout:', timeoutError);
       return res.status(500).json({ 
