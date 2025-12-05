@@ -91,13 +91,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setTimeout(initializeAuth, 100);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, retries = 2) => {
     try {
       console.log('Attempting login for:', email);
       setLoading(true);
       
-      const response = await api.post('/auth/login', { email, password });
+      // Validate email format on frontend
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new Error('Invalid email format');
+      }
+
+      // Add timeout protection
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout. Please check your connection and try again.')), 30000)
+      );
+
+      const loginPromise = api.post('/auth/login', { email, password });
+      const response = await Promise.race([loginPromise, timeoutPromise]) as any;
+      
+      if (!response || !response.data) {
+        throw new Error('Invalid response from server');
+      }
+
       const { token, user: userData } = response.data;
+      
+      if (!token || !userData) {
+        throw new Error('Missing authentication data');
+      }
       
       // Store token and set up API headers
       localStorage.setItem('token', token);
@@ -111,12 +132,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error: any) {
       console.error('Login failed:', error);
       
+      // Retry logic for network errors
+      if (retries > 0 && (
+        error.message?.includes('timeout') || 
+        error.message?.includes('network') ||
+        error.code === 'ECONNABORTED' ||
+        error.code === 'ERR_NETWORK'
+      )) {
+        console.log(`Retrying login... ${retries} attempts remaining`);
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+        return login(email, password, retries - 1);
+      }
+      
       // Clear any existing authentication on login failure
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       delete api.defaults.headers.common['Authorization'];
       setUser(null);
       
-      throw new Error(error.response?.data?.message || 'Login failed');
+      // Provide user-friendly error messages
+      let errorMessage = 'Login failed';
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        errorMessage = 'Request timeout. Please check your connection and try again.';
+      } else if (error.code === 'ERR_NETWORK' || error.message?.includes('network')) {
+        errorMessage = 'Network error. Please check your internet connection.';
+      }
+      
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }

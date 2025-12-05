@@ -41,6 +41,12 @@ router.post('/admin-login', async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
     let supabase;
     try {
       const supabaseConfig = require('../../config/supabase');
@@ -56,15 +62,34 @@ router.post('/admin-login', async (req, res) => {
       });
     }
 
-    const { data: user, error } = await supabase
+    // Add timeout protection for database query
+    const queryPromise = supabase
       .from('users')
       .select('id, name, email, password, role')
       .eq('email', email.toLowerCase().trim())
       .single();
 
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database query timeout')), 10000)
+    );
+
+    let user, error;
+    try {
+      const result = await Promise.race([queryPromise, timeoutPromise]);
+      user = result.data;
+      error = result.error;
+    } catch (timeoutError) {
+      console.error('Database query timeout:', timeoutError);
+      return res.status(500).json({ 
+        message: 'Server is taking too long to respond. Please try again.', 
+        error: 'Database timeout' 
+      });
+    }
+
     if (error) {
       console.error('Supabase query error:', error);
-      return res.status(400).json({ message: 'Invalid email or password', details: error.message });
+      // Don't reveal if user exists or not for security
+      return res.status(400).json({ message: 'Invalid email or password' });
     }
 
     if (!user) {
@@ -76,16 +101,42 @@ router.post('/admin-login', async (req, res) => {
       return res.status(403).json({ message: 'Access denied. Admin privileges required.' });
     }
 
-    const verify = await verifyAndUpgradePassword(supabase, user, password);
+    // Add timeout protection for password verification
+    const verifyPromise = verifyAndUpgradePassword(supabase, user, password);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Password verification timeout')), 10000)
+    );
+
+    let verify;
+    try {
+      verify = await Promise.race([verifyPromise, timeoutPromise]);
+    } catch (timeoutError) {
+      console.error('Password verification timeout:', timeoutError);
+      return res.status(500).json({ 
+        message: 'Server is taking too long to respond. Please try again.', 
+        error: 'Verification timeout' 
+      });
+    }
+
     if (!verify.ok) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    const token = jwt.sign(
-      { userId: user.id, role: user.role },
-      process.env.JWT_SECRET || 'fallback-secret-key',
-      { expiresIn: '7d' }
-    );
+    // Generate token with error handling
+    let token;
+    try {
+      token = jwt.sign(
+        { userId: user.id, role: user.role },
+        process.env.JWT_SECRET || 'fallback-secret-key',
+        { expiresIn: '7d' }
+      );
+    } catch (tokenError) {
+      console.error('Token generation error:', tokenError);
+      return res.status(500).json({ 
+        message: 'Failed to create session. Please try again.', 
+        error: 'Token generation failed' 
+      });
+    }
 
     res.json({
       message: 'Admin login successful',
@@ -111,14 +162,58 @@ router.post('/user-login', async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const { supabase } = require('../../config/supabase');
-    const { data: user, error } = await supabase
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    let supabase;
+    try {
+      const supabaseConfig = require('../../config/supabase');
+      supabase = supabaseConfig.supabase;
+      if (!supabase) {
+        throw new Error('Supabase client not initialized');
+      }
+    } catch (configError) {
+      console.error('Failed to load Supabase config:', configError);
+      return res.status(500).json({ 
+        message: 'Server configuration error. Please try again later.', 
+        error: configError.message 
+      });
+    }
+
+    // Add timeout protection for database query
+    const queryPromise = supabase
       .from('users')
       .select('id, name, email, password, role, must_change_password')
       .eq('email', email.toLowerCase().trim())
       .single();
 
-    if (error || !user) {
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database query timeout')), 10000)
+    );
+
+    let user, error;
+    try {
+      const result = await Promise.race([queryPromise, timeoutPromise]);
+      user = result.data;
+      error = result.error;
+    } catch (timeoutError) {
+      console.error('Database query timeout:', timeoutError);
+      return res.status(500).json({ 
+        message: 'Server is taking too long to respond. Please try again.', 
+        error: 'Database timeout' 
+      });
+    }
+
+    if (error) {
+      console.error('Supabase query error:', error);
+      // Don't reveal if user exists or not for security
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    if (!user) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
@@ -127,7 +222,23 @@ router.post('/user-login', async (req, res) => {
       return res.status(403).json({ message: 'Please use admin login for admin accounts' });
     }
 
-    const verify = await verifyAndUpgradePassword(supabase, user, password);
+    // Add timeout protection for password verification
+    const verifyPromise = verifyAndUpgradePassword(supabase, user, password);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Password verification timeout')), 10000)
+    );
+
+    let verify;
+    try {
+      verify = await Promise.race([verifyPromise, timeoutPromise]);
+    } catch (timeoutError) {
+      console.error('Password verification timeout:', timeoutError);
+      return res.status(500).json({ 
+        message: 'Server is taking too long to respond. Please try again.', 
+        error: 'Verification timeout' 
+      });
+    }
+
     if (!verify.ok) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
@@ -154,7 +265,12 @@ router.post('/user-login', async (req, res) => {
     });
   } catch (error) {
     console.error('User login error:', error);
-    res.status(500).json({ message: 'Login failed', error: error.message });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Login failed. Please try again.', 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -347,28 +463,96 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const { supabase } = require('../../config/supabase');
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    let supabase;
+    try {
+      const supabaseConfig = require('../../config/supabase');
+      supabase = supabaseConfig.supabase;
+      if (!supabase) {
+        throw new Error('Supabase client not initialized');
+      }
+    } catch (configError) {
+      console.error('Failed to load Supabase config:', configError);
+      return res.status(500).json({ 
+        message: 'Server configuration error. Please try again later.', 
+        error: configError.message 
+      });
+    }
+
     const normalizedEmail = String(email).toLowerCase().trim();
-    const { data: user, error } = await supabase
-      .from('users').select('id, name, email, password, role')
-      .eq('email', normalizedEmail).single();
+    
+    // Add timeout protection for database query
+    const queryPromise = supabase
+      .from('users')
+      .select('id, name, email, password, role')
+      .eq('email', normalizedEmail)
+      .single();
+
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database query timeout')), 10000)
+    );
+
+    let user, error;
+    try {
+      const result = await Promise.race([queryPromise, timeoutPromise]);
+      user = result.data;
+      error = result.error;
+    } catch (timeoutError) {
+      console.error('Database query timeout:', timeoutError);
+      return res.status(500).json({ 
+        message: 'Server is taking too long to respond. Please try again.', 
+        error: 'Database timeout' 
+      });
+    }
 
     if (error || !user) {
       console.log('[AUTH] /login user not found or error', { normalizedEmail, error: error?.message });
+      // Don't reveal if user exists or not for security
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    const verify = await verifyAndUpgradePassword(supabase, user, String(password));
+    // Add timeout protection for password verification
+    const verifyPromise = verifyAndUpgradePassword(supabase, user, String(password));
+    const verifyTimeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Password verification timeout')), 10000)
+    );
+
+    let verify;
+    try {
+      verify = await Promise.race([verifyPromise, verifyTimeoutPromise]);
+    } catch (timeoutError) {
+      console.error('Password verification timeout:', timeoutError);
+      return res.status(500).json({ 
+        message: 'Server is taking too long to respond. Please try again.', 
+        error: 'Verification timeout' 
+      });
+    }
+
     if (!verify.ok) {
       console.log('[AUTH] /login password mismatch', { normalizedEmail });
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    const token = jwt.sign(
-      { userId: user.id, role: user.role },
-      process.env.JWT_SECRET || 'fallback-secret-key',
-      { expiresIn: '7d' }
-    );
+    // Generate token with error handling
+    let token;
+    try {
+      token = jwt.sign(
+        { userId: user.id, role: user.role },
+        process.env.JWT_SECRET || 'fallback-secret-key',
+        { expiresIn: '7d' }
+      );
+    } catch (tokenError) {
+      console.error('Token generation error:', tokenError);
+      return res.status(500).json({ 
+        message: 'Failed to create session. Please try again.', 
+        error: 'Token generation failed' 
+      });
+    }
 
     res.json({
       message: 'Login successful',
@@ -377,7 +561,12 @@ router.post('/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Login failed', error: error.message });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Login failed. Please try again.', 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 // GET CURRENT USER
