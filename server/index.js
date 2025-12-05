@@ -29,13 +29,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// Test Supabase connection
+// Test Supabase connection (non-blocking)
 const { supabase } = require('../config/supabase');
-supabase.from('users').select('count').then(() => {
-  console.log('✅ Supabase connected successfully');
-}).catch(err => {
-  console.log('❌ Supabase connection error:', err.message);
-});
+if (supabase) {
+  supabase.from('users').select('count').limit(1).then(() => {
+    console.log('✅ Supabase connected successfully');
+  }).catch(err => {
+    console.log('❌ Supabase connection error:', err.message);
+  });
+} else {
+  console.warn('⚠️ Supabase not initialized - check environment variables');
+}
 
 // Test endpoint for debugging
 app.get('/api/test', (req, res) => {

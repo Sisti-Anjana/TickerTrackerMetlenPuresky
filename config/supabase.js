@@ -2,68 +2,82 @@
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
-// Validate environment variables
+// Validate environment variables (don't exit, just warn)
+let supabaseUrl, supabaseAnonKey, supabaseServiceKey;
+let supabase, supabaseAnon;
+
 if (!process.env.SUPABASE_URL) {
   console.error('❌ Missing required SUPABASE_URL environment variable');
-  process.exit(1);
-}
-
-if (!process.env.SUPABASE_ANON_KEY) {
+  console.error('⚠️ Server will start but database operations will fail');
+} else if (!process.env.SUPABASE_ANON_KEY) {
   console.error('❌ Missing required SUPABASE_ANON_KEY environment variable');
-  process.exit(1);
-}
+  console.error('⚠️ Server will start but database operations will fail');
+} else {
+  supabaseUrl = process.env.SUPABASE_URL;
+  supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+  supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE;
 
-if (!process.env.SUPABASE_SERVICE_ROLE) {
-  console.warn('⚠️ SUPABASE_SERVICE_ROLE environment variable is missing. Some admin operations may fail.');
-}
+  console.log('🔗 Supabase URL:', supabaseUrl ? supabaseUrl.substring(0, 30) + '...' : 'NOT SET');
+  console.log('🔑 Keys available:', {
+    anon: supabaseAnonKey ? '✅ Present' : '❌ Missing',
+    service: supabaseServiceKey ? '✅ Present' : '⚠️ Missing (some admin features may not work)'
+  });
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE;
+  // Create Supabase client for server-side operations
+  try {
+    supabase = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      },
+      global: {
+        headers: {
+          'x-application-name': 'ticket-management-server'
+        }
+      }
+    });
 
-console.log('🔗 Supabase URL:', supabaseUrl);
-console.log('🔑 Keys available:', {
-  anon: '✅ Present',
-  service: supabaseServiceKey ? '✅ Present' : '⚠️ Missing (some admin features may not work)'
-});
-
-// Create Supabase client for server-side operations
-const supabase = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  },
-  global: {
-    headers: {
-      'x-application-name': 'ticket-management-server'
-    }
+    // Create Supabase client for client-side operations  
+    supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true
+      },
+      global: {
+        headers: {
+          'x-application-name': 'ticket-management-client'
+        }
+      }
+    });
+  } catch (error) {
+    console.error('❌ Failed to create Supabase clients:', error.message);
+    supabase = null;
+    supabaseAnon = null;
   }
-});
-
-// Create Supabase client for client-side operations  
-const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true
-  },
-  global: {
-    headers: {
-      'x-application-name': 'ticket-management-client'
-    }
-  }
-});
+}
 
 // Enhanced connection test function
 async function testSupabaseConnection() {
   try {
+    if (!supabase || !supabaseUrl) {
+      console.error('❌ Supabase not configured - cannot test connection');
+      return false;
+    }
+
     console.log('=== TESTING SUPABASE CONNECTION ===');
-    console.log('🔗 Testing URL:', supabaseUrl);
+    console.log('🔗 Testing URL:', supabaseUrl.substring(0, 30) + '...');
     
-    // Test basic connectivity
-    const { data, error } = await supabase
+    // Test basic connectivity with timeout
+    const connectionPromise = supabase
       .from('users')
       .select('count')
       .limit(1);
+    
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Connection timeout after 10 seconds')), 10000)
+    );
+    
+    const { data, error } = await Promise.race([connectionPromise, timeoutPromise]);
     
     if (error) {
       console.error('❌ Connection failed:', error.message);
@@ -72,16 +86,6 @@ async function testSupabaseConnection() {
     }
     
     console.log('✅ Supabase connected successfully!');
-    
-    // Test table access
-    const { data: tables } = await supabase
-      .from('information_schema.tables')
-      .select('table_name')
-      .eq('table_schema', 'public')
-      .in('table_name', ['users', 'tickets', 'categories']);
-    
-    console.log('📋 Available tables:', tables?.map(t => t.table_name) || []);
-    
     return true;
   } catch (error) {
     console.error('❌ Connection test failed:', error.message);
@@ -121,13 +125,16 @@ module.exports = {
   getDatabaseStats
 };
 
-// Auto-test connection when module is loaded
-testSupabaseConnection().then(success => {
-  if (success) {
-    console.log('🚀 Supabase module loaded successfully!');
-  } else {
-    console.error('⚠️ Supabase connection issues detected. Check your configuration.');
-  }
-}).catch(error => {
-  console.error('⚠️ Supabase initialization error:', error.message);
-});
+// Auto-test connection when module is loaded (non-blocking)
+// Don't wait for this to complete before exporting
+setTimeout(() => {
+  testSupabaseConnection().then(success => {
+    if (success) {
+      console.log('🚀 Supabase module loaded successfully!');
+    } else {
+      console.error('⚠️ Supabase connection issues detected. Check your configuration.');
+    }
+  }).catch(error => {
+    console.error('⚠️ Supabase initialization error:', error.message);
+  });
+}, 1000); // Wait 1 second for server to start, then test

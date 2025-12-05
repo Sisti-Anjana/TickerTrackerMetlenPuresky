@@ -41,14 +41,33 @@ router.post('/admin-login', async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const { supabase } = require('../../config/supabase');
+    let supabase;
+    try {
+      const supabaseConfig = require('../../config/supabase');
+      supabase = supabaseConfig.supabase;
+      if (!supabase) {
+        throw new Error('Supabase client not initialized');
+      }
+    } catch (configError) {
+      console.error('Failed to load Supabase config:', configError);
+      return res.status(500).json({ 
+        message: 'Server configuration error', 
+        error: configError.message 
+      });
+    }
+
     const { data: user, error } = await supabase
       .from('users')
       .select('id, name, email, password, role')
       .eq('email', email.toLowerCase().trim())
       .single();
 
-    if (error || !user) {
+    if (error) {
+      console.error('Supabase query error:', error);
+      return res.status(400).json({ message: 'Invalid email or password', details: error.message });
+    }
+
+    if (!user) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
@@ -75,7 +94,12 @@ router.post('/admin-login', async (req, res) => {
     });
   } catch (error) {
     console.error('Admin login error:', error);
-    res.status(500).json({ message: 'Login failed', error: error.message });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Login failed', 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
