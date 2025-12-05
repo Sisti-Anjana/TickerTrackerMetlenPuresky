@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           
           // Add timeout to prevent hanging
-          const timeoutPromise = new Promise((_, reject) => 
+          const timeoutPromise = new Promise<never>((_, reject) => 
             setTimeout(() => reject(new Error('Auth timeout')), 3000)
           );
           
@@ -91,7 +91,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setTimeout(initializeAuth, 100);
   }, []);
 
-  const login = async (email: string, password: string, retries = 2) => {
+  const login = async (email: string, password: string, retries = 2): Promise<void> => {
     try {
       console.log('Attempting login for:', email);
       setLoading(true);
@@ -103,18 +103,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       // Add timeout protection
-      const timeoutPromise = new Promise((_, reject) => 
+      const timeoutPromise = new Promise<never>((_, reject) => 
         setTimeout(() => reject(new Error('Request timeout. Please check your connection and try again.')), 30000)
       );
 
       const loginPromise = api.post('/auth/login', { email, password });
-      const response = await Promise.race([loginPromise, timeoutPromise]) as any;
+      const response = await Promise.race([loginPromise, timeoutPromise]);
       
-      if (!response || !response.data) {
+      if (!response || !(response as any).data) {
         throw new Error('Invalid response from server');
       }
 
-      const { token, user: userData } = response.data;
+      const { token, user: userData } = (response as any).data;
       
       if (!token || !userData) {
         throw new Error('Missing authentication data');
