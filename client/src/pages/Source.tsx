@@ -182,6 +182,9 @@ const Source: React.FC = () => {
     const kwDown = ticket.kw_down || 0;
     const customer = ticket.customer_name || 'the customer';
     
+    // Extract first name from customer name (e.g., "Kushal Mareedu" -> "Kushal")
+    const firstName = customer.split(' ')[0] || customer;
+    
     // Calculate duration
     let durationText = 'Duration unknown';
     if (ticket.issue_start_time) {
@@ -212,7 +215,7 @@ const Source: React.FC = () => {
     }
 
     // Build summary based on ticket data
-    let summary = `This is a ${priority.toLowerCase()} priority ${status.toLowerCase()} ticket for ${customer} at ${site}. `;
+    let summary = `This is a ${priority.toLowerCase()} priority ${status.toLowerCase()} ticket by ${firstName} for ${site}. `;
     
     if (ticket.issue_description) {
       summary += `\n\nIssue Details: ${ticket.issue_description}\n\n`;
