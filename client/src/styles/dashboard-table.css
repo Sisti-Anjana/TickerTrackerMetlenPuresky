@@ -599,19 +599,37 @@
 }
 
 .description-cell {
-  max-width: 200px;
-  word-wrap: break-word;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
+  max-width: none !important;
+  min-width: 200px;
+  position: relative;
+  word-wrap: break-word !important;
+  overflow: visible !important;
 }
 
-/* On hover, show full description and subtle highlight only for this cell */
-.description-cell:hover {
-  max-width: none;
-  white-space: normal;
-  overflow: visible;
-  background: #f8fafc;
+.description-text {
+  display: block !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.5 !important;
+  padding: 4px 0 !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  max-width: none !important;
+  cursor: default !important;
+}
+
+/* Remove any hover effects */
+.description-cell:hover .description-text,
+.description-text:hover {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  max-width: none !important;
+  background: transparent !important;
+  padding: 4px 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .created-by-cell {
@@ -1189,9 +1207,7 @@
 
 .tickets-table tbody tr:hover {
   background: #f9fafb !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  transform: scale(1.001);
-  transition: all 0.2s;
+  transition: background-color 0.2s ease;
 }
 
 /* Ticket number - make it stand out */

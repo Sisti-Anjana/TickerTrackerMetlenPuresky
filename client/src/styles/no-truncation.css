@@ -14,41 +14,44 @@ span[class*="badge"] {
   text-overflow: clip !important;
 }
 
-/* Description fields: Truncate by default, expand on hover/click */
+/* Description fields: Show full text by default - NO truncation, NO hover effects */
 .description-text,
 .ticket-description,
 .description,
-[class*="description"],
 .description-cell div {
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  max-width: 300px !important;
-  cursor: pointer !important;
-  transition: all 0.3s ease !important;
-}
-
-/* Show full description on hover */
-.description-text:hover,
-.ticket-description:hover,
-.description:hover,
-[class*="description"]:hover,
-.description-cell div:hover {
-  white-space: pre-wrap !important;
+  white-space: normal !important;
   overflow: visible !important;
   text-overflow: clip !important;
   max-width: none !important;
-  background: #f9fafb !important;
-  padding: 8px !important;
-  border-radius: 6px !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-  z-index: 999 !important;
-  position: relative !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.5 !important;
+  padding: 4px 0 !important;
 }
 
-/* Ensure table cells accommodate hover expansion */
+/* Remove hover effects - no expansion, no background change */
+.description-text:hover,
+.ticket-description:hover,
+.description:hover,
+.description-cell div:hover {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  max-width: none !important;
+  background: transparent !important;
+  padding: 4px 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  z-index: auto !important;
+  position: static !important;
+}
+
+/* Description cell - allow full text display */
 .description-cell {
   position: relative !important;
+  max-width: none !important;
+  overflow: visible !important;
+  word-wrap: break-word !important;
 }
 
 /* Keep other text normal */

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../services/api';
 import { Users, Mail, Lock, AlertCircle, ArrowLeft, RefreshCw } from 'lucide-react';
 import '../styles/UserLogin.css';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '/api';
 
 const UserLogin: React.FC = () => {
   const navigate = useNavigate();
@@ -26,17 +25,8 @@ const UserLogin: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/user-login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'User login failed');
-      }
+      const response = await api.post('/auth/user-login', formData);
+      const data = response.data;
 
       // Check if password change is required
       if (data.mustChangePassword) {
@@ -55,7 +45,7 @@ const UserLogin: React.FC = () => {
       // Navigate to dashboard
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'An error occurred during login');
+      setError(err.response?.data?.message || err.message || 'An error occurred during login');
     } finally {
       setLoading(false);
     }
@@ -78,21 +68,13 @@ const UserLogin: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          oldPassword: formData.password,
-          newPassword
-        })
+      const response = await api.post('/auth/change-password', {
+        userId,
+        oldPassword: formData.password,
+        newPassword
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Password change failed');
-      }
+      const data = response.data;
 
       // Store token and user info
       localStorage.setItem('token', data.token);

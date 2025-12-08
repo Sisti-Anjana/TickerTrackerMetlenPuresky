@@ -46,6 +46,7 @@ const Source: React.FC = () => {
   const [selectedSite, setSelectedSite] = useState<string | null>(null);
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'closed'>('all');
   const [dateFilter, setDateFilter] = useState({
     startDate: '',
     endDate: ''
@@ -319,6 +320,23 @@ const Source: React.FC = () => {
   // Site Selection Screen
   const sitesData = getSitesData();
   const selectedSiteData = sitesData.find(s => s.siteName === selectedSite);
+  
+  // Filter tickets based on status filter
+  const getFilteredTickets = (siteTickets: Ticket[]): Ticket[] => {
+    if (statusFilter === 'all') return siteTickets;
+    if (statusFilter === 'open') {
+      return siteTickets.filter(t => t.ticket_status?.toLowerCase() === 'open');
+    }
+    if (statusFilter === 'closed') {
+      return siteTickets.filter(t => t.ticket_status?.toLowerCase() === 'closed');
+    }
+    return siteTickets;
+  };
+  
+  const filteredSiteData = selectedSiteData ? {
+    ...selectedSiteData,
+    tickets: getFilteredTickets(selectedSiteData.tickets)
+  } : null;
 
   return (
     <>
@@ -412,31 +430,44 @@ const Source: React.FC = () => {
             <div
               key={site.siteName}
               className={`site-card ${selectedSite === site.siteName ? 'selected' : ''}`}
-              onClick={() => setSelectedSite(selectedSite === site.siteName ? null : site.siteName)}
             >
-              <div className="site-card-header">
-                <h3 className="site-name-display">{site.siteName}</h3>
-                <span className={`site-badge ${site.status}`}>
-                  {site.status}
-                </span>
+              <div className="site-card-header-new">
+                <h3 className="site-name-display-new">{site.siteName}</h3>
               </div>
               
-              <div className="site-card-stats">
-                <div className="site-stat">
-                  <div className="site-stat-value">{site.tickets.length}</div>
-                  <div className="site-stat-label">Total</div>
+              <div className="site-card-stats-new">
+                <div 
+                  className="site-stat-clickable"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedSite(site.siteName);
+                    setStatusFilter('all');
+                  }}
+                >
+                  <span className="site-stat-value-new">{site.tickets.length}</span>
+                  <span className="site-stat-label-new">Total</span>
                 </div>
-                <div className="site-stat">
-                  <div className="site-stat-value">{site.openTickets}</div>
-                  <div className="site-stat-label">Open</div>
+                <div 
+                  className="site-stat-clickable"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedSite(site.siteName);
+                    setStatusFilter('open');
+                  }}
+                >
+                  <span className="site-stat-value-new">{site.openTickets}</span>
+                  <span className="site-stat-label-new">Open</span>
                 </div>
-                <div className="site-stat">
-                  <div className="site-stat-value">{site.closedTickets}</div>
-                  <div className="site-stat-label">Closed</div>
-                </div>
-                <div className="site-stat">
-                  <div className="site-stat-value">{site.lastUpdate}</div>
-                  <div className="site-stat-label">Last Update</div>
+                <div 
+                  className="site-stat-clickable"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedSite(site.siteName);
+                    setStatusFilter('closed');
+                  }}
+                >
+                  <span className="site-stat-value-new">{site.closedTickets}</span>
+                  <span className="site-stat-label-new">Closed</span>
                 </div>
               </div>
             </div>
@@ -459,13 +490,16 @@ const Source: React.FC = () => {
         </div>
 
         {/* Detailed View */}
-        {selectedSiteData && (
+        {filteredSiteData && (
           <div className="detailed-view">
             <div className="detailed-header">
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                 <BackButton
                   label="Back to Sites"
-                  onClick={() => setSelectedSite(null)}
+                  onClick={() => {
+                    setSelectedSite(null);
+                    setStatusFilter('all');
+                  }}
                   className="back-button-secondary"
                 />
                 <BackButton
@@ -473,18 +507,35 @@ const Source: React.FC = () => {
                   onClick={() => {
                     setSelectedClient(null);
                     setSelectedSite(null);
+                    setStatusFilter('all');
                     setDateFilter({ startDate: '', endDate: '' });
                     setSearchQuery('');
                   }}
                   className="back-button-secondary"
                 />
               </div>
-              <h2 className="detailed-title">
-                {selectedSiteData.siteName} - Detailed Ticket Data
-              </h2>
+              <div style={{ flex: 1 }}>
+                <h2 className="detailed-title">
+                  {filteredSiteData.siteName} - Detailed Ticket Data
+                </h2>
+                {statusFilter !== 'all' && (
+                  <div className="status-filter-indicator">
+                    Showing {statusFilter === 'open' ? 'Open' : 'Closed'} tickets only
+                    <button 
+                      className="clear-status-filter-btn"
+                      onClick={() => setStatusFilter('all')}
+                    >
+                      Show All
+                    </button>
+                  </div>
+                )}
+              </div>
               <button 
                 className="close-detailed-btn"
-                onClick={() => setSelectedSite(null)}
+                onClick={() => {
+                  setSelectedSite(null);
+                  setStatusFilter('all');
+                }}
               >
                 ✕ Close
               </button>
@@ -507,7 +558,16 @@ const Source: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {selectedSiteData.tickets.map(ticket => (
+                {filteredSiteData.tickets.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} style={{ textAlign: 'center', padding: '2rem' }}>
+                      <p style={{ fontSize: '1.1rem', color: '#64748b' }}>
+                        No {statusFilter === 'all' ? '' : statusFilter} tickets found for this site.
+                      </p>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredSiteData.tickets.map(ticket => (
                   <React.Fragment key={ticket.id}>
                     <tr>
                       <td><strong>{ticket.ticket_number || ticket.id.slice(0, 8)}</strong></td>
@@ -559,7 +619,8 @@ const Source: React.FC = () => {
                       </tr>
                     )}
                   </React.Fragment>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
 
@@ -570,26 +631,31 @@ const Source: React.FC = () => {
               </h3>
               <div className="explanation-content">
                 <p>
-                  <strong>Site Overview:</strong> {selectedSiteData.siteName} has a total of{' '}
-                  <strong>{selectedSiteData.tickets.length}</strong> tickets recorded in this period.
+                  <strong>Site Overview:</strong> {filteredSiteData.siteName} has a total of{' '}
+                  <strong>{selectedSiteData?.tickets.length || 0}</strong> tickets recorded in this period.
                 </p>
                 <p>
                   <strong>Current Status:</strong> There are currently{' '}
-                  <strong>{selectedSiteData.openTickets}</strong> open ticket(s) and{' '}
-                  <strong>{selectedSiteData.closedTickets}</strong> closed ticket(s).
+                  <strong>{selectedSiteData?.openTickets || 0}</strong> open ticket(s) and{' '}
+                  <strong>{selectedSiteData?.closedTickets || 0}</strong> closed ticket(s).
                 </p>
+                {statusFilter !== 'all' && (
+                  <p>
+                    <strong>Filtered View:</strong> Showing <strong>{filteredSiteData.tickets.length}</strong> {statusFilter} ticket(s).
+                  </p>
+                )}
                 <p><strong>Key Insights:</strong></p>
                 <ul>
                   <li>
-                    Most recent activity: {selectedSiteData.lastUpdate}
+                    Most recent activity: {selectedSiteData?.lastUpdate || 'N/A'}
                   </li>
                   <li>
-                    Resolution rate: {selectedSiteData.tickets.length > 0 
+                    Resolution rate: {selectedSiteData && selectedSiteData.tickets.length > 0 
                       ? Math.round((selectedSiteData.closedTickets / selectedSiteData.tickets.length) * 100)
                       : 0}%
                   </li>
                   <li>
-                    Total power impact: {selectedSiteData.tickets.reduce((sum, t) => sum + (t.kw_down || 0), 0)} KW
+                    Total power impact: {selectedSiteData?.tickets.reduce((sum, t) => sum + (t.kw_down || 0), 0) || 0} KW
                   </li>
                   <li>
                     Average response time: Based on ticket creation patterns and issue start times

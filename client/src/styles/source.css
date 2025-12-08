@@ -442,12 +442,27 @@
   margin-bottom: 1rem;
 }
 
+.site-card-header-new {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
 .site-name-display {
   font-size: 1.25rem;
   font-weight: 700;
   color: #000000;
   flex: 1 1 0;
   min-width: 0;
+  word-wrap: break-word;
+}
+
+.site-name-display-new {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+  line-height: 1.4;
   word-wrap: break-word;
 }
 
@@ -475,11 +490,38 @@
   margin-top: 1rem;
 }
 
+.site-card-stats-new {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
 .site-stat {
   text-align: center;
   padding: 0.75rem;
   background: #f8fafc;
   border-radius: 8px;
+}
+
+.site-stat-clickable {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  width: 100%;
+}
+
+.site-stat-clickable:hover {
+  background: #e0f2fe;
+  border-color: #76AB3F;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(118, 171, 63, 0.2);
 }
 
 .site-card:hover .site-stat {
@@ -492,12 +534,29 @@
   color: #000000;
 }
 
+.site-stat-value-new {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+  margin-right: 8px;
+}
+
 .site-stat-label {
   font-size: 0.75rem;
   color: #000000;
   text-transform: uppercase;
   margin-top: 0.25rem;
   font-weight: 600;
+}
+
+.site-stat-label-new {
+  font-size: 0.9rem;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin: 0;
 }
 
 /* Detailed View */
@@ -513,10 +572,42 @@
 .detailed-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
   border-bottom: 2px solid #e2e8f0;
+  gap: 1rem;
+}
+
+.status-filter-indicator {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #e0f2fe;
+  border: 1px solid #76AB3F;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: #1a365d;
+  font-weight: 600;
+}
+
+.clear-status-filter-btn {
+  padding: 0.25rem 0.75rem;
+  background: #76AB3F;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-status-filter-btn:hover {
+  background: #5a8c2f;
+  transform: translateY(-1px);
 }
 
 .detailed-title {
@@ -695,6 +786,28 @@
   .search-filter-group {
     width: 100%;
     min-width: 100%;
+  }
+  
+  .site-card-stats-new {
+    flex-direction: column;
+  }
+  
+  .site-stat-clickable {
+    width: 100%;
+  }
+  
+  .site-name-display-new {
+    font-size: 1.15rem;
+  }
+  
+  .detailed-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .status-filter-indicator {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../services/api';
 import { ShieldCheck, Mail, Lock, AlertCircle, ArrowLeft } from 'lucide-react';
 import '../styles/AdminLogin.css';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '/api';
 
 const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
@@ -22,17 +21,8 @@ const AdminLogin: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/admin-login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Admin login failed');
-      }
+      const response = await api.post('/auth/admin-login', formData);
+      const data = response.data;
 
       // Store token and user info
       localStorage.setItem('token', data.token);
@@ -44,7 +34,7 @@ const AdminLogin: React.FC = () => {
       // Navigate to dashboard
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'An error occurred during login');
+      setError(err.response?.data?.message || err.message || 'An error occurred during login');
     } finally {
       setLoading(false);
     }

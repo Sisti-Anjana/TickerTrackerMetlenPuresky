@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import BackButton from '../components/BackButton';
+import api from '../services/api';
 import '../styles/AdminPanel.css';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '/api';
 
 interface UserType {
   id: number;
@@ -36,16 +35,34 @@ const AdminPanel: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/auth/debug/users`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setUsers(data.users || []);
+      setLoading(true);
+      setError('');
+      
+      // Try the admin endpoint first (requires auth, returns only 'user' role)
+      try {
+        const response = await api.get('/admin/users');
+        if (response.data && response.data.users) {
+          setUsers(response.data.users || []);
+          setLoading(false);
+          return;
+        }
+      } catch (adminError: any) {
+        console.log('Admin endpoint failed, trying debug endpoint:', adminError.message);
       }
-    } catch (err) {
+      
+      // Fallback to debug endpoint (returns all users including admins)
+      const response = await api.get('/auth/debug/users');
+      if (response.data && response.data.users) {
+        setUsers(response.data.users || []);
+      } else {
+        setUsers([]);
+      }
+    } catch (err: any) {
       console.error('Failed to fetch users:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to load users');
+      setUsers([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -66,34 +83,21 @@ const AdminPanel: React.FC = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/auth/create-user`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await api.post('/admin/create-user', formData);
 
-      const data = await response.json();
+      if (response.data) {
+        setSuccess('User account created successfully!');
+        setCreatedCredentials({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password
+        });
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to create user');
+        setFormData({ name: '', email: '', password: '' });
+        await fetchUsers();
       }
-
-      setSuccess('User account created successfully!');
-      setCreatedCredentials({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password
-      });
-
-      setFormData({ name: '', email: '', password: '' });
-      fetchUsers();
-
     } catch (err: any) {
-      setError(err.message || 'Failed to create user');
+      setError(err.response?.data?.message || err.message || 'Failed to create user');
     } finally {
       setLoading(false);
     }
@@ -140,19 +144,10 @@ const AdminPanel: React.FC = () => {
         updateData.password = formData.password;
       }
 
-      const response = await fetch(`${API_BASE_URL}/admin/users/${editingUser.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(updateData)
-      });
+      const response = await api.put(`/admin/users/${editingUser.id}`, updateData);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to update user');
+      if (!response.data) {
+        throw new Error('Failed to update user');
       }
 
       setSuccess('User updated successfully!');
@@ -175,18 +170,10 @@ const AdminPanel: React.FC = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/admin/users/${showDeleteConfirm.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await api.delete(`/admin/users/${showDeleteConfirm.id}`);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to delete user');
+      if (!response.data) {
+        throw new Error('Failed to delete user');
       }
 
       setSuccess('User deleted successfully!');
@@ -237,8 +224,27 @@ const AdminPanel: React.FC = () => {
       {/* Users List */}
       <div className="users-list">
         <h2>Existing Users ({users.length})</h2>
-        <div className="users-grid">
-          {users.map((user) => (
+        {loading && users.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '2rem' }}>
+            <p>Loading users...</p>
+          </div>
+        ) : users.length === 0 ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '3rem 2rem',
+            background: '#f8f9fa',
+            borderRadius: '8px',
+            border: '2px dashed #dee2e6'
+          }}>
+            <p style={{ fontSize: '1.2rem', color: '#495057', marginBottom: '0.5rem' }}>👤</p>
+            <h3 style={{ marginBottom: '0.5rem', color: '#495057' }}>No Users Found</h3>
+            <p style={{ color: '#6c757d' }}>
+              There are no users in the system yet. Create your first user account above.
+            </p>
+          </div>
+        ) : (
+          <div className="users-grid">
+            {users.map((user) => (
             <div key={user.id} className="user-card">
               <div className="user-icon">
                 👤
@@ -267,8 +273,9 @@ const AdminPanel: React.FC = () => {
                 )}
               </div>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Create User Modal */}

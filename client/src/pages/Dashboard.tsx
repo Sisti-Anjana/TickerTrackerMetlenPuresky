@@ -1310,11 +1310,8 @@ const Dashboard = (): JSX.Element => {
                     </td>
                     
                     {/* Description */}
-                    <td className="description-cell" style={{ maxWidth: '250px' }}>
-                      <div 
-                        className="description-text"
-                        title="Click to see full description"
-                      >
+                    <td className="description-cell">
+                      <div className="description-text">
                         {ticket.issue_description || 'No description'}
                       </div>
                     </td>
@@ -1641,8 +1638,8 @@ const Dashboard = (): JSX.Element => {
                             {ticket.category || 'Other'}
                           </span>
                         </td>
-                        <td style={{ padding: '14px 12px', fontSize: '13px', color: '#6b7280', maxWidth: '250px' }}>
-                          <div className="description-text" title="Click to see full description">
+                        <td style={{ padding: '14px 12px', fontSize: '13px', color: '#6b7280' }}>
+                          <div className="description-text">
                             {ticket.issue_description || 'No description'}
                           </div>
                         </td>

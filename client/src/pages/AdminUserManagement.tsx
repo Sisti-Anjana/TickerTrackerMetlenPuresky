@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Users, Trash2, AlertCircle, CheckCircle, Copy, Eye, EyeOff } from 'lucide-react';
+import api from '../services/api';
 import '../styles/AdminUserManagement.css';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '/api';
 
 interface User {
   id: number;
@@ -34,19 +33,35 @@ const AdminUserManagement: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/auth/debug/users`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      setLoading(true);
+      setError('');
+      
+      // Try the admin endpoint first (requires auth, returns only 'user' role)
+      try {
+        const response = await api.get('/admin/users');
+        if (response.data && response.data.users) {
+          setUsers(response.data.users || []);
+          setLoading(false);
+          return;
         }
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setUsers(data.users || []);
+      } catch (adminError: any) {
+        console.log('Admin endpoint failed, trying debug endpoint:', adminError.message);
       }
-    } catch (error) {
+      
+      // Fallback to debug endpoint (returns all users including admins)
+      const response = await api.get('/auth/debug/users');
+      if (response.data && response.data.users) {
+        setUsers(response.data.users || []);
+      } else {
+        setUsers([]);
+        setError('No users found in database');
+      }
+    } catch (error: any) {
       console.error('Error fetching users:', error);
+      setError(error.response?.data?.message || error.message || 'Failed to load users. Please check your connection and try again.');
+      setUsers([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -66,35 +81,23 @@ const AdminUserManagement: React.FC = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/auth/create-user`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await api.post('/admin/create-user', formData);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to create user');
+      if (response.data) {
+        setSuccess('User created successfully!');
+        setCreatedCredentials({
+          email: formData.email,
+          password: formData.password
+        });
+        
+        // Reset form
+        setFormData({ name: '', email: '', password: '' });
+        
+        // Refresh users list
+        await fetchUsers();
       }
-
-      setSuccess('User created successfully!');
-      setCreatedCredentials({
-        email: formData.email,
-        password: formData.password
-      });
-      
-      // Reset form
-      setFormData({ name: '', email: '', password: '' });
-      
-      // Refresh users list
-      fetchUsers();
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      setError(err.response?.data?.message || err.message || 'An error occurred while creating user');
     } finally {
       setLoading(false);
     }
@@ -256,38 +259,64 @@ const AdminUserManagement: React.FC = () => {
 
       <div className="users-list-container">
         <h2>All Users ({users.length})</h2>
-        <div className="users-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Created At</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
-                  <td>
-                    <span className={`role-badge ${user.role}`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`status-badge ${user.must_change_password ? 'pending' : 'active'}`}>
-                      {user.must_change_password ? 'Needs Password Change' : 'Active'}
-                    </span>
-                  </td>
-                  <td>{new Date(user.created_at).toLocaleDateString()}</td>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '2rem' }}>
+            <p>Loading users...</p>
+          </div>
+        ) : users.length === 0 ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '3rem 2rem',
+            background: '#f8f9fa',
+            borderRadius: '8px',
+            border: '2px dashed #dee2e6'
+          }}>
+            <Users size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+            <h3 style={{ marginBottom: '0.5rem', color: '#495057' }}>No Users Found</h3>
+            <p style={{ color: '#6c757d', marginBottom: '1rem' }}>
+              There are no users in the system yet. Create your first user account above.
+            </p>
+            {error && (
+              <div className="alert alert-error" style={{ marginTop: '1rem', maxWidth: '500px', margin: '1rem auto 0' }}>
+                <AlertCircle size={18} />
+                <span>{error}</span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="users-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Created At</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>
+                      <span className={`role-badge ${user.role}`}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`status-badge ${user.must_change_password ? 'pending' : 'active'}`}>
+                        {user.must_change_password ? 'Needs Password Change' : 'Active'}
+                      </span>
+                    </td>
+                    <td>{new Date(user.created_at).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
