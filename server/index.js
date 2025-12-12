@@ -185,6 +185,24 @@ app.get('/', (req, res) => {
   });
 });
 
+// 404 handler for unmatched API routes
+app.use('/api/*', (req, res) => {
+  console.error(`❌ 404 - API endpoint not found: ${req.method} ${req.path}`);
+  console.error('Available routes:', {
+    auth: '/api/auth/*',
+    tickets: '/api/tickets/*',
+    comments: '/api/comments/*',
+    admin: '/api/admin/*',
+    equipment: '/api/equipment/*'
+  });
+  res.status(404).json({ 
+    error: 'API endpoint not found',
+    method: req.method,
+    path: req.path,
+    message: `The endpoint ${req.method} ${req.path} does not exist`
+  });
+});
+
 // Serve client build in production for single-port hosting
 if (process.env.NODE_ENV === 'production') {
   const path = require('path');
