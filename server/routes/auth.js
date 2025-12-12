@@ -36,6 +36,10 @@ async function verifyAndUpgradePassword(supabase, userRecord, incomingPassword) 
 // ADMIN LOGIN
 router.post('/admin-login', async (req, res) => {
   try {
+    console.log('✅ /api/auth/admin-login route hit');
+    console.log('Request method:', req.method);
+    console.log('Request path:', req.path);
+    console.log('Request body:', { email: req.body?.email ? 'present' : 'missing' });
     const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });

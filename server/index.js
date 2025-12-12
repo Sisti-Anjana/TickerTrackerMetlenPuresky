@@ -33,10 +33,10 @@ app.use((req, res, next) => {
 const { supabase } = require('../config/supabase');
 if (supabase) {
   supabase.from('users').select('count').limit(1).then(() => {
-    console.log('✅ Supabase connected successfully');
-  }).catch(err => {
-    console.log('❌ Supabase connection error:', err.message);
-  });
+  console.log('✅ Supabase connected successfully');
+}).catch(err => {
+  console.log('❌ Supabase connection error:', err.message);
+});
 } else {
   console.warn('⚠️ Supabase not initialized - check environment variables');
 }
@@ -182,24 +182,6 @@ app.get('/', (req, res) => {
       comments: '/api/comments/*'
     },
     frontend: 'https://frabjous-fairy-9be454.netlify.app'
-  });
-});
-
-// 404 handler for unmatched API routes
-app.use('/api/*', (req, res) => {
-  console.error(`❌ 404 - API endpoint not found: ${req.method} ${req.path}`);
-  console.error('Available routes:', {
-    auth: '/api/auth/*',
-    tickets: '/api/tickets/*',
-    comments: '/api/comments/*',
-    admin: '/api/admin/*',
-    equipment: '/api/equipment/*'
-  });
-  res.status(404).json({ 
-    error: 'API endpoint not found',
-    method: req.method,
-    path: req.path,
-    message: `The endpoint ${req.method} ${req.path} does not exist`
   });
 });
 
