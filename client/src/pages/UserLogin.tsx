@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import { Users, Mail, Lock, AlertCircle, RefreshCw, User, ArrowRight } from 'lucide-react';
-import logo from '../assests/logo.jpg';
+import loginImage from '../assests/login.png';
 import '../styles/UserLogin.css';
 
 const UserLogin: React.FC = () => {
@@ -164,7 +164,7 @@ const UserLogin: React.FC = () => {
         {/* Left Side - Branding */}
         <div className="login-left-panel">
           <div className="login-logo-container">
-            <img src={logo} alt="American Green Solutions" className="login-logo" />
+            <img src={loginImage} alt="American Green Solutions" className="login-logo" />
           </div>
           <div className="login-branding">
             <h1 className="login-company-name">AMERICAN</h1>
