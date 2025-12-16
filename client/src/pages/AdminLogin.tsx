@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
-import { ShieldCheck, Mail, Lock, AlertCircle, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, AlertCircle, ArrowLeft, User, ArrowRight } from 'lucide-react';
+import logo from '../assests/logo.jpg';
 import '../styles/AdminLogin.css';
 
 const AdminLogin: React.FC = () => {
@@ -43,68 +44,84 @@ const AdminLogin: React.FC = () => {
   return (
     <div className="admin-login-container">
       <div className="admin-login-card">
-        <Link to="/" className="back-button">
-          <ArrowLeft size={20} />
-          <span>Back</span>
-        </Link>
-
-        <div className="admin-login-header">
-          <div className="admin-icon-large">
-            <ShieldCheck size={60} />
+        {/* Left Side - Branding */}
+        <div className="login-left-panel">
+          <div className="login-logo-container">
+            <img src={logo} alt="American Green Solutions" className="login-logo" />
           </div>
-          <h1>Admin Login</h1>
-          <p>Access the administration panel</p>
+          <div className="login-branding">
+            <h1 className="login-company-name">AMERICAN</h1>
+            <h2 className="login-company-tagline">GREEN SOLUTIONS</h2>
+          </div>
+          <div className="login-welcome">
+            <h3>Welcome</h3>
+            <p>Please sign in to continue</p>
+          </div>
         </div>
 
-        {error && (
-          <div className="error-message">
-            <AlertCircle size={18} />
-            <span>{error}</span>
-          </div>
-        )}
+        {/* Right Side - Login Form */}
+        <div className="login-right-panel">
+          <Link to="/" className="back-button">
+            <ArrowLeft size={18} />
+            <span>Back</span>
+          </Link>
 
-        <form onSubmit={handleSubmit} className="admin-login-form">
-          <div className="form-group">
-            <label htmlFor="email">
-              <Mail size={18} />
-              <span>Admin Email</span>
-            </label>
-            <input
-              type="email"
-              id="email"
-              placeholder="admin@system.local"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-              autoFocus
-            />
+          <div className="login-form-header">
+            <h1>Admin Login</h1>
+            <p>Access the administration panel</p>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">
-              <Lock size={18} />
-              <span>Password</span>
-            </label>
-            <input
-              type="password"
-              id="password"
-              placeholder="Enter your admin password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              required
-            />
+          {error && (
+            <div className="error-message">
+              <AlertCircle size={18} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="admin-login-form">
+            <div className="form-group">
+              <label htmlFor="email">Admin Email</label>
+              <div className="input-wrapper">
+                <User size={20} className="input-icon" />
+                <input
+                  type="email"
+                  id="email"
+                  placeholder="Type your admin email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  required
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <div className="input-wrapper">
+                <Lock size={20} className="input-icon" />
+                <input
+                  type="password"
+                  id="password"
+                  placeholder="Type your password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+
+            <button type="submit" className="sign-in-button" disabled={loading}>
+              <span>{loading ? 'Signing in...' : 'Sign In'}</span>
+              <ArrowRight size={20} />
+            </button>
+          </form>
+
+          <div className="admin-link-section">
+            <p className="security-note">
+              <ShieldCheck size={16} />
+              This is a secure admin area
+            </p>
           </div>
-
-          <button type="submit" className="admin-login-button" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login as Admin'}
-          </button>
-        </form>
-
-        <div className="admin-login-footer">
-          <p className="security-note">
-            <ShieldCheck size={16} />
-            This is a secure admin area
-          </p>
         </div>
       </div>
     </div>
