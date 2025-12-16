@@ -267,7 +267,7 @@
 }
 
 .admin-link {
-  color: #ffffff;
+  color: #ffffff !important;
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
@@ -278,6 +278,7 @@
 
 .admin-link:hover {
   opacity: 1;
+  color: #ffffff !important;
 }
 
 /* Responsive Design */
