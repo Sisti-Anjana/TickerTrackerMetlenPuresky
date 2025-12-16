@@ -241,6 +241,7 @@ const UserLogin: React.FC = () => {
           </form>
 
           <div className="admin-link-section">
+            <div className="divider-line"></div>
             <Link to="/admin-login" className="admin-link">
               Are you an admin? Click here
             </Link>

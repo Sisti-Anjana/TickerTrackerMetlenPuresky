@@ -85,10 +85,16 @@ function App() {
       <Router>
         <div className="App">
           <Routes>
-            {/* Login Type Selection */}
+            {/* User Login - Default */}
             <Route path="/" element={
               <PublicRoute>
-                <LoginTypeSelection />
+                <UserLogin />
+              </PublicRoute>
+            } />
+            
+            <Route path="/user-login" element={
+              <PublicRoute>
+                <UserLogin />
               </PublicRoute>
             } />
             
@@ -99,12 +105,6 @@ function App() {
               </PublicRoute>
             } />
             
-            {/* User Login */}
-            <Route path="/user-login" element={
-              <PublicRoute>
-                <UserLogin />
-              </PublicRoute>
-            } />            
             {/* Legacy routes for backward compatibility */}
             <Route path="/login" element={<Navigate to="/" replace />} />
             <Route path="/register" element={
