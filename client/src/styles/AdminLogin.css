@@ -251,6 +251,7 @@
 
 .admin-link-section {
   margin-top: 25px;
+  padding-top: 0;
   text-align: center;
   width: 100%;
   box-sizing: border-box;
@@ -263,7 +264,7 @@
   width: 100%;
 }
 
-.switch-link {
+.admin-link {
   color: #000000;
   text-decoration: none;
   font-size: 0.95rem;
@@ -273,7 +274,7 @@
   display: inline-block;
 }
 
-.switch-link:hover {
+.admin-link:hover {
   opacity: 1;
 }
 

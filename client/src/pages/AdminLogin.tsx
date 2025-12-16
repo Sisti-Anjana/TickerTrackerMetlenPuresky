@@ -102,7 +102,7 @@ const AdminLogin: React.FC = () => {
 
           <div className="admin-link-section">
             <div className="divider-line"></div>
-            <Link to="/user-login" className="switch-link">
+            <Link to="/user-login" className="admin-link">
               Are you a user? Click here
             </Link>
           </div>
