@@ -23,7 +23,7 @@
 .login-left-panel {
   flex: 1;
   background: #ffffff;
-  padding: 50px 40px;
+  padding: 30px 35px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -33,7 +33,7 @@
 }
 
 .login-logo-container {
-  margin-bottom: 40px;
+  margin-bottom: 25px;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -73,7 +73,7 @@
 .login-right-panel {
   flex: 1;
   background: linear-gradient(135deg, #65a30d 0%, #3f6212 100%);
-  padding: 40px 35px;
+  padding: 30px 35px;
   display: flex;
   flex-direction: column;
   justify-content: center;

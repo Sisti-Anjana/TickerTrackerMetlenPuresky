@@ -23,7 +23,7 @@
 .login-left-panel {
   flex: 1;
   background: #ffffff;
-  padding: 50px 40px;
+  padding: 30px 35px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -33,7 +33,7 @@
 }
 
 .login-logo-container {
-  margin-bottom: 40px;
+  margin-bottom: 25px;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -73,7 +73,7 @@
 .login-right-panel {
   flex: 1;
   background: linear-gradient(135deg, #65a30d 0%, #3f6212 100%);
-  padding: 40px 35px;
+  padding: 30px 35px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -109,7 +109,7 @@
 }
 
 .login-form-header {
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   margin-top: 0;
   width: 100%;
   padding-top: 0;
@@ -252,7 +252,7 @@
 }
 
 .admin-link-section {
-  margin-top: 25px;
+  margin-top: 15px;
   padding-top: 0;
   text-align: center;
   width: 100%;

@@ -209,9 +209,6 @@ const UserLogin: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
               />
-              <Link to="/forgot-password" className="forgot-password-link">
-                Forgot password?
-              </Link>
             </div>
 
             <button 
