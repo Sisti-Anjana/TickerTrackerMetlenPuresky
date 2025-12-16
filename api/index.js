@@ -25,7 +25,10 @@ app.use(express.json());
 
 // Enhanced logging middleware
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  console.log('Request URL:', req.url);
+  console.log('Request Original URL:', req.originalUrl);
+  console.log('Request Base URL:', req.baseUrl);
   if (req.body && Object.keys(req.body).length > 0) {
     console.log('Request body:', JSON.stringify(req.body, null, 2));
   }
@@ -207,7 +210,7 @@ app.use((err, req, res, next) => {
 
 // Export for Vercel serverless function
 // Vercel's @vercel/node adapter handles Express apps directly
-// The rewrite rule sends /api/* to this function, and Vercel strips /api
-// So we need to handle routes both with and without /api prefix
+// When /api/* is rewritten to /api/index.js, Vercel passes the request
+// The path includes /api, so our routes with /api prefix will match
 module.exports = app;
 
