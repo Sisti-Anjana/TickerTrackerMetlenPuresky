@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
-import { Users, Mail, Lock, AlertCircle, RefreshCw, User, ArrowRight } from 'lucide-react';
+import { Users, Mail, Lock, AlertCircle, RefreshCw, ArrowRight } from 'lucide-react';
 import loginImage from '../assests/login.png';
 import '../styles/UserLogin.css';
 
@@ -176,7 +176,6 @@ const UserLogin: React.FC = () => {
         <div className="login-right-panel">
           <div className="login-form-header">
             <h1>User Login</h1>
-            <p>Access your portfolio dashboard</p>
           </div>
 
           {error && (
@@ -189,33 +188,27 @@ const UserLogin: React.FC = () => {
           <form onSubmit={handleSubmit} className="user-login-form">
             <div className="form-group">
               <label htmlFor="email">Email</label>
-              <div className="input-wrapper">
-                <User size={20} className="input-icon" />
-                <input
-                  type="email"
-                  id="email"
-                  placeholder="Type your email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                  autoFocus
-                />
-              </div>
+              <input
+                type="email"
+                id="email"
+                placeholder="Type your email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+                autoFocus
+              />
             </div>
 
             <div className="form-group">
               <label htmlFor="password">Password</label>
-              <div className="input-wrapper">
-                <Lock size={20} className="input-icon" />
-                <input
-                  type="password"
-                  id="password"
-                  placeholder="Type your password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  required
-                />
-              </div>
+              <input
+                type="password"
+                id="password"
+                placeholder="Type your password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required
+              />
               <Link to="/forgot-password" className="forgot-password-link">
                 Forgot password?
               </Link>
