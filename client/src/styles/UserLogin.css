@@ -275,6 +275,8 @@
   width: 100%;
 }
 
+.admin-link-section .admin-link,
+a.admin-link,
 .admin-link {
   color: #ffffff !important;
   text-decoration: none;
@@ -285,6 +287,8 @@
   display: inline-block;
 }
 
+.admin-link-section .admin-link:hover,
+a.admin-link:hover,
 .admin-link:hover {
   opacity: 1;
   color: #ffffff !important;
