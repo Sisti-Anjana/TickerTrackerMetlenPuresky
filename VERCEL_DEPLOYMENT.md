@@ -20,9 +20,9 @@ Deploy everything fresh to Vercel (frontend + backend combined).
 4. Configure the project:
    - **Framework Preset**: Other (or leave blank)
    - **Root Directory**: `.` (root)
-   - **Build Command**: `cd client && npm install && CI=false npm run build`
+   - **Build Command**: `npm install && cd client && npm install && CI=false npm run build`
    - **Output Directory**: `client/build`
-   - **Install Command**: `npm install && cd client && npm install`
+   - **Install Command**: Leave empty (Vercel will auto-detect)
 5. Add **Environment Variables** (Settings → Environment Variables):
    - `SUPABASE_URL` = Your Supabase project URL
    - `SUPABASE_ANON_KEY` = Your Supabase anonymous key
