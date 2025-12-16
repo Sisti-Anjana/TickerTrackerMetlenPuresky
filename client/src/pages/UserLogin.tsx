@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
-import { Users, Mail, Lock, AlertCircle, ArrowLeft, RefreshCw, User, ArrowRight } from 'lucide-react';
+import { Users, Mail, Lock, AlertCircle, RefreshCw, User, ArrowRight } from 'lucide-react';
 import logo from '../assests/logo.jpg';
 import '../styles/UserLogin.css';
 
