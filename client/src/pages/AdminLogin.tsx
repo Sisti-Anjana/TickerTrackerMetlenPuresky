@@ -49,10 +49,6 @@ const AdminLogin: React.FC = () => {
           <div className="login-logo-container">
             <img src={loginImage} alt="American Green Solutions" className="login-logo" />
           </div>
-          <div className="login-branding">
-            <h1 className="login-company-name">AMERICAN</h1>
-            <h2 className="login-company-tagline">GREEN SOLUTIONS</h2>
-          </div>
           <div className="login-welcome">
             <h3>Welcome</h3>
             <p>Please sign in to continue</p>
