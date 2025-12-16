@@ -101,10 +101,10 @@ const AdminLogin: React.FC = () => {
           </form>
 
           <div className="admin-link-section">
-            <p className="security-note">
-              <ShieldCheck size={16} />
-              This is a secure admin area
-            </p>
+            <div className="divider-line"></div>
+            <Link to="/user-login" className="switch-link">
+              Are you a user? Click here
+            </Link>
           </div>
         </div>
       </div>

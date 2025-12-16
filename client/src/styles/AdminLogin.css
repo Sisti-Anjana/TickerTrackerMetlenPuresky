@@ -250,21 +250,31 @@
 }
 
 .admin-link-section {
-  margin-top: 30px;
-  padding-top: 25px;
+  margin-top: 25px;
   text-align: center;
   width: 100%;
   box-sizing: border-box;
 }
 
-.security-note {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.divider-line {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.2);
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.switch-link {
   color: #000000;
-  font-size: 0.9rem;
+  text-decoration: none;
+  font-size: 0.95rem;
   font-weight: 500;
   opacity: 0.8;
+  transition: opacity 0.3s ease;
+  display: inline-block;
+}
+
+.switch-link:hover {
+  opacity: 1;
 }
 
 /* Responsive Design */
