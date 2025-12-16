@@ -267,11 +267,11 @@
 }
 
 .admin-link {
-  color: #000000;
+  color: #ffffff;
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
-  opacity: 0.8;
+  opacity: 0.9;
   transition: opacity 0.3s ease;
   display: inline-block;
 }
