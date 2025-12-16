@@ -12,18 +12,18 @@
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  max-width: 1000px;
+  max-width: 850px;
   width: 100%;
   display: flex;
   overflow: hidden;
-  min-height: 600px;
+  min-height: 550px;
 }
 
 /* Left Panel - Branding */
 .login-left-panel {
   flex: 1;
   background: #ffffff;
-  padding: 60px 50px;
+  padding: 50px 40px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -33,7 +33,7 @@
 }
 
 .login-logo-container {
-  margin-bottom: 50px;
+  margin-bottom: 40px;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -41,7 +41,7 @@
 }
 
 .login-logo {
-  max-width: 350px;
+  max-width: 280px;
   width: 100%;
   height: auto;
   object-fit: contain;
@@ -50,19 +50,19 @@
 
 .login-welcome {
   width: 100%;
-  margin-top: 20px;
+  margin-top: 0;
 }
 
 .login-welcome h3 {
-  font-size: 2.2rem;
+  font-size: 1.8rem;
   font-weight: 700;
   color: #000000;
-  margin: 0 0 15px 0;
+  margin: 0 0 12px 0;
   line-height: 1.2;
 }
 
 .login-welcome p {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #666666;
   margin: 0;
   font-weight: 400;
@@ -73,13 +73,13 @@
 .login-right-panel {
   flex: 1;
   background: linear-gradient(135deg, #65a30d 0%, #3f6212 100%);
-  padding: 60px 50px;
+  padding: 50px 40px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   position: relative;
   box-sizing: border-box;
-  padding-top: 80px;
+  padding-top: 70px;
 }
 
 .back-button {
@@ -110,10 +110,10 @@
 }
 
 .login-form-header h1 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
   color: #ffffff;
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
   line-height: 1.2;
 }
 
