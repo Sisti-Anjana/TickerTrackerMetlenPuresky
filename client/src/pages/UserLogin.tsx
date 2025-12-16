@@ -178,11 +178,6 @@ const UserLogin: React.FC = () => {
 
         {/* Right Side - Login Form */}
         <div className="login-right-panel">
-          <Link to="/" className="back-button">
-            <ArrowLeft size={18} />
-            <span>Back</span>
-          </Link>
-
           <div className="login-form-header">
             <h1>User Login</h1>
             <p>Access your portfolio dashboard</p>
