@@ -14,7 +14,13 @@ const app = express();
 app.use(cors({
   origin: true,
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Handle OPTIONS requests for CORS preflight
+app.options('*', cors());
+
 app.use(express.json());
 
 // Enhanced logging middleware
@@ -153,12 +159,18 @@ app.get('/api/debug/database', async (req, res) => {
   }
 });
 
-// Routes
+// Routes - Vercel strips /api prefix, so routes should not include it
+// But we'll handle both cases for compatibility
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
+app.use('/tickets', ticketRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/comments', commentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/admin', adminRoutes);
 app.use('/api/equipment', equipmentRoutes);
+app.use('/equipment', equipmentRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -194,6 +206,8 @@ app.use((err, req, res, next) => {
 });
 
 // Export for Vercel serverless function
-// Vercel's @vercel/node adapter can handle Express apps directly
+// Vercel's @vercel/node adapter handles Express apps directly
+// The rewrite rule sends /api/* to this function, and Vercel strips /api
+// So we need to handle routes both with and without /api prefix
 module.exports = app;
 
