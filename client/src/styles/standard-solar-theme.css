@@ -1,0 +1,84 @@
+/* Standard Solar / AGS Theme */
+:root {
+  --primary-green: #84cc16; /* Lime/Green similar to screenshot */
+  --header-bg: #84cc16;
+  --header-text: #ffffff;
+  --sidebar-width: 260px;
+  --sidebar-bg: #ffffff;
+  --sidebar-active: #f0fdf4; /* Very light green */
+  --sidebar-active-text: #65a30d;
+  --sidebar-hover: #f7fee7;
+}
+
+/* Header Styling */
+.navbar {
+  background: linear-gradient(to right, #7aba2e, #8cbd43); /* Gradient approximation */
+  color: white;
+  height: 80px; /* Taller header like screenshot */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  border-bottom: none;
+}
+
+.navbar-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.navbar-center-title {
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar-main-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.navbar-subtitle {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  opacity: 0.9;
+}
+
+/* Sidebar Refinements */
+.sidebar {
+  background-color: #ffffff !important;
+  border-right: 1px solid #f0f0f0;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.02);
+}
+
+.nav-item {
+  color: #52525b; /* Gray-600 */
+  font-weight: 500;
+  border-radius: 0 24px 24px 0; /* Rounded right side */
+  margin-right: 16px;
+  margin-left: 0;
+  width: calc(100% - 16px);
+}
+
+.nav-item.active {
+  background-color: #ecfccb !important; /* Lime-100 */
+  color: #4d7c0f !important; /* Lime-700 */
+  border-left: 4px solid #65a30d;
+}
+
+.nav-item:hover:not(.active) {
+  background-color: #f7fee7;
+}
+
+/* Layout adjustments */
+.main-content-wrapper {
+  background-color: #f8fafc; /* Slate-50 background for content */
+}

@@ -689,7 +689,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .access-denied h2 {
@@ -732,5 +734,10 @@
 
   .sites-grid {
     grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+    max-height: 85vh;
   }
 }

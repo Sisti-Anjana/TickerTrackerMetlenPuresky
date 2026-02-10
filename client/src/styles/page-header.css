@@ -1,32 +1,38 @@
-/* App Layout - Fixed sidebar visibility and clean header */
+/* App Layout - Fixed sidebar and navbar */
 .app-layout {
   display: flex;
   min-height: 100vh;
-  background-color: #f5f7fa;
+  background-color: #ffffff;
+}
+
+/* Main Content Wrapper - Contains navbar and content */
+.main-content-wrapper {
+  flex: 1;
+  margin-left: 80px; /* Space for sidebar */
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.3s ease;
 }
 
 /* Main Content Area */
 .main-content {
   flex: 1;
-  margin-left: 280px; /* Space for sidebar */
-  background-color: #f5f7fa;
-  min-height: 100vh;
-  transition: margin-left 0.3s ease;
+  background-color: #ffffff;
+  min-height: calc(100vh - 80px);
+  margin-top: 80px; /* Space for navbar */
+  padding: 20px 30px;
+  transition: margin-top 0.3s ease;
 }
 
-/* Remove mobile navbar on desktop */
-.mobile-navbar {
-  display: none;
-}
-
-/* Responsive - Mobile */
+/* Mobile responsive */
 @media (max-width: 1024px) {
-  .main-content {
+  .main-content-wrapper {
     margin-left: 0; /* No margin on mobile */
   }
   
-  .mobile-navbar {
-    display: block;
+  .main-content {
+    margin-top: 60px; /* Smaller navbar on mobile */
+    padding: 15px 20px;
   }
 }
 
@@ -107,15 +113,5 @@
     flex-direction: column;
     gap: 15px;
     padding: 15px;
-  }
-  
-  .page-header-left,
-  .page-header-right {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .page-header-user {
-    align-items: center;
   }
 }

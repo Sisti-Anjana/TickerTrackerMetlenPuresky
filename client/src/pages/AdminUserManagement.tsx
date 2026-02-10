@@ -19,8 +19,8 @@ const AdminUserManagement: React.FC = () => {
   const [success, setSuccess] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [createdCredentials, setCreatedCredentials] = useState<{email: string, password: string} | null>(null);
-  
+  const [createdCredentials, setCreatedCredentials] = useState<{ email: string, password: string } | null>(null);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -35,7 +35,7 @@ const AdminUserManagement: React.FC = () => {
     try {
       setLoading(true);
       setError('');
-      
+
       // Try the admin endpoint first (requires auth, returns only 'user' role)
       try {
         const response = await api.get('/admin/users');
@@ -47,7 +47,7 @@ const AdminUserManagement: React.FC = () => {
       } catch (adminError: any) {
         console.log('Admin endpoint failed, trying debug endpoint:', adminError.message);
       }
-      
+
       // Fallback to debug endpoint (returns all users including admins)
       const response = await api.get('/auth/debug/users');
       if (response.data && response.data.users) {
@@ -89,10 +89,10 @@ const AdminUserManagement: React.FC = () => {
           email: formData.email,
           password: formData.password
         });
-        
+
         // Reset form
         setFormData({ name: '', email: '', password: '' });
-        
+
         // Refresh users list
         await fetchUsers();
       }
@@ -119,7 +119,7 @@ const AdminUserManagement: React.FC = () => {
             <p>Create and manage user accounts</p>
           </div>
         </div>
-        <button 
+        <button
           className="create-user-btn"
           onClick={() => {
             setShowCreateForm(!showCreateForm);
@@ -154,7 +154,7 @@ const AdminUserManagement: React.FC = () => {
             <h3>User Created Successfully!</h3>
           </div>
           <p className="credentials-note">
-            ⚠️ Please save these credentials and provide them to the user. They won't be shown again!
+            Please save these credentials and provide them to the user. They won't be shown again!
           </p>
           <div className="credentials-box">
             <div className="credential-item">
@@ -179,7 +179,7 @@ const AdminUserManagement: React.FC = () => {
           <p className="credentials-info">
             The user will be required to change this password on their first login.
           </p>
-          <button 
+          <button
             className="close-credentials-btn"
             onClick={() => setCreatedCredentials(null)}
           >
@@ -264,8 +264,8 @@ const AdminUserManagement: React.FC = () => {
             <p>Loading users...</p>
           </div>
         ) : users.length === 0 ? (
-          <div style={{ 
-            textAlign: 'center', 
+          <div style={{
+            textAlign: 'center',
             padding: '3rem 2rem',
             background: '#f8f9fa',
             borderRadius: '8px',

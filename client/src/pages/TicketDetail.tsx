@@ -33,20 +33,41 @@ interface Ticket {
 const TicketDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
+
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState(false);
-  
+
   // Status update states
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('');
   const [closedDate, setClosedDate] = useState('');
 
+  const [history, setHistory] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
   useEffect(() => {
     fetchTicketDetails();
   }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchHistory();
+    }
+  }, [id]);
+
+  const fetchHistory = async () => {
+    try {
+      setHistoryLoading(true);
+      const response = await api.get(`/tickets/${id}/history`);
+      setHistory(response.data);
+    } catch (error) {
+      console.error('Error fetching history:', error);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
   const fetchTicketDetails = async () => {
     try {
@@ -87,15 +108,15 @@ const TicketDetail: React.FC = () => {
       setUpdating(true);
       console.log('Updating ticket status:', { id, selectedStatus, closedDate });
       console.log('Update data:', updateData);
-      
+
       // Use PUT since PATCH is not supported by backend
       const response = await api.put(`/tickets/${id}`, updateData);
-      
+
       console.log('Update response:', response.data);
-      
+
       alert('Status updated successfully! Redirecting to dashboard...');
       setShowStatusDropdown(false);
-      
+
       // Navigate back to dashboard and force refresh
       navigate('/dashboard', { replace: true });
       window.location.reload(); // Force full page reload to refresh data
@@ -103,7 +124,7 @@ const TicketDetail: React.FC = () => {
       console.error('Error updating status:', error);
       console.error('Error response data:', error.response?.data);
       console.error('Error status:', error.response?.status);
-      
+
       if (error.response?.status === 403) {
         alert(`Permission denied: ${error.response?.data?.message || 'You may not have permission to update this ticket. Only the ticket owner can update it.'}`);
       } else {
@@ -141,24 +162,24 @@ const TicketDetail: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';
-    
+
     try {
       const date = new Date(dateString);
-      
+
       if (isNaN(date.getTime())) return 'Invalid Date';
-      
+
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
       const year = date.getFullYear();
-      
+
       let hours = date.getHours();
       const minutes = String(date.getMinutes()).padStart(2, '0');
       const ampm = hours >= 12 ? 'PM' : 'AM';
-      
+
       hours = hours % 12;
       hours = hours ? hours : 12; // 0 should be 12
       const hoursStr = String(hours).padStart(2, '0');
-      
+
       return `${month}/${day}/${year} ${hoursStr}:${minutes} ${ampm}`;
     } catch (error) {
       console.error('Error formatting date:', error);
@@ -205,13 +226,13 @@ const TicketDetail: React.FC = () => {
       {/* Status Badge and Info Bar */}
       <div className="status-info-bar">
         <div className="status-badge-container">
-          <span 
-            className="status-badge" 
+          <span
+            className="status-badge"
             style={{ backgroundColor: getStatusColor(ticket.ticket_status) }}
           >
             {ticket.ticket_status}
           </span>
-          <span 
+          <span
             className="priority-badge"
             style={{ backgroundColor: getPriorityColor(ticket.priority) }}
           >
@@ -229,11 +250,11 @@ const TicketDetail: React.FC = () => {
       <div className="status-update-section">
         <div className="status-update-inline">
           <h3 className="status-update-title">Update Status</h3>
-          
+
           <div className="status-form-inline">
             <div className="form-group-compact">
               <label>Current Status:</label>
-              <select 
+              <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
                 className="status-select-compact"
@@ -256,7 +277,7 @@ const TicketDetail: React.FC = () => {
               </div>
             )}
 
-            <button 
+            <button
               onClick={handleStatusUpdate}
               disabled={updating}
               className="btn btn-primary update-btn-compact"
@@ -408,6 +429,58 @@ const TicketDetail: React.FC = () => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Ticket History Section */}
+      <div className="detail-card full-width" style={{ marginTop: '20px' }}>
+        <h2 className="card-title">
+          Edit History
+        </h2>
+        <div className="card-content">
+          {historyLoading ? (
+            <p>Loading history...</p>
+          ) : history.length === 0 ? (
+            <p className="no-history">No edit history available for this ticket.</p>
+          ) : (
+            <div className="history-list">
+              {history.map((record: any) => (
+                <div key={record.id} className="history-item">
+                  <div className="history-header">
+                    <span className="history-user">
+                      {record.users?.name || 'Unknown User'}
+                    </span>
+                    <span className="history-date">
+                      {formatDate(record.created_at)}
+                    </span>
+                  </div>
+
+                  <div className="history-reason">
+                    <span style={{ fontWeight: '600', color: '#4b5563' }}>Reason: </span>
+                    <span>{record.reason || 'No reason provided'}</span>
+                  </div>
+
+                  <div className="history-changes">
+                    <h4>Changes:</h4>
+                    <ul>
+                      {Object.keys(record.changes || {}).map(field => (
+                        <li key={field}>
+                          <span style={{ textTransform: 'capitalize', fontWeight: '500' }}>{field.replace(/_/g, ' ')}:</span>{' '}
+                          <span style={{ color: '#ef4444', textDecoration: 'line-through' }}>
+                            {String(record.changes[field].old || 'Empty')}
+                          </span>
+                          {' '}&rarr;{' '}
+                          <span style={{ color: '#10b981', fontWeight: '500' }}>
+                            {String(record.changes[field].new || 'Empty')}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

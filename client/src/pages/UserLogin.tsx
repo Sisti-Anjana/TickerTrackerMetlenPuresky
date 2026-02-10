@@ -26,7 +26,8 @@ const UserLogin: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await api.post('/auth/user-login', formData);
+      // Use unified login endpoint so system detects admin vs user automatically
+      const response = await api.post('/auth/login', formData);
       const data = response.data;
 
       // Check if password change is required
@@ -43,7 +44,8 @@ const UserLogin: React.FC = () => {
       // Update auth context
       setAuth(data.user, data.token);
       
-      // Navigate to dashboard
+      // Navigate to appropriate page based on role if needed
+      // For now both roles go to dashboard; you can branch on data.user.role later
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'An error occurred during login');
@@ -175,7 +177,7 @@ const UserLogin: React.FC = () => {
         {/* Right Side - Login Form */}
         <div className="login-right-panel">
           <div className="login-form-header">
-            <h1>User Login</h1>
+            <h1>Login</h1>
           </div>
 
           {error && (
@@ -221,12 +223,7 @@ const UserLogin: React.FC = () => {
             </button>
           </form>
 
-          <div className="admin-link-section">
-            <div className="divider-line"></div>
-            <Link to="/admin-login" className="admin-link">
-              Are you an admin? Click here
-            </Link>
-          </div>
+          {/* Single login – no admin/user switch links needed */}
         </div>
       </div>
     </div>

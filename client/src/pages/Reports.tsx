@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
-import TopHeader from '../components/TopHeader';
+
 import Analytics from './Analytics';
 import api from '../services/api';
 import '../styles/reports.css';
@@ -27,7 +27,7 @@ interface SummaryMetrics {
   ticketsThisMonth: number;
   ticketsThisWeek: number;
   ticketsToday: number;
-  
+
   // Rates and percentages
   resolutionRate: number;
   completionRate: number;
@@ -35,29 +35,29 @@ interface SummaryMetrics {
   pendingRate: number;
   weeklyClosureRate: number;
   productionImpactRate: number;
-  
+
   // Time metrics
   avgResponseTime: string;
   avgResolutionTime: string;
-  
+
   // Priority counts
   urgentPriority: number;
   highPriority: number;
   mediumPriority: number;
   lowPriority: number;
-  
+
   // Category counts
   productionImpacting: number;
   communicationIssues: number;
   cannotConfirm: number;
   mostCommonCategory: string;
-  
+
   // Site metrics
   activeSites: number;
   mostActiveSite: string;
   totalKwDown: number;
   avgTicketsPerSite: number;
-  
+
   // Team metrics
   activeTeamMembers: number;
   avgTicketsPerUser: number;
@@ -81,7 +81,7 @@ const Reports: React.FC = () => {
       setLoading(true);
       const response = await api.get('/tickets');
       const tickets: Ticket[] = response.data.tickets || [];
-      
+
       const calculatedMetrics = calculateMetrics(tickets);
       setMetrics(calculatedMetrics);
     } catch (error) {
@@ -103,7 +103,7 @@ const Reports: React.FC = () => {
     const openTickets = tickets.filter(t => t.ticket_status?.toLowerCase() === 'open').length;
     const closedTickets = tickets.filter(t => t.ticket_status?.toLowerCase() === 'closed').length;
     const pendingTickets = tickets.filter(t => t.ticket_status?.toLowerCase() === 'pending').length;
-    
+
     const ticketsToday = tickets.filter(t => new Date(t.created_at) >= today).length;
     const ticketsThisWeek = tickets.filter(t => new Date(t.created_at) >= weekStart).length;
     const ticketsThisMonth = tickets.filter(t => new Date(t.created_at) >= monthStart).length;
@@ -113,13 +113,13 @@ const Reports: React.FC = () => {
     const completionRate = resolutionRate;
     const currentlyOpenRate = totalTickets > 0 ? (openTickets / totalTickets) * 100 : 0;
     const pendingRate = totalTickets > 0 ? (pendingTickets / totalTickets) * 100 : 0;
-    
-    const ticketsClosedThisWeek = tickets.filter(t => 
+
+    const ticketsClosedThisWeek = tickets.filter(t =>
       t.closed_at && new Date(t.closed_at) >= weekStart
     ).length;
     const weeklyClosureRate = ticketsThisWeek > 0 ? (ticketsClosedThisWeek / ticketsThisWeek) * 100 : 0;
-    
-    const productionImpactRate = totalTickets > 0 ? (tickets.filter(t => 
+
+    const productionImpactRate = totalTickets > 0 ? (tickets.filter(t =>
       t.category?.toLowerCase().includes('production')
     ).length / totalTickets) * 100 : 0;
 
@@ -128,7 +128,7 @@ const Reports: React.FC = () => {
     let responseCount = 0;
     let totalResolutionHours = 0;
     let resolutionCount = 0;
-    
+
     tickets.forEach(ticket => {
       if (ticket.closed_at) {
         const created = new Date(ticket.created_at).getTime();
@@ -140,10 +140,10 @@ const Reports: React.FC = () => {
         resolutionCount++;
       }
     });
-    
+
     const avgResponseHours = responseCount > 0 ? totalResponseHours / responseCount : 0;
     const avgResponseTime = `${avgResponseHours.toFixed(1)} hours`;
-    
+
     const avgResolutionHours = resolutionCount > 0 ? totalResolutionHours / resolutionCount : 0;
     const avgResolutionTime = `${avgResolutionHours.toFixed(1)} hours`;
 
@@ -154,15 +154,15 @@ const Reports: React.FC = () => {
     const lowPriority = tickets.filter(t => t.priority?.toLowerCase() === 'low').length;
 
     // Category counts
-    const productionImpacting = tickets.filter(t => 
+    const productionImpacting = tickets.filter(t =>
       t.category?.toLowerCase().includes('production')
     ).length;
-    
-    const communicationIssues = tickets.filter(t => 
+
+    const communicationIssues = tickets.filter(t =>
       t.category?.toLowerCase().includes('communication')
     ).length;
-    
-    const cannotConfirm = tickets.filter(t => 
+
+    const cannotConfirm = tickets.filter(t =>
       t.category?.toLowerCase().includes('cannot confirm')
     ).length;
 
@@ -183,7 +183,7 @@ const Reports: React.FC = () => {
         siteCounts[t.site_name] = (siteCounts[t.site_name] || 0) + 1;
       }
     });
-    
+
     const activeSites = Object.keys(siteCounts).length;
     const mostActiveSite = Object.entries(siteCounts)
       .sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
@@ -235,23 +235,23 @@ const Reports: React.FC = () => {
 
   return (
     <>
-      <TopHeader />
-      
+
+
       <div className="reports-page">
         <BackButton label="Back to Dashboard" />
-        
+
         <div className="reports-container">
           {/* Professional Tab Navigation */}
           <div className="reports-tabs">
             <div className="tab-list">
-              <button 
+              <button
                 className={`tab-button ${activeTab === 'analytics' ? 'active' : ''}`}
                 onClick={() => setActiveTab('analytics')}
               >
                 <span className="tab-icon">📈</span>
                 <span className="tab-text">Analytics Dashboard - Real-time Performance Metrics</span>
               </button>
-              <button 
+              <button
                 className={`tab-button ${activeTab === 'summary' ? 'active' : ''}`}
                 onClick={() => setActiveTab('summary')}
               >
@@ -264,7 +264,7 @@ const Reports: React.FC = () => {
           {/* Content Area */}
           <div className="reports-content">
             {activeTab === 'analytics' && <Analytics />}
-            
+
             {activeTab === 'summary' && (
               <div className="summary-content">
                 {loading ? (
@@ -277,9 +277,9 @@ const Reports: React.FC = () => {
                     <div className="content-intro">
                       <h2>Executive Summary Overview</h2>
                       <p>
-                        This executive summary provides a high-level overview of the key performance indicators and operational metrics 
-                        for the AGS Solar Asset Management System. The data presented below represents <strong>real-time statistics</strong> collected 
-                        from all ticket management activities, site operations, and team performance across our entire solar infrastructure 
+                        This executive summary provides a high-level overview of the key performance indicators and operational metrics
+                        for the AGS Solar Asset Management System. The data presented below represents <strong>real-time statistics</strong> collected
+                        from all ticket management activities, site operations, and team performance across our entire solar infrastructure
                         network. Last updated: {new Date().toLocaleString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
@@ -611,14 +611,14 @@ const Reports: React.FC = () => {
                     <div className="content-footer">
                       <h3>Report Generation & Data Export</h3>
                       <p>
-                        All metrics and statistics presented in this dashboard are updated in <strong>real-time</strong> based on actual ticket data from the system. 
-                        The report automatically recalculates when new tickets are created or existing tickets are updated. This ensures you always have the most current operational insights. 
-                        For detailed analytics and historical trend analysis, please refer to the Analytics Dashboard tab above. 
+                        All metrics and statistics presented in this dashboard are updated in <strong>real-time</strong> based on actual ticket data from the system.
+                        The report automatically recalculates when new tickets are created or existing tickets are updated. This ensures you always have the most current operational insights.
+                        For detailed analytics and historical trend analysis, please refer to the Analytics Dashboard tab above.
                         The system tracks <strong>{metrics.totalTickets} total tickets</strong> across <strong>{metrics.activeSites} sites</strong> with <strong>{metrics.activeTeamMembers} active team members</strong> contributing to ticket management and resolution.
                       </p>
                       <div style={{ marginTop: '16px', padding: '12px', background: '#f0f7e8', borderRadius: '8px', borderLeft: '4px solid #76ab3f' }}>
-                        <strong>📊 Quick Summary:</strong> Resolution rate of {metrics.resolutionRate.toFixed(1)}% with {metrics.openTickets} open tickets and {metrics.closedTickets} resolved. 
-                        {metrics.urgentPriority > 0 && ` ⚠️ ${metrics.urgentPriority} urgent tickets require immediate attention.`}
+                        <strong>📊 Quick Summary:</strong> Resolution rate of {metrics.resolutionRate.toFixed(1)}% with {metrics.openTickets} open tickets and {metrics.closedTickets} resolved.
+                        {metrics.urgentPriority > 0 && ` ${metrics.urgentPriority} urgent tickets require immediate attention.`}
                       </div>
                     </div>
                   </>

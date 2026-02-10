@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
-import TopHeader from '../components/TopHeader';
+
 import {
   getStatusBadge,
   getStatusIcon,
@@ -108,7 +108,7 @@ const Dashboard = (): JSX.Element => {
   const [priorityFilter, setPriorityFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [activeStatFilter, setActiveStatFilter] = useState('');
-  
+
   // CSV Export states
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportDateRange, setExportDateRange] = useState({
@@ -126,11 +126,11 @@ const Dashboard = (): JSX.Element => {
     try {
       if (showLoading) setLoading(true);
       else setRefreshing(true);
-      
+
       setError('');
       console.log('🎫 Fetching tickets with filter:', filter);
       console.log('👤 Current user:', user?.name, 'ID:', user?.id);
-      
+
       // Always fetch all tickets first
       const params: Record<string, string> = {
         limit: '500'
@@ -139,14 +139,14 @@ const Dashboard = (): JSX.Element => {
         params.filter = 'my-tickets';
       }
       const response = await api.get('/tickets', { params });
-      
+
       console.log('📊 Raw Tickets API Response:', response.data);
       console.log('📊 Number of tickets from API:', response.data?.tickets?.length || 0);
-      
+
       if (response.data?.tickets) {
         let ticketsData = response.data.tickets;
         const originalCount = ticketsData.length;
-        
+
         console.log('📊 IMPORTANT: We have', originalCount, 'tickets from API');
         console.log('📊 First ticket sample from API:', ticketsData[0]);
         console.log('📊 User info for matching:', {
@@ -154,25 +154,25 @@ const Dashboard = (): JSX.Element => {
           userName: user?.name,
           userEmail: user?.email
         });
-        
+
         // Apply My Tickets filter immediately if needed
         if (filter === 'my-tickets' && user) {
           console.log('🔍 BEFORE My Tickets filter:', ticketsData.length, 'tickets');
-          
+
           // Let's check what fields exist in the tickets
           console.log('📊 Checking ticket fields:', Object.keys(ticketsData[0] || {}));
-          
+
           ticketsData = ticketsData.filter((ticket: any) => {
             // FIXED: Check for user_id field (not created_by)!
             const isCreatedByUserId = ticket.user_id === user.id;
             const isCreatedByName = ticket.customer_name === user.name;
             const isCreatedByEmail = ticket.created_by_email === user.email;
-            
+
             // Also keep old checks as fallback for backward compatibility
             const isCreatedByOld = ticket.created_by === user.id || ticket.created_by_name === user.name;
-            
+
             const isCreatedByUser = isCreatedByUserId || isCreatedByName || isCreatedByEmail || isCreatedByOld;
-            
+
             if (isCreatedByUser) {
               console.log('✅ Ticket created by user:', ticket.ticket_number, {
                 ticket_user_id: ticket.user_id,
@@ -181,7 +181,7 @@ const Dashboard = (): JSX.Element => {
                 user_name: user.name
               });
             }
-            
+
             return isCreatedByUser;
           });
           console.log('🔍 AFTER My Tickets filter:', ticketsData.length, 'tickets');
@@ -189,11 +189,11 @@ const Dashboard = (): JSX.Element => {
         } else {
           console.log('🔍 Using ALL tickets mode:', ticketsData.length, 'tickets');
         }
-        
+
         setTickets(ticketsData);
         setFilteredTickets(ticketsData);
         setLastUpdate(new Date());
-        
+
         console.log(`✅ Final loaded tickets: ${ticketsData.length} for filter: ${filter}`);
         console.log('📊 Sample tickets:', ticketsData.slice(0, 2).map((t: any) => ({
           ticket_number: t.ticket_number,
@@ -201,7 +201,7 @@ const Dashboard = (): JSX.Element => {
           status_alt: t.status,
           created_by: t.created_by_name
         })));
-        
+
         // Find and log AGS11 specifically
         const ags11 = ticketsData.find((t: any) => t.ticket_number === 'AGS11');
         if (ags11) {
@@ -216,7 +216,7 @@ const Dashboard = (): JSX.Element => {
             full_ticket: ags11
           });
         }
-        
+
         // Log ALL tickets with their status fields
         console.log('📊 ALL TICKETS STATUS CHECK:', ticketsData.map((t: any) => ({
           ticket_number: t.ticket_number,
@@ -246,7 +246,7 @@ const Dashboard = (): JSX.Element => {
       console.log('📊 Fetching stats with filter:', filter);
       const params = filter === 'my-tickets' ? { filter: 'my-tickets' } : {};
       const response = await api.get('/tickets/meta/stats', { params });
-      
+
       console.log('📈 Stats response:', response.data);
       setStats(response.data);
     } catch (error: any) {
@@ -307,11 +307,11 @@ const Dashboard = (): JSX.Element => {
     if (activeStatFilter) {
       console.log('🎯 Applying stat filter:', activeStatFilter);
       const beforeStatFilter = filtered.length;
-      
+
       // Log all unique statuses in current tickets
       const uniqueStatuses = Array.from(new Set(filtered.map(t => t.ticket_status)));
       console.log('📊 Unique statuses in tickets:', uniqueStatuses);
-      
+
       switch (activeStatFilter) {
         case 'total':
           // Show all tickets (no additional filtering needed)
@@ -351,7 +351,7 @@ const Dashboard = (): JSX.Element => {
     // Apply text search
     if (searchTerm.trim() !== '') {
       const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(ticket => 
+      filtered = filtered.filter(ticket =>
         ticket.ticket_number?.toLowerCase().includes(searchLower) ||
         ticket.customer_name?.toLowerCase().includes(searchLower) ||
         ticket.equipment?.toLowerCase().includes(searchLower) ||
@@ -384,14 +384,14 @@ const Dashboard = (): JSX.Element => {
 
     // Apply priority filter
     if (priorityFilter) {
-      filtered = filtered.filter(ticket => 
+      filtered = filtered.filter(ticket =>
         ticket.priority?.toLowerCase() === priorityFilter.toLowerCase()
       );
     }
 
     // Apply status filter (only if no stat filter is active)
     if (statusFilter && !activeStatFilter) {
-      filtered = filtered.filter(ticket => 
+      filtered = filtered.filter(ticket =>
         ticket.ticket_status?.toLowerCase() === statusFilter.toLowerCase()
       );
     }
@@ -451,14 +451,14 @@ const Dashboard = (): JSX.Element => {
   const handleFilterChange = (newFilter: 'all' | 'my-tickets') => {
     console.log('🔄 Filter changed to:', newFilter);
     setFilter(newFilter);
-    
+
     // Update URL to persist the filter
     if (newFilter === 'my-tickets') {
       navigate('/dashboard?filter=my-tickets', { replace: true });
     } else {
       navigate('/dashboard', { replace: true });
     }
-    
+
     setSearchTerm(''); // Clear search when changing filter
     clearAdvancedFilters(); // Clear advanced filters when changing main filter
   };
@@ -469,10 +469,10 @@ const Dashboard = (): JSX.Element => {
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    
+
     const thisWeekStart = new Date(today);
     thisWeekStart.setDate(today.getDate() - today.getDay());
-    
+
     const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
 
     const currentStats: DashboardStats = {
@@ -481,15 +481,15 @@ const Dashboard = (): JSX.Element => {
       pending: ticketList.filter(t => (t.ticket_status || t.status)?.toLowerCase() === 'pending').length,
       closed: ticketList.filter(t => (t.ticket_status || t.status)?.toLowerCase() === 'closed').length,
       resolved: ticketList.filter(t => (t.ticket_status || t.status)?.toLowerCase() === 'resolved').length,
-      production_impacting: ticketList.filter(t => 
-        t.category?.toLowerCase().includes('production') || 
+      production_impacting: ticketList.filter(t =>
+        t.category?.toLowerCase().includes('production') ||
         t.priority?.toLowerCase() === 'urgent'
       ).length,
-      communication_issues: ticketList.filter(t => 
+      communication_issues: ticketList.filter(t =>
         t.category?.toLowerCase().includes('communication') ||
         t.issue_description?.toLowerCase().includes('communication')
       ).length,
-      cannot_confirm: ticketList.filter(t => 
+      cannot_confirm: ticketList.filter(t =>
         t.category?.toLowerCase().includes('cannot confirm') ||
         t.issue_description?.toLowerCase().includes('cannot confirm')
       ).length,
@@ -509,7 +509,7 @@ const Dashboard = (): JSX.Element => {
       user: user?.name || '',
       last_updated: new Date().toISOString()
     };
-    
+
     return currentStats;
   }, [filter, user?.name]);
 
@@ -524,7 +524,7 @@ const Dashboard = (): JSX.Element => {
         created_by: tickets[0].created_by_name
       } : 'No tickets'
     });
-    
+
     if (tickets.length >= 0) { // Always calculate, even for 0 tickets
       const newStats = calculateStats(tickets);
       console.log('📊 Stats calculated:', newStats);
@@ -554,13 +554,13 @@ const Dashboard = (): JSX.Element => {
       tickets: tickets.length,
       filteredTickets: filteredTickets.length
     });
-    
+
     // Clear other filters when clicking a stat card
     setSearchTerm('');
     setDateFilter({ startDate: '', endDate: '' });
     setPriorityFilter('');
     setStatusFilter('');
-    
+
     // Toggle the stat filter
     if (activeStatFilter === statType) {
       console.log('✅ Clearing stat filter');
@@ -576,26 +576,26 @@ const Dashboard = (): JSX.Element => {
     if (totalDuration && totalDuration !== 'calculating...') {
       return totalDuration;
     }
-    
+
     if (!startTime) return 'N/A';
-    
+
     const start = new Date(startTime);
     let end: Date;
-    
+
     const currentStatus = (status || '').toLowerCase();
     if (currentStatus === 'closed' || currentStatus === 'resolved') {
       end = closedAt ? new Date(closedAt) : (endTime ? new Date(endTime) : new Date());
     } else {
       end = endTime ? new Date(endTime) : new Date();
     }
-    
+
     const diffMs = end.getTime() - start.getTime();
     if (diffMs < 0) return 'N/A';
-    
+
     const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    
+
     if (days > 0) {
       return `${days}d ${hours}h ${minutes}m`;
     } else if (hours > 0) {
@@ -608,23 +608,23 @@ const Dashboard = (): JSX.Element => {
   const exportToCSV = () => {
     // Filter tickets based on date range if provided
     let ticketsToExport = filteredTickets;
-    
+
     if (exportDateRange.startDate || exportDateRange.endDate) {
       ticketsToExport = filteredTickets.filter(ticket => {
         const ticketDate = new Date(ticket.created_at);
         const startDate = exportDateRange.startDate ? new Date(exportDateRange.startDate) : null;
         const endDate = exportDateRange.endDate ? new Date(exportDateRange.endDate) : null;
-        
+
         // Set end date to end of day if provided
         if (endDate) {
           endDate.setHours(23, 59, 59, 999);
         }
-        
+
         // Set start date to start of day if provided
         if (startDate) {
           startDate.setHours(0, 0, 0, 0);
         }
-        
+
         if (startDate && endDate) {
           return ticketDate >= startDate && ticketDate <= endDate;
         } else if (startDate) {
@@ -635,12 +635,12 @@ const Dashboard = (): JSX.Element => {
         return true;
       });
     }
-    
+
     if (ticketsToExport.length === 0) {
       alert('No tickets to export with the selected date range.');
       return;
     }
-    
+
     // CSV Headers - Match table structure
     const headers = [
       'Created Date',
@@ -654,7 +654,7 @@ const Dashboard = (): JSX.Element => {
       'Status',
       'Requestor'
     ];
-    
+
     // Convert tickets to CSV rows - Match table structure
     const csvRows = ticketsToExport.map(ticket => {
       const row = [
@@ -669,7 +669,7 @@ const Dashboard = (): JSX.Element => {
         ticket.ticket_status || ticket.status || 'Open',
         ticket.users?.name || ticket.created_by_name || 'Unknown'
       ];
-      
+
       // Escape fields that contain commas or quotes
       return row.map(field => {
         const fieldStr = String(field);
@@ -679,17 +679,17 @@ const Dashboard = (): JSX.Element => {
         return fieldStr;
       }).join(',');
     });
-    
+
     // Combine headers and rows
     const csvContent = [headers.join(','), ...csvRows].join('\n');
-    
+
     // Create blob and download
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    
+
     link.setAttribute('href', url);
-    
+
     // Generate filename with date range if applicable
     let filename = 'tickets_export';
     if (exportDateRange.startDate && exportDateRange.endDate) {
@@ -700,13 +700,13 @@ const Dashboard = (): JSX.Element => {
       filename += `_until_${exportDateRange.endDate}`;
     }
     filename += `_${new Date().toISOString().split('T')[0]}.csv`;
-    
+
     link.setAttribute('download', filename);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     // Close modal and reset date range
     setShowExportModal(false);
     setExportDateRange({ startDate: '', endDate: '' });
@@ -743,22 +743,22 @@ const Dashboard = (): JSX.Element => {
     // Remove any non-numeric characters except /
     const cleaned = dateStr.replace(/[^\d/]/g, '');
     const parts = cleaned.split('/');
-    
+
     if (parts.length === 3) {
       const month = parts[0].padStart(2, '0');
       const day = parts[1].padStart(2, '0');
       let year = parts[2];
-      
+
       // Handle 2-digit year
       if (year.length === 2) {
         year = '20' + year;
       }
-      
+
       // Validate
       const monthNum = parseInt(month);
       const dayNum = parseInt(day);
       const yearNum = parseInt(year);
-      
+
       if (monthNum >= 1 && monthNum <= 12 && dayNum >= 1 && dayNum <= 31 && yearNum >= 1900) {
         return `${year}-${month}-${day}`;
       }
@@ -770,7 +770,7 @@ const Dashboard = (): JSX.Element => {
   const handleDateInput = (value: string, field: 'startDate' | 'endDate') => {
     // Remove non-numeric characters
     let cleaned = value.replace(/\D/g, '');
-    
+
     // Auto-format as MM/DD/YYYY
     let formatted = '';
     if (cleaned.length > 0) {
@@ -782,7 +782,7 @@ const Dashboard = (): JSX.Element => {
         formatted += '/' + cleaned.substring(4, 8);
       }
     }
-    
+
     // Update display value
     if (field === 'startDate') {
       setDateFilter(prev => ({ ...prev, startDate: parseDateInput(formatted) }));
@@ -796,7 +796,7 @@ const Dashboard = (): JSX.Element => {
     try {
       setRefreshing(true);
       console.log('Changing status to:', newStatus, 'for ticket:', ticketId);
-      
+
       const updateData: any = {
         ticket_status: newStatus
       };
@@ -808,16 +808,16 @@ const Dashboard = (): JSX.Element => {
       }
 
       const response = await api.put(`/tickets/${ticketId}`, updateData);
-      
+
       console.log('Status updated successfully:', response.data);
-      
+
       // Refresh the tickets list
       await fetchTickets(false);
       await fetchStats();
-      
+
       // Show success message
       alert(`Ticket ${ticketNumber} status changed to ${newStatus}!`);
-      
+
     } catch (error: any) {
       console.error('Error updating status:', error);
       alert(`Failed to update status: ${error.response?.data?.message || error.message}`);
@@ -850,11 +850,11 @@ const Dashboard = (): JSX.Element => {
 
   const formatDuration = (startTime?: string, endTime?: string, totalDuration?: string, ticketStatus?: string, closedAt?: string) => {
     if (totalDuration) return totalDuration;
-    
+
     if (startTime) {
       const start = new Date(startTime);
       let end: Date;
-      
+
       // For Closed tickets, use closed_at if available; otherwise use endTime
       if (ticketStatus?.toLowerCase() === 'closed' && closedAt) {
         end = new Date(closedAt);
@@ -864,10 +864,10 @@ const Dashboard = (): JSX.Element => {
         // For Open/Pending tickets, use current time
         end = new Date();
       }
-      
+
       const diffMs = end.getTime() - start.getTime();
       if (diffMs < 0) return 'N/A';
-      
+
       const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
       const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
       return `${diffHours}h ${diffMinutes}m`;
@@ -894,7 +894,7 @@ const Dashboard = (): JSX.Element => {
       <div className="page">
         <div className="alert alert-error">
           <div className="alert-content">
-            <strong>⚠️ Error:</strong> {error}
+            <strong>Error:</strong> {error}
             <button onClick={handleRefresh} className="btn btn-small btn-outline">
               Try Again
             </button>
@@ -939,859 +939,859 @@ const Dashboard = (): JSX.Element => {
   return (
     <>
       {/* Top Header */}
-      <TopHeader />
-      
+
+
       <div className="page">
-      {/* Enhanced Dashboard Header */}
-      <div className="dashboard-header">
-        <div className="dashboard-actions-container">
-          <div className="filter-buttons">
-            <button 
-              onClick={() => handleFilterChange('all')}
-              className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-outline'}`}
+        {/* Enhanced Dashboard Header */}
+        <div className="dashboard-header">
+          <div className="dashboard-actions-container">
+            <div className="filter-buttons">
+              <button
+                onClick={() => handleFilterChange('all')}
+                className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-outline'}`}
+              >
+                All Tickets
+              </button>
+              <button
+                onClick={() => handleFilterChange('my-tickets')}
+                className={`btn ${filter === 'my-tickets' ? 'btn-primary' : 'btn-outline'}`}
+              >
+                My Tickets
+              </button>
+            </div>
+
+            <div className="view-toggle">
+              <button
+                onClick={() => setViewMode('table')}
+                className={`btn ${viewMode === 'table' ? 'btn-primary' : 'btn-outline'}`}
+                title="Table View"
+              >
+                Table
+              </button>
+              <button
+                onClick={() => setViewMode('cards')}
+                className={`btn ${viewMode === 'cards' ? 'btn-primary' : 'btn-outline'}`}
+                title="Card View"
+              >
+                Cards
+              </button>
+            </div>
+
+            <button
+              onClick={handleRefresh}
+              className="btn btn-outline"
+              disabled={refreshing}
             >
-              All Tickets
+              {refreshing ? '🔄 Refreshing...' : '🔄 Refresh'}
             </button>
-            <button 
-              onClick={() => handleFilterChange('my-tickets')}
-              className={`btn ${filter === 'my-tickets' ? 'btn-primary' : 'btn-outline'}`}
-            >
-              My Tickets
-            </button>
+
+            <Link to="/create-ticket" className="btn btn-primary">
+              ➕ Create New Ticket
+            </Link>
           </div>
-          
-          <div className="view-toggle">
-            <button 
-              onClick={() => setViewMode('table')}
-              className={`btn ${viewMode === 'table' ? 'btn-primary' : 'btn-outline'}`}
-              title="Table View"
-            >
-              Table
-            </button>
-            <button 
-              onClick={() => setViewMode('cards')}
-              className={`btn ${viewMode === 'cards' ? 'btn-primary' : 'btn-outline'}`}
-              title="Card View"
-            >
-              Cards
-            </button>
+        </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="alert alert-error">
+            <div className="alert-content">
+              <strong>Error:</strong> {error}
+              <button onClick={handleRefresh} className="btn btn-small btn-outline">
+                Try Again
+              </button>
+            </div>
           </div>
-          
-          <button 
-            onClick={handleRefresh} 
-            className="btn btn-outline"
-            disabled={refreshing}
+        )}
+
+        {/* Stats Cards - Moved here below header */}
+        <div className="dashboard-stats">
+          <div
+            className={`stat-card total ${activeStatFilter === 'total' ? 'active' : ''}`}
+            onClick={() => handleStatCardClick('total')}
           >
-            {refreshing ? '🔄 Refreshing...' : '🔄 Refresh'}
-          </button>
-          
-          <Link to="/create-ticket" className="btn btn-primary">
-            ➕ Create New Ticket
-          </Link>
-        </div>
-      </div>
-
-      {/* Error Display */}
-      {error && (
-        <div className="alert alert-error">
-          <div className="alert-content">
-            <strong>⚠️ Error:</strong> {error}
-            <button onClick={handleRefresh} className="btn btn-small btn-outline">
-              Try Again
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Stats Cards - Moved here below header */}
-      <div className="dashboard-stats">
-        <div 
-          className={`stat-card total ${activeStatFilter === 'total' ? 'active' : ''}`}
-          onClick={() => handleStatCardClick('total')}
-        >
-          <div className="stat-content">
-            <div className="stat-label">Total Tickets</div>
-            <div className="stat-number">{stats.total}</div>
-          </div>
-        </div>
-        <div 
-          className={`stat-card open ${activeStatFilter === 'open' ? 'active' : ''}`}
-          onClick={() => handleStatCardClick('open')}
-        >
-          <div className="stat-content">
-            <div className="stat-label">Open</div>
-            <div className="stat-number">{stats.open}</div>
-          </div>
-        </div>
-        <div 
-          className={`stat-card pending ${activeStatFilter === 'pending' ? 'active' : ''}`}
-          onClick={() => handleStatCardClick('pending')}
-        >
-          <div className="stat-content">
-            <div className="stat-label">Pending</div>
-            <div className="stat-number">{stats.pending}</div>
-          </div>
-        </div>
-        <div 
-          className={`stat-card closed ${activeStatFilter === 'closed' ? 'active' : ''}`}
-          onClick={() => handleStatCardClick('closed')}
-        >
-          <div className="stat-content">
-            <div className="stat-label">Closed</div>
-            <div className="stat-number">{stats.closed}</div>
-          </div>
-        </div>
-        <div 
-          className={`stat-card production ${activeStatFilter === 'production' ? 'active' : ''}`}
-          onClick={() => handleStatCardClick('production')}
-        >
-          <div className="stat-content">
-            <div className="stat-label">Production Impacting</div>
-            <div className="stat-number">{stats.production_impacting}</div>
-          </div>
-        </div>
-        <div 
-          className={`stat-card today ${activeStatFilter === 'today' ? 'active' : ''}`}
-          onClick={() => handleStatCardClick('today')}
-        >
-          <div className="stat-content">
-            <div className="stat-label">Today</div>
-            <div className="stat-number">{stats.today}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Search Bar with Filters - Moved below stats cards */}
-      <div className="search-and-filters-container">
-        <div className="search-container">
-          <span className="search-icon">🔍︎</span>
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search all tickets by number, customer, equipment..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        <div className="inline-filters">
-          <div className="filter-group">
-            <select
-              className="filter-select"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="">All Statuses</option>
-              <option value="open">Open</option>
-              <option value="pending">Pending</option>
-              <option value="closed">Closed</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <select
-              className="filter-select"
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-            >
-              <option value="">All Priorities</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
-            </select>
-          </div>
-
-          <span className="date-separator-label">FROM</span>
-          <input
-            type="date"
-            className="filter-input date-input"
-            value={dateFilter.startDate}
-            onChange={(e) => setDateFilter(prev => ({ ...prev, startDate: e.target.value }))}
-          />
-
-          <span className="date-separator-label">TO</span>
-          <input
-            type="date"
-            className="filter-input date-input"
-            value={dateFilter.endDate}
-            onChange={(e) => setDateFilter(prev => ({ ...prev, endDate: e.target.value }))}
-          />
-
-          {hasActiveFilters() && (
-            <button className="clear-all-filters" onClick={clearAdvancedFilters}>
-              Clear Filters
-            </button>
-          )}
-        </div>
-
-        <div className="search-results-count">
-          {filteredTickets.length} of {tickets.length} tickets
-        </div>
-      </div>
-
-      {/* Tickets List */}
-      <div className="tickets-section">
-        <div className="section-header">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <div>
-              <h2 className="section-title">
-                {searchTerm ? `Search Results (${filteredTickets.length})` : 
-                 filter === 'my-tickets' ? 'Your Recent Tickets' : 'Recent Tickets'}
-              </h2>
-              {!searchTerm && (
-                <div className="section-meta">
-                  Showing {filteredTickets.length} {filter === 'my-tickets' ? 'of your tickets' : 'tickets'}
-                </div>
-              )}
+            <div className="stat-content">
+              <div className="stat-label">Total Tickets</div>
+              <div className="stat-number">{stats.total}</div>
             </div>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-              <div style={{ position: 'relative' }}>
-                <button 
-                  className="btn btn-primary"
-                  onClick={handleExportClick}
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px',
-                    padding: '10px 20px'
-                  }}
-                >
-                  📊 Export / Present
-                  <span style={{ fontSize: '12px' }}>{showExportMenu ? '▲' : '▼'}</span>
-                </button>
-                
-                {showExportMenu && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: 0,
-                    marginTop: '8px',
-                    background: 'white',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    minWidth: '250px',
-                    zIndex: 1000,
-                    overflow: 'hidden'
-                  }}>
-                    <button
-                      onClick={handleProfessionalReport}
-                      style={{
-                        width: '100%',
-                        padding: '14px 20px',
-                        border: 'none',
-                        background: 'white',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        fontSize: '14px',
-                        color: '#1f2937',
-                        transition: 'background 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = '#f9fafb'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
-                    >
-                      <span style={{ fontSize: '20px' }}>📄</span>
-                      <div>
-                        <div style={{ fontWeight: '600' }}>Professional Report</div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>Beautiful formatted view</div>
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => { setShowExportModal(true); setShowExportMenu(false); }}
-                      style={{
-                        width: '100%',
-                        padding: '14px 20px',
-                        border: 'none',
-                        background: 'white',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        fontSize: '14px',
-                        color: '#1f2937',
-                        transition: 'background 0.2s',
-                        borderTop: '1px solid #f3f4f6'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = '#f9fafb'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
-                    >
-                      <span style={{ fontSize: '20px' }}>📊</span>
-                      <div>
-                        <div style={{ fontWeight: '600' }}>Export to CSV</div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>Download spreadsheet</div>
-                      </div>
-                    </button>
-                  </div>
-                )}
-              </div>
+          </div>
+          <div
+            className={`stat-card open ${activeStatFilter === 'open' ? 'active' : ''}`}
+            onClick={() => handleStatCardClick('open')}
+          >
+            <div className="stat-content">
+              <div className="stat-label">Open</div>
+              <div className="stat-number">{stats.open}</div>
+            </div>
+          </div>
+          <div
+            className={`stat-card pending ${activeStatFilter === 'pending' ? 'active' : ''}`}
+            onClick={() => handleStatCardClick('pending')}
+          >
+            <div className="stat-content">
+              <div className="stat-label">Pending</div>
+              <div className="stat-number">{stats.pending}</div>
+            </div>
+          </div>
+          <div
+            className={`stat-card closed ${activeStatFilter === 'closed' ? 'active' : ''}`}
+            onClick={() => handleStatCardClick('closed')}
+          >
+            <div className="stat-content">
+              <div className="stat-label">Closed</div>
+              <div className="stat-number">{stats.closed}</div>
+            </div>
+          </div>
+          <div
+            className={`stat-card production ${activeStatFilter === 'production' ? 'active' : ''}`}
+            onClick={() => handleStatCardClick('production')}
+          >
+            <div className="stat-content">
+              <div className="stat-label">Production Impacting</div>
+              <div className="stat-number">{stats.production_impacting}</div>
+            </div>
+          </div>
+          <div
+            className={`stat-card today ${activeStatFilter === 'today' ? 'active' : ''}`}
+            onClick={() => handleStatCardClick('today')}
+          >
+            <div className="stat-content">
+              <div className="stat-label">Today</div>
+              <div className="stat-number">{stats.today}</div>
             </div>
           </div>
         </div>
 
-        {filteredTickets.length === 0 ? (
-          <div className="empty-state">
-            {searchTerm ? (
-              <>
-                <div className="empty-icon">🔍︎</div>
-                <h3>No tickets found</h3>
-                <p>No tickets match your search "{searchTerm}"</p>
-                <button onClick={() => setSearchTerm('')} className="btn btn-outline">
-                  Clear Search
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="empty-icon">📋</div>
-                <h3>{filter === 'my-tickets' ? 'No tickets yet' : 'No tickets in system'}</h3>
-                <p>
-                  {filter === 'my-tickets' 
-                    ? "You haven't created any tickets yet." 
-                    : 'No tickets have been created in the system yet.'}
-                </p>
-                <Link to="/create-ticket" className="btn btn-primary">
-                  Create Your First Ticket
-                </Link>
-              </>
+        {/* Search Bar with Filters - Moved below stats cards */}
+        <div className="search-and-filters-container">
+          <div className="search-container">
+
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search all tickets by number, customer, equipment..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <div className="inline-filters">
+            <div className="filter-group">
+              <select
+                className="filter-select"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="">All Statuses</option>
+                <option value="open">Open</option>
+                <option value="pending">Pending</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <select
+                className="filter-select"
+                value={priorityFilter}
+                onChange={(e) => setPriorityFilter(e.target.value)}
+              >
+                <option value="">All Priorities</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+
+            <span className="date-separator-label">FROM</span>
+            <input
+              type="date"
+              className="filter-input date-input"
+              value={dateFilter.startDate}
+              onChange={(e) => setDateFilter(prev => ({ ...prev, startDate: e.target.value }))}
+            />
+
+            <span className="date-separator-label">TO</span>
+            <input
+              type="date"
+              className="filter-input date-input"
+              value={dateFilter.endDate}
+              onChange={(e) => setDateFilter(prev => ({ ...prev, endDate: e.target.value }))}
+            />
+
+            {hasActiveFilters() && (
+              <button className="clear-all-filters" onClick={clearAdvancedFilters}>
+                Clear Filters
+              </button>
             )}
           </div>
-        ) : viewMode === 'table' ? (
-          <div className="tickets-table-container">
-            {renderPaginationControls}
-            <table className="tickets-table">
-              <thead>
-                <tr>
-                  <th>Created Date</th>
-                  <th>Ticket #</th>
-                  <th>Site Name</th>
-                  <th>Equipment</th>
-                  <th>Category</th>
-                  <th>Description</th>
-                  <th>Priority</th>
-                  <th>Site Outage</th>
-                  <th>Status</th>
-                  <th>Requestor</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedTickets.map((ticket) => (
-                  <tr key={ticket.id}>
-                    {/* Created Date */}
-                    <td className="created-date-cell">
-                      {formatDate(ticket.created_at)}
-                    </td>
-                    
-                    {/* Ticket Number */}
-                    <td className="ticket-number-cell">
-                      <Link to={`/tickets/${ticket.id}`} className="ticket-link">
-                        {ticket.ticket_number || 'No Number'}
-                      </Link>
-                    </td>
-                    
-                    {/* Site Name */}
-                    <td className="site-cell">
-                      {ticket.site_name || 'N/A'}
-                    </td>
-                    
-                    {/* Equipment */}
-                    <td className="equipment-cell">
-                      {ticket.equipment || 'N/A'}
-                    </td>
-                    
-                    {/* Category */}
-                    <td className="category-cell">
-                      <span className={`category-badge category-${ticket.category?.toLowerCase().replace(/\s+/g, '-')}`}>
-                        {ticket.category || 'Other'}
-                      </span>
-                    </td>
-                    
-                    {/* Description */}
-                    <td className="description-cell">
-                      <div className="description-text">
-                        {ticket.issue_description || 'No description'}
-                      </div>
-                    </td>
 
-                    {/* Priority */}
-                    <td className="priority-cell">
-                      <span className={`priority-badge priority-${(ticket.priority || 'medium').toLowerCase()}`}>
-                        {ticket.priority || 'Medium'}
-                      </span>
-                    </td>
-                    
-                    {/* Outage */}
-                    <td className="outage-cell">
-                      <span className={`badge ${getOutageBadge(ticket.site_outage)}`}>
-                        {ticket.site_outage || 'No'}
-                      </span>
-                    </td>
-                    
-                    {/* Status */}
-                    <td className="status-cell">
-                      <span className={`status-badge status-${(ticket.ticket_status || ticket.status || 'open').toLowerCase()}`}>
-                        {ticket.ticket_status || ticket.status || 'Open'}
-                      </span>
-                    </td>
-                    
-                    {/* Requestor Name */}
-                    <td className="created-by-cell">
-                      {ticket.users?.name || ticket.created_by_name || 'Unknown'}
-                    </td>
-                    
-                    {/* Actions */}
-                    <td className="actions-cell">
-                      <div className="ticket-action-buttons">
-                      <Link 
-                        to={`/tickets/${ticket.id}`} 
-                          className="btn btn-small btn-outline"
-                          style={{ padding: '6px 10px' }}
-                      >
-                          View
-                      </Link>
-                        {(ticket.is_owner || (user as any)?.role === 'admin') && (
-                          <button
-                            className="btn btn-small btn-danger"
-                            onClick={() => handleDeleteTicket(ticket.id, ticket.ticket_number || 'Unknown')}
-                            disabled={refreshing}
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {renderPaginationControls}
-          </div>
-        ) : (
-          // Card View - Compact and organized
-          <>
-            {renderPaginationControls}
-            <div
-              style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-            gap: '16px',
-            padding: '16px'
-              }}
-            >
-              {paginatedTickets.map(ticket => (
-                <div
-                  key={ticket.id}
-                  style={{
-                background: 'white',
-                borderRadius: '8px',
-                padding: '16px',
-                border: '1px solid #e5e7eb',
-                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-                  }}
-                >
-                {/* Header */}
-                  <div
-                    style={{
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'flex-start', 
-                  marginBottom: '12px' 
-                    }}
-                  >
-                    <Link
-                      to={`/tickets/${ticket.id}`}
-                      style={{
-                    fontWeight: '600',
-                    color: '#3b82f6',
-                    textDecoration: 'none',
-                    fontSize: '16px'
-                      }}
-                    >
-                    {ticket.ticket_number || 'No Number'}
-                  </Link>
-                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                    <span className={`badge ${getStatusBadge(ticket.ticket_status)}`}>
-                      {getStatusIcon(ticket.ticket_status)} {ticket.ticket_status || 'Open'}
-                    </span>
-                      {ticket.is_owner && <span className="owner-badge">👤</span>}
-                  </div>
-                </div>
-                
-                {/* Main Content */}
-                  <div
-                    style={{
-                  display: 'grid', 
-                  gridTemplateColumns: '1fr 1fr', 
-                  gap: '8px', 
-                  fontSize: '14px',
-                  marginBottom: '12px'
-                    }}
-                  >
-                  <div>
-                    <strong>Customer:</strong>
-                    <div style={{ color: '#6b7280' }}>{ticket.customer_name || 'N/A'}</div>
-                  </div>
-                  <div>
-                    <strong>Site:</strong>
-                    <div style={{ color: '#6b7280' }}>{ticket.site_name || 'N/A'}</div>
-                  </div>
-                  <div style={{ gridColumn: 'span 2' }}>
-                    <strong>Equipment:</strong>
-                    <div style={{ color: '#6b7280' }}>{ticket.equipment || 'N/A'}</div>
-                  </div>
-                  <div>
-                    <strong>Category:</strong>
-                    <div>
-                      <span className={`badge ${getCategoryBadge(ticket.category)}`}>
-                        {ticket.category || 'Unknown'}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <strong>Duration:</strong>
-                    <div style={{ color: '#6b7280' }}>
-                      {formatDuration(ticket.issue_start_time, ticket.issue_end_time, ticket.total_duration)}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Footer */}
-                  <div
-                    style={{
-                  paddingTop: '12px', 
-                  borderTop: '1px solid #f1f5f9',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontSize: '12px',
-                  color: '#6b7280'
-                    }}
-                  >
-                  <div>
-                    <div>By: {ticket.users?.name || ticket.created_by_name || 'Unknown'}</div>
-                    <div>{formatDate(ticket.created_at)}</div>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '140px' }}>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                    <Link 
-                      to={`/tickets/${ticket.id}`} 
-                      className="btn btn-small btn-outline"
-                          style={{ flex: 1, textAlign: 'center' }}
-                    >
-                          View
-                    </Link>
-                        {(ticket.is_owner || (user as any)?.role === 'admin') && (
-                          <button
-                            className="btn btn-small btn-danger"
-                            style={{ flex: 1 }}
-                            onClick={() => handleDeleteTicket(ticket.id, ticket.ticket_number || 'Unknown')}
-                            disabled={refreshing}
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </div>
-                    {ticket.is_owner && (
-                      <div>
-                          <label
-                            style={{
-                              fontSize: '10px',
-                              color: '#6b7280',
-                              marginBottom: '2px',
-                              display: 'block'
-                            }}
-                          >
-                          Status:
-                        </label>
-                        <select
-                          value={ticket.ticket_status?.toLowerCase() || 'open'}
-                            onChange={e =>
-                              handleStatusChange(ticket.id, e.target.value, ticket.ticket_number || 'Unknown')
-                            }
-                          className="form-select"
-                          style={{ 
-                            width: '100%', 
-                            fontSize: '11px',
-                            padding: '2px 4px'
-                          }}
-                          disabled={refreshing}
-                        >
-                          <option value="open">Open</option>
-                          <option value="pending">Pending</option>
-                          <option value="closed">Closed</option>
-                        </select>
-                      </div>
-                    )}
-                    {ticket.ticket_status === 'closed' && ticket.closed_at && (
-                      <div style={{ fontSize: '10px', color: '#059669', textAlign: 'center' }}>
-                          <strong>Closed:</strong>
-                          <br />
-                          {new Date(ticket.closed_at).toLocaleDateString()}
-                          <br />
-                        {new Date(ticket.closed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-            {renderPaginationControls}
-          </>
-        )}
-      </div>
-
-      {/* Additional Dashboard Info */}
-      <div className="dashboard-footer">
-        <div className="dashboard-info">
-          <p>
-            Dashboard last refreshed at {lastUpdate.toLocaleTimeString()} • 
-            Showing {filter === 'my-tickets' ? 'your tickets only' : 'all system tickets'} • 
-            Auto-refresh every 30 seconds
-          </p>
-          {stats.last_updated && (
-            <small>
-              Server data last updated: {new Date(stats.last_updated).toLocaleTimeString()}
-            </small>
-          )}
-        </div>
-      </div>
-
-      {/* Professional Report Modal */}
-      {showProfessionalReport && (
-        <div className="modal-overlay" onClick={() => setShowProfessionalReport(false)} style={{ zIndex: 2000 }}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95%', width: '1200px', maxHeight: '90vh', overflow: 'auto' }}>
-            <div className="modal-header" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
-              <h3>📊 Professional Ticket Report</h3>
-              <button className="modal-close" onClick={() => setShowProfessionalReport(false)} style={{ color: 'white' }}>×</button>
-            </div>
-            <div className="modal-body" style={{ padding: '40px', background: '#f9fafb' }}>
-              {/* Report Header */}
-              <div style={{ background: 'white', padding: '30px', borderRadius: '12px', marginBottom: '30px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                  <div>
-                    <h1 style={{ fontSize: '32px', color: '#1f2937', marginBottom: '8px' }}>AGS ROCC TEAM</h1>
-                    <p style={{ color: '#6b7280', fontSize: '16px' }}>Solar Asset Management System</p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '14px', color: '#6b7280' }}>Report Generated</div>
-                    <div style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937' }}>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
-                  </div>
-                </div>
-                
-                {/* Summary Stats */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px', marginTop: '24px' }}>
-                  <div style={{ background: '#eff6ff', padding: '16px', borderRadius: '8px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#1e40af' }}>{filteredTickets.length}</div>
-                    <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>Total Tickets</div>
-                  </div>
-                  <div style={{ background: '#f0fdf4', padding: '16px', borderRadius: '8px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#15803d' }}>{filteredTickets.filter(t => t.ticket_status?.toLowerCase() === 'closed').length}</div>
-                    <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>Closed</div>
-                  </div>
-                  <div style={{ background: '#fef3c7', padding: '16px', borderRadius: '8px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#92400e' }}>{filteredTickets.filter(t => t.ticket_status?.toLowerCase() === 'pending').length}</div>
-                    <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>Pending</div>
-                  </div>
-                  <div style={{ background: '#dbeafe', padding: '16px', borderRadius: '8px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#1e40af' }}>{filteredTickets.filter(t => t.ticket_status?.toLowerCase() === 'open').length}</div>
-                    <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>Open</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Professional Table */}
-              <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
-                      <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Created Date</th>
-                      <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Ticket #</th>
-                      <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Site</th>
-                      <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Equipment</th>
-                      <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Category</th>
-                      <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Description</th>
-                      <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Priority</th>
-                      <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Site Outage</th>
-                      <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Status</th>
-                      <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Requestor</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredTickets.map((ticket, index) => (
-                      <tr key={ticket.id} style={{ background: index % 2 === 0 ? 'white' : '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                        <td style={{ padding: '14px 12px', fontSize: '13px', color: '#374151' }}>{formatDate(ticket.created_at)}</td>
-                        <td style={{ padding: '14px 12px', fontSize: '13px', fontWeight: '600', color: '#3b82f6' }}>{ticket.ticket_number || 'N/A'}</td>
-                        <td style={{ padding: '14px 12px', fontSize: '13px', color: '#374151' }}>{ticket.site_name || 'N/A'}</td>
-                        <td style={{ padding: '14px 12px', fontSize: '13px', color: '#374151' }}>{ticket.equipment || 'N/A'}</td>
-                        <td style={{ padding: '14px 12px', fontSize: '12px' }}>
-                          <span style={{ 
-                            padding: '4px 8px', 
-                            borderRadius: '12px', 
-                            background: '#f3f4f6', 
-                            color: '#374151',
-                            fontWeight: '500'
-                          }}>
-                            {ticket.category || 'Other'}
-                          </span>
-                        </td>
-                        <td style={{ padding: '14px 12px', fontSize: '13px', color: '#6b7280' }}>
-                          <div className="description-text">
-                            {ticket.issue_description || 'No description'}
-                          </div>
-                        </td>
-                        <td style={{ padding: '14px 12px', fontSize: '12px' }}>
-                          <span style={{ 
-                            padding: '4px 8px', 
-                            borderRadius: '12px', 
-                            background: ticket.priority?.toLowerCase() === 'urgent' ? '#fee2e2' : 
-                                       ticket.priority?.toLowerCase() === 'high' ? '#fef3c7' :
-                                       ticket.priority?.toLowerCase() === 'medium' ? '#dbeafe' : '#f0fdf4',
-                            color: ticket.priority?.toLowerCase() === 'urgent' ? '#991b1b' :
-                                   ticket.priority?.toLowerCase() === 'high' ? '#92400e' :
-                                   ticket.priority?.toLowerCase() === 'medium' ? '#1e40af' : '#15803d',
-                            fontWeight: '600',
-                            textTransform: 'uppercase'
-                          }}>
-                            {ticket.priority || 'Medium'}
-                          </span>
-                        </td>
-                        <td style={{ padding: '14px 12px', fontSize: '12px' }}>
-                          <span style={{ 
-                            padding: '4px 8px', 
-                            borderRadius: '12px', 
-                            background: ticket.site_outage?.toLowerCase() === 'yes' ? '#fee2e2' : '#f0fdf4',
-                            color: ticket.site_outage?.toLowerCase() === 'yes' ? '#991b1b' : '#15803d',
-                            fontWeight: '600'
-                          }}>
-                            {ticket.site_outage || 'No'}
-                          </span>
-                        </td>
-                        <td style={{ padding: '14px 12px', fontSize: '12px' }}>
-                          <span style={{ 
-                            padding: '4px 8px', 
-                            borderRadius: '12px', 
-                            background: ticket.ticket_status?.toLowerCase() === 'closed' ? '#d1fae5' :
-                                       ticket.ticket_status?.toLowerCase() === 'open' ? '#dbeafe' :
-                                       ticket.ticket_status?.toLowerCase() === 'pending' ? '#fef3c7' : '#f3f4f6',
-                            color: ticket.ticket_status?.toLowerCase() === 'closed' ? '#065f46' :
-                                   ticket.ticket_status?.toLowerCase() === 'open' ? '#1e40af' :
-                                   ticket.ticket_status?.toLowerCase() === 'pending' ? '#92400e' : '#374151',
-                            fontWeight: '600',
-                            textTransform: 'uppercase'
-                          }}>
-                            {ticket.ticket_status || 'Open'}
-                          </span>
-                        </td>
-                        <td style={{ padding: '14px 12px', fontSize: '13px', color: '#374151' }}>{ticket.users?.name || ticket.created_by_name || 'Unknown'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Footer */}
-              <div style={{ marginTop: '30px', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
-                <p>Report generated on {new Date().toLocaleString()}</p>
-                <p style={{ marginTop: '8px' }}>© {new Date().getFullYear()} AGS ROCC Team - Solar Asset Management System</p>
-              </div>
-            </div>
-            <div className="modal-footer" style={{ borderTop: '1px solid #e5e7eb', padding: '20px', background: 'white', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button 
-                className="btn btn-outline" 
-                onClick={() => window.print()}
-                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                🖨️ Print Report
-              </button>
-              <button 
-                className="btn btn-primary" 
-                onClick={() => setShowProfessionalReport(false)}
-              >
-                Close
-              </button>
-            </div>
+          <div className="search-results-count">
+            {filteredTickets.length} of {tickets.length} tickets
           </div>
         </div>
-      )}
 
-      {/* CSV Export Modal */}
-      {showExportModal && (
-        <div className="modal-overlay" onClick={handleExportCancel}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Export Tickets to CSV</h3>
-              <button className="modal-close" onClick={handleExportCancel}>×</button>
-            </div>
-            <div className="modal-body">
-              <p style={{ marginBottom: '20px', color: '#666' }}>
-                Select a date range to filter tickets for export. Leave blank to export all {filteredTickets.length} tickets.
-              </p>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
-                    Start Date (Optional)
-                  </label>
-                  <input
-                    type="date"
-                    className="filter-input date-input"
-                    value={exportDateRange.startDate}
-                    onChange={(e) => setExportDateRange(prev => ({ ...prev, startDate: e.target.value }))}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-                
-                <div>
-                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
-                    End Date (Optional)
-                  </label>
-                  <input
-                    type="date"
-                    className="filter-input date-input"
-                    value={exportDateRange.endDate}
-                    onChange={(e) => setExportDateRange(prev => ({ ...prev, endDate: e.target.value }))}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-                
-                {(exportDateRange.startDate || exportDateRange.endDate) && (
-                  <div style={{ 
-                    padding: '10px', 
-                    backgroundColor: '#f0f9ff', 
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    color: '#0369a1'
-                  }}>
-                    <strong>Preview:</strong> Will export tickets created 
-                    {exportDateRange.startDate && ` from ${new Date(exportDateRange.startDate).toLocaleDateString()}`}
-                    {exportDateRange.endDate && ` to ${new Date(exportDateRange.endDate).toLocaleDateString()}`}
+        {/* Tickets List */}
+        <div className="tickets-section">
+          <div className="section-header">
+            <div className="section-header-content">
+              <div className="section-title-wrapper">
+                <h2 className="section-title">
+                  {searchTerm ? `Search Results (${filteredTickets.length})` :
+                    filter === 'my-tickets' ? 'Your Recent Tickets' : 'Recent Tickets'}
+                </h2>
+                {!searchTerm && (
+                  <div className="section-meta">
+                    Showing {filteredTickets.length} {filter === 'my-tickets' ? 'of your tickets' : 'tickets'}
                   </div>
                 )}
               </div>
-            </div>
-            <div className="modal-footer">
-              <button 
-                className="btn btn-outline" 
-                onClick={handleExportCancel}
-              >
-                Cancel
-              </button>
-              <button 
-                className="btn btn-primary" 
-                onClick={exportToCSV}
-                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                Export CSV
-              </button>
+              <div className="section-actions-wrapper">
+                <div style={{ position: 'relative' }}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleExportClick}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 20px'
+                    }}
+                  >
+                    Export / Present
+                    <span style={{ fontSize: '12px' }}>{showExportMenu ? '▲' : '▼'}</span>
+                  </button>
+
+                  {showExportMenu && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      right: 0,
+                      marginTop: '8px',
+                      background: 'white',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      minWidth: '250px',
+                      zIndex: 1000,
+                      overflow: 'hidden'
+                    }}>
+                      <button
+                        onClick={handleProfessionalReport}
+                        style={{
+                          width: '100%',
+                          padding: '14px 20px',
+                          border: 'none',
+                          background: 'white',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          fontSize: '14px',
+                          color: '#1f2937',
+                          transition: 'background 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#f9fafb'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                      >
+
+                        <div>
+                          <div style={{ fontWeight: '600' }}>Professional Report</div>
+                          <div style={{ fontSize: '12px', color: '#6b7280' }}>Beautiful formatted view</div>
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => { setShowExportModal(true); setShowExportMenu(false); }}
+                        style={{
+                          width: '100%',
+                          padding: '14px 20px',
+                          border: 'none',
+                          background: 'white',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          fontSize: '14px',
+                          color: '#1f2937',
+                          transition: 'background 0.2s',
+                          borderTop: '1px solid #f3f4f6'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#f9fafb'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                      >
+                        <span style={{ fontSize: '20px' }}></span>
+                        <div>
+                          <div style={{ fontWeight: '600' }}>Export to CSV</div>
+                          <div style={{ fontSize: '12px', color: '#6b7280' }}>Download spreadsheet</div>
+                        </div>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
+
+          {filteredTickets.length === 0 ? (
+            <div className="empty-state">
+              {searchTerm ? (
+                <>
+                  <div className="empty-icon">🔍︎</div>
+                  <h3>No tickets found</h3>
+                  <p>No tickets match your search "{searchTerm}"</p>
+                  <button onClick={() => setSearchTerm('')} className="btn btn-outline">
+                    Clear Search
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="empty-icon">📋</div>
+                  <h3>{filter === 'my-tickets' ? 'No tickets yet' : 'No tickets in system'}</h3>
+                  <p>
+                    {filter === 'my-tickets'
+                      ? "You haven't created any tickets yet."
+                      : 'No tickets have been created in the system yet.'}
+                  </p>
+                  <Link to="/create-ticket" className="btn btn-primary">
+                    Create Your First Ticket
+                  </Link>
+                </>
+              )}
+            </div>
+          ) : viewMode === 'table' ? (
+            <div className="tickets-table-container">
+              {renderPaginationControls}
+              <table className="tickets-table">
+                <thead>
+                  <tr>
+                    <th>Created Date</th>
+                    <th>Ticket #</th>
+                    <th>Site Name</th>
+                    <th>Equipment</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Priority</th>
+                    <th>Site Outage</th>
+                    <th>Status</th>
+                    <th>Requestor</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedTickets.map((ticket) => (
+                    <tr key={ticket.id}>
+                      {/* Created Date */}
+                      <td className="created-date-cell" data-label="Created Date">
+                        {formatDate(ticket.created_at)}
+                      </td>
+
+                      {/* Ticket Number */}
+                      <td className="ticket-number-cell" data-label="Ticket #">
+                        <Link to={`/tickets/${ticket.id}`} className="ticket-number-link">
+                          {ticket.ticket_number || 'No Number'}
+                        </Link>
+                      </td>
+
+                      {/* Site Name */}
+                      <td className="site-cell" data-label="Site Name">
+                        {ticket.site_name || 'N/A'}
+                      </td>
+
+                      {/* Equipment */}
+                      <td className="equipment-cell" data-label="Equipment">
+                        {ticket.equipment || 'N/A'}
+                      </td>
+
+                      {/* Category */}
+                      <td className="category-cell" data-label="Category">
+                        <span className={`category-badge category-${ticket.category?.toLowerCase().replace(/\s+/g, '-')}`}>
+                          {ticket.category || 'Other'}
+                        </span>
+                      </td>
+
+                      {/* Description */}
+                      <td className="description-cell" data-label="Description">
+                        <div className="description-text">
+                          {ticket.issue_description || 'No description'}
+                        </div>
+                      </td>
+
+                      {/* Priority */}
+                      <td className="priority-cell" data-label="Priority">
+                        <span className={`priority-badge priority-${(ticket.priority || 'medium').toLowerCase()}`}>
+                          {ticket.priority || 'Medium'}
+                        </span>
+                      </td>
+
+                      {/* Outage */}
+                      <td className="outage-cell" data-label="Site Outage">
+                        <span className={`badge ${getOutageBadge(ticket.site_outage)}`}>
+                          {ticket.site_outage || 'No'}
+                        </span>
+                      </td>
+
+                      {/* Status */}
+                      <td className="status-cell" data-label="Status">
+                        <span className={`status-badge status-${(ticket.ticket_status || ticket.status || 'open').toLowerCase()}`}>
+                          {ticket.ticket_status || ticket.status || 'Open'}
+                        </span>
+                      </td>
+
+                      {/* Requestor Name */}
+                      <td className="created-by-cell" data-label="Requestor">
+                        {ticket.users?.name || ticket.created_by_name || 'Unknown'}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="actions-cell" data-label="Actions">
+                        <div className="ticket-action-buttons">
+                          <Link
+                            to={`/tickets/${ticket.id}`}
+                            className="btn btn-small btn-outline"
+                            style={{ padding: '6px 10px' }}
+                          >
+                            View
+                          </Link>
+                          {(ticket.is_owner || (user as any)?.role === 'admin') && (
+                            <button
+                              className="btn btn-small btn-danger"
+                              onClick={() => handleDeleteTicket(ticket.id, ticket.ticket_number || 'Unknown')}
+                              disabled={refreshing}
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {renderPaginationControls}
+            </div>
+          ) : (
+            // Card View - Compact and organized
+            <>
+              {renderPaginationControls}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+                  gap: '16px',
+                  padding: '16px'
+                }}
+              >
+                {paginatedTickets.map(ticket => (
+                  <div
+                    key={ticket.id}
+                    style={{
+                      background: 'white',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      border: '1px solid #e5e7eb',
+                      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                    }}
+                  >
+                    {/* Header */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        marginBottom: '12px'
+                      }}
+                    >
+                      <Link
+                        to={`/tickets/${ticket.id}`}
+                        style={{
+                          fontWeight: '600',
+                          color: '#3b82f6',
+                          textDecoration: 'none',
+                          fontSize: '16px'
+                        }}
+                      >
+                        {ticket.ticket_number || 'No Number'}
+                      </Link>
+                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                        <span className={`badge ${getStatusBadge(ticket.ticket_status)}`}>
+                          {getStatusIcon(ticket.ticket_status)} {ticket.ticket_status || 'Open'}
+                        </span>
+                        {ticket.is_owner && <span className="owner-badge">👤</span>}
+                      </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: '8px',
+                        fontSize: '14px',
+                        marginBottom: '12px'
+                      }}
+                    >
+                      <div>
+                        <strong>Customer:</strong>
+                        <div style={{ color: '#6b7280' }}>{ticket.customer_name || 'N/A'}</div>
+                      </div>
+                      <div>
+                        <strong>Site:</strong>
+                        <div style={{ color: '#6b7280' }}>{ticket.site_name || 'N/A'}</div>
+                      </div>
+                      <div style={{ gridColumn: 'span 2' }}>
+                        <strong>Equipment:</strong>
+                        <div style={{ color: '#6b7280' }}>{ticket.equipment || 'N/A'}</div>
+                      </div>
+                      <div>
+                        <strong>Category:</strong>
+                        <div>
+                          <span className={`badge ${getCategoryBadge(ticket.category)}`}>
+                            {ticket.category || 'Unknown'}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <strong>Duration:</strong>
+                        <div style={{ color: '#6b7280' }}>
+                          {formatDuration(ticket.issue_start_time, ticket.issue_end_time, ticket.total_duration)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div
+                      style={{
+                        paddingTop: '12px',
+                        borderTop: '1px solid #f1f5f9',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontSize: '12px',
+                        color: '#6b7280'
+                      }}
+                    >
+                      <div>
+                        <div>By: {ticket.users?.name || ticket.created_by_name || 'Unknown'}</div>
+                        <div>{formatDate(ticket.created_at)}</div>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '140px' }}>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <Link
+                            to={`/tickets/${ticket.id}`}
+                            className="btn btn-small btn-outline"
+                            style={{ flex: 1, textAlign: 'center' }}
+                          >
+                            View
+                          </Link>
+                          {(ticket.is_owner || (user as any)?.role === 'admin') && (
+                            <button
+                              className="btn btn-small btn-danger"
+                              style={{ flex: 1 }}
+                              onClick={() => handleDeleteTicket(ticket.id, ticket.ticket_number || 'Unknown')}
+                              disabled={refreshing}
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                        {ticket.is_owner && (
+                          <div>
+                            <label
+                              style={{
+                                fontSize: '10px',
+                                color: '#6b7280',
+                                marginBottom: '2px',
+                                display: 'block'
+                              }}
+                            >
+                              Status:
+                            </label>
+                            <select
+                              value={ticket.ticket_status?.toLowerCase() || 'open'}
+                              onChange={e =>
+                                handleStatusChange(ticket.id, e.target.value, ticket.ticket_number || 'Unknown')
+                              }
+                              className="form-select"
+                              style={{
+                                width: '100%',
+                                fontSize: '11px',
+                                padding: '2px 4px'
+                              }}
+                              disabled={refreshing}
+                            >
+                              <option value="open">Open</option>
+                              <option value="pending">Pending</option>
+                              <option value="closed">Closed</option>
+                            </select>
+                          </div>
+                        )}
+                        {ticket.ticket_status === 'closed' && ticket.closed_at && (
+                          <div style={{ fontSize: '10px', color: '#059669', textAlign: 'center' }}>
+                            <strong>Closed:</strong>
+                            <br />
+                            {new Date(ticket.closed_at).toLocaleDateString()}
+                            <br />
+                            {new Date(ticket.closed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {renderPaginationControls}
+            </>
+          )}
         </div>
-      )}
-    </div>
+
+        {/* Additional Dashboard Info */}
+        <div className="dashboard-footer">
+          <div className="dashboard-info">
+            <p>
+              Dashboard last refreshed at {lastUpdate.toLocaleTimeString()} •
+              Showing {filter === 'my-tickets' ? 'your tickets only' : 'all system tickets'} •
+              Auto-refresh every 30 seconds
+            </p>
+            {stats.last_updated && (
+              <small>
+                Server data last updated: {new Date(stats.last_updated).toLocaleTimeString()}
+              </small>
+            )}
+          </div>
+        </div>
+
+        {/* Professional Report Modal */}
+        {showProfessionalReport && (
+          <div className="modal-overlay" onClick={() => setShowProfessionalReport(false)} style={{ zIndex: 2000 }}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95%', width: '1200px', maxHeight: '90vh', overflow: 'auto' }}>
+              <div className="modal-header" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+                <h3>Professional Ticket Report</h3>
+                <button className="modal-close" onClick={() => setShowProfessionalReport(false)} style={{ color: 'white' }}>×</button>
+              </div>
+              <div className="modal-body" style={{ padding: '40px', background: '#f9fafb' }}>
+                {/* Report Header */}
+                <div style={{ background: 'white', padding: '30px', borderRadius: '12px', marginBottom: '30px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <div>
+                      <h1 style={{ fontSize: '32px', color: '#1f2937', marginBottom: '8px' }}>AGS ROCC TEAM</h1>
+                      <p style={{ color: '#6b7280', fontSize: '16px' }}>Solar Asset Management System</p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '14px', color: '#6b7280' }}>Report Generated</div>
+                      <div style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937' }}>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+                    </div>
+                  </div>
+
+                  {/* Summary Stats */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px', marginTop: '24px' }}>
+                    <div style={{ background: '#eff6ff', padding: '16px', borderRadius: '8px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '28px', fontWeight: '700', color: '#1e40af' }}>{filteredTickets.length}</div>
+                      <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>Total Tickets</div>
+                    </div>
+                    <div style={{ background: '#f0fdf4', padding: '16px', borderRadius: '8px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '28px', fontWeight: '700', color: '#15803d' }}>{filteredTickets.filter(t => t.ticket_status?.toLowerCase() === 'closed').length}</div>
+                      <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>Closed</div>
+                    </div>
+                    <div style={{ background: '#fef3c7', padding: '16px', borderRadius: '8px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '28px', fontWeight: '700', color: '#92400e' }}>{filteredTickets.filter(t => t.ticket_status?.toLowerCase() === 'pending').length}</div>
+                      <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>Pending</div>
+                    </div>
+                    <div style={{ background: '#dbeafe', padding: '16px', borderRadius: '8px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '28px', fontWeight: '700', color: '#1e40af' }}>{filteredTickets.filter(t => t.ticket_status?.toLowerCase() === 'open').length}</div>
+                      <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>Open</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Professional Table */}
+                <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+                        <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Created Date</th>
+                        <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Ticket #</th>
+                        <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Site</th>
+                        <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Equipment</th>
+                        <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Category</th>
+                        <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Description</th>
+                        <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Priority</th>
+                        <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Site Outage</th>
+                        <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Status</th>
+                        <th style={{ padding: '16px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>Requestor</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTickets.map((ticket, index) => (
+                        <tr key={ticket.id} style={{ background: index % 2 === 0 ? 'white' : '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                          <td style={{ padding: '14px 12px', fontSize: '13px', color: '#374151' }}>{formatDate(ticket.created_at)}</td>
+                          <td style={{ padding: '14px 12px', fontSize: '13px', fontWeight: '600', color: '#3b82f6' }}>{ticket.ticket_number || 'N/A'}</td>
+                          <td style={{ padding: '14px 12px', fontSize: '13px', color: '#374151' }}>{ticket.site_name || 'N/A'}</td>
+                          <td style={{ padding: '14px 12px', fontSize: '13px', color: '#374151' }}>{ticket.equipment || 'N/A'}</td>
+                          <td style={{ padding: '14px 12px', fontSize: '12px' }}>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              background: '#f3f4f6',
+                              color: '#374151',
+                              fontWeight: '500'
+                            }}>
+                              {ticket.category || 'Other'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '14px 12px', fontSize: '13px', color: '#6b7280' }}>
+                            <div className="description-text">
+                              {ticket.issue_description || 'No description'}
+                            </div>
+                          </td>
+                          <td style={{ padding: '14px 12px', fontSize: '12px' }}>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              background: ticket.priority?.toLowerCase() === 'urgent' ? '#fee2e2' :
+                                ticket.priority?.toLowerCase() === 'high' ? '#fef3c7' :
+                                  ticket.priority?.toLowerCase() === 'medium' ? '#dbeafe' : '#f0fdf4',
+                              color: ticket.priority?.toLowerCase() === 'urgent' ? '#991b1b' :
+                                ticket.priority?.toLowerCase() === 'high' ? '#92400e' :
+                                  ticket.priority?.toLowerCase() === 'medium' ? '#1e40af' : '#15803d',
+                              fontWeight: '600',
+                              textTransform: 'uppercase'
+                            }}>
+                              {ticket.priority || 'Medium'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '14px 12px', fontSize: '12px' }}>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              background: ticket.site_outage?.toLowerCase() === 'yes' ? '#fee2e2' : '#f0fdf4',
+                              color: ticket.site_outage?.toLowerCase() === 'yes' ? '#991b1b' : '#15803d',
+                              fontWeight: '600'
+                            }}>
+                              {ticket.site_outage || 'No'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '14px 12px', fontSize: '12px' }}>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              background: ticket.ticket_status?.toLowerCase() === 'closed' ? '#d1fae5' :
+                                ticket.ticket_status?.toLowerCase() === 'open' ? '#dbeafe' :
+                                  ticket.ticket_status?.toLowerCase() === 'pending' ? '#fef3c7' : '#f3f4f6',
+                              color: ticket.ticket_status?.toLowerCase() === 'closed' ? '#065f46' :
+                                ticket.ticket_status?.toLowerCase() === 'open' ? '#1e40af' :
+                                  ticket.ticket_status?.toLowerCase() === 'pending' ? '#92400e' : '#374151',
+                              fontWeight: '600',
+                              textTransform: 'uppercase'
+                            }}>
+                              {ticket.ticket_status || 'Open'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '14px 12px', fontSize: '13px', color: '#374151' }}>{ticket.users?.name || ticket.created_by_name || 'Unknown'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Footer */}
+                <div style={{ marginTop: '30px', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
+                  <p>Report generated on {new Date().toLocaleString()}</p>
+                  <p style={{ marginTop: '8px' }}>© {new Date().getFullYear()} AGS ROCC Team - Solar Asset Management System</p>
+                </div>
+              </div>
+              <div className="modal-footer" style={{ borderTop: '1px solid #e5e7eb', padding: '20px', background: 'white', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <button
+                  className="btn btn-outline"
+                  onClick={() => window.print()}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  Print Report
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setShowProfessionalReport(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* CSV Export Modal */}
+        {showExportModal && (
+          <div className="modal-overlay" onClick={handleExportCancel}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Export Tickets to CSV</h3>
+                <button className="modal-close" onClick={handleExportCancel}>×</button>
+              </div>
+              <div className="modal-body">
+                <p style={{ marginBottom: '20px', color: '#666' }}>
+                  Select a date range to filter tickets for export. Leave blank to export all {filteredTickets.length} tickets.
+                </p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+                      Start Date (Optional)
+                    </label>
+                    <input
+                      type="date"
+                      className="filter-input date-input"
+                      value={exportDateRange.startDate}
+                      onChange={(e) => setExportDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+                      End Date (Optional)
+                    </label>
+                    <input
+                      type="date"
+                      className="filter-input date-input"
+                      value={exportDateRange.endDate}
+                      onChange={(e) => setExportDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+
+                  {(exportDateRange.startDate || exportDateRange.endDate) && (
+                    <div style={{
+                      padding: '10px',
+                      backgroundColor: '#f0f9ff',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      color: '#0369a1'
+                    }}>
+                      <strong>Preview:</strong> Will export tickets created
+                      {exportDateRange.startDate && ` from ${new Date(exportDateRange.startDate).toLocaleDateString()}`}
+                      {exportDateRange.endDate && ` to ${new Date(exportDateRange.endDate).toLocaleDateString()}`}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="btn btn-outline"
+                  onClick={handleExportCancel}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={exportToCSV}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  Export CSV
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </>
   );
 };

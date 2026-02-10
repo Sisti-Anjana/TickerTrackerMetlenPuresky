@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import TopHeader from '../components/TopHeader';
+
 import BackButton from '../components/BackButton';
 import api from '../services/api';
 import '../styles/team-performance.css';
@@ -58,12 +58,12 @@ const TeamPerformance: React.FC = () => {
   const [expandedUsers, setExpandedUsers] = useState<Set<string | number>>(new Set());
   const [viewFilter, setViewFilter] = useState<ViewFilter>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
-  
+
   // Search and filters
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'total' | 'completion'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  
+
   const [dateFilter, setDateFilter] = useState({
     startDate: '',
     endDate: ''
@@ -85,7 +85,7 @@ const TeamPerformance: React.FC = () => {
       setLoading(true);
       const response = await api.get('/tickets');
       const tickets: Ticket[] = response.data.tickets || [];
-      
+
       const performanceData = calculateTeamPerformance(tickets);
       setUserPerformances(performanceData);
     } catch (error) {
@@ -105,12 +105,12 @@ const TeamPerformance: React.FC = () => {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const userMap = new Map<string, Ticket[]>();
-    
+
     tickets.forEach(ticket => {
       const userName = ticket.users?.name || ticket.created_by_name || ticket.customer_name || 'Unknown User';
       const userEmail = ticket.users?.email || ticket.created_by_email || `${userName.toLowerCase().replace(/\s+/g, '')}@email.com`;
       const userKey = `${userName}|${userEmail}`;
-      
+
       if (!userMap.has(userKey)) {
         userMap.set(userKey, []);
       }
@@ -118,36 +118,36 @@ const TeamPerformance: React.FC = () => {
     });
 
     const performances: UserPerformance[] = [];
-    
+
     userMap.forEach((userTickets, userKey) => {
       const [name, email] = userKey.split('|');
-      
+
       const totalTickets = userTickets.length;
       const openTickets = userTickets.filter(t => t.ticket_status?.toLowerCase() === 'open').length;
       const closedTickets = userTickets.filter(t => t.ticket_status?.toLowerCase() === 'closed').length;
       const pendingTickets = userTickets.filter(t => t.ticket_status?.toLowerCase() === 'pending').length;
       const completedTickets = closedTickets;
-      
-      const productionImpacting = userTickets.filter(t => 
+
+      const productionImpacting = userTickets.filter(t =>
         t.category?.toLowerCase().includes('production') || t.priority?.toLowerCase() === 'urgent'
       ).length;
-      
-      const highPriority = userTickets.filter(t => 
+
+      const highPriority = userTickets.filter(t =>
         t.priority?.toLowerCase() === 'high' || t.priority?.toLowerCase() === 'urgent'
       ).length;
-      
+
       const completionRate = totalTickets > 0 ? Math.round((closedTickets / totalTickets) * 100) : 0;
-      
+
       const todayTickets = userTickets.filter(t => {
         const ticketDate = new Date(t.created_at);
         return ticketDate >= today && ticketDate < tomorrow;
       });
-      
+
       const weekTickets = userTickets.filter(t => {
         const ticketDate = new Date(t.created_at);
         return ticketDate >= weekStart;
       });
-      
+
       const monthTickets = userTickets.filter(t => {
         const ticketDate = new Date(t.created_at);
         return ticketDate >= monthStart;
@@ -166,9 +166,9 @@ const TeamPerformance: React.FC = () => {
           }
         }
       });
-      
+
       const avgCreationMinutes = creationCount > 0 ? totalCreationMinutes / creationCount : 0;
-      const avgCaseCreationTime = avgCreationMinutes > 60 
+      const avgCaseCreationTime = avgCreationMinutes > 60
         ? `${(avgCreationMinutes / 60).toFixed(1)}h`
         : `${Math.round(avgCreationMinutes)}m`;
 
@@ -228,7 +228,7 @@ const TeamPerformance: React.FC = () => {
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter(user => 
+      filtered = filtered.filter(user =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -289,19 +289,19 @@ const TeamPerformance: React.FC = () => {
     return (
       <div className="tickets-section">
         <div className="filter-tabs">
-          <button 
+          <button
             className={`filter-tab ${viewFilter === 'today' ? 'active' : ''}`}
             onClick={() => setViewFilter('today')}
           >
             Today ({performance.ticketsToday})
           </button>
-          <button 
+          <button
             className={`filter-tab ${viewFilter === 'month' ? 'active' : ''}`}
             onClick={() => setViewFilter('month')}
           >
             This Month ({performance.ticketsThisMonth})
           </button>
-          <button 
+          <button
             className={`filter-tab ${viewFilter === 'all' ? 'active' : ''}`}
             onClick={() => setViewFilter('all')}
           >
@@ -324,7 +324,7 @@ const TeamPerformance: React.FC = () => {
             onChange={(e) => setDateFilter({ ...dateFilter, endDate: e.target.value })}
           />
           {(dateFilter.startDate || dateFilter.endDate) && (
-            <button 
+            <button
               className="clear-date-btn"
               onClick={() => setDateFilter({ startDate: '', endDate: '' })}
             >
@@ -362,7 +362,7 @@ const TeamPerformance: React.FC = () => {
                 </div>
                 {ticket.issue_start_time && (
                   <div className="ticket-detail">
-                    <strong>⏱️ CASE CREATION TIME:</strong> {
+                    <strong>CASE CREATION TIME:</strong> {
                       (() => {
                         const start = new Date(ticket.issue_start_time).getTime();
                         const created = new Date(ticket.created_at).getTime();
@@ -389,7 +389,7 @@ const TeamPerformance: React.FC = () => {
   if (loading) {
     return (
       <>
-        <TopHeader />
+
         <div className="team-performance-page">
           <div className="loading-container">
             <div className="spinner"></div>
@@ -402,7 +402,7 @@ const TeamPerformance: React.FC = () => {
 
   return (
     <>
-      <TopHeader />
+
       <div className="team-performance-page">
         <div style={{ marginBottom: '20px', padding: '0 20px' }}>
           <BackButton label="Back to Dashboard" to="/dashboard" />
@@ -411,13 +411,13 @@ const TeamPerformance: React.FC = () => {
         <div className="view-toggle-section">
           <div className="view-mode-title">Team Performance Dashboard</div>
           <div className="view-mode-buttons">
-            <button 
+            <button
               className={`view-mode-btn ${viewMode === 'cards' ? 'active' : ''}`}
               onClick={() => setViewMode('cards')}
             >
               <span className="btn-icon">▦</span> Card View
             </button>
-            <button 
+            <button
               className={`view-mode-btn ${viewMode === 'table' ? 'active' : ''}`}
               onClick={() => setViewMode('table')}
             >
@@ -486,7 +486,7 @@ const TeamPerformance: React.FC = () => {
             </div>
 
             {hasActiveFilters() && (
-              <button 
+              <button
                 className="clear-filters-btn"
                 onClick={clearAllFilters}
               >
@@ -536,8 +536,8 @@ const TeamPerformance: React.FC = () => {
                     <div className="completion-label">COMPLETION RATE</div>
                     <div className="completion-value">{performance.completionRate.toFixed(1)}%</div>
                     <div className="completion-bar">
-                      <div 
-                        className="completion-fill" 
+                      <div
+                        className="completion-fill"
                         style={{ width: `${performance.completionRate}%` }}
                       ></div>
                     </div>
@@ -553,7 +553,7 @@ const TeamPerformance: React.FC = () => {
                       <span className="stat-text">Production: {performance.productionImpacting}</span>
                     </div>
                     <div className="stat-row">
-                      <span className="stat-icon-box">⏱</span>
+                      <span className="stat-icon-box">C</span>
                       <span className="stat-text">Avg Case Creation: {performance.avgCaseCreationTime}</span>
                     </div>
                     <div className="stat-row">
@@ -570,7 +570,7 @@ const TeamPerformance: React.FC = () => {
                     </div>
                   </div>
 
-                  <button 
+                  <button
                     className={`toggle-tickets-btn ${isExpanded ? 'hide' : 'view'}`}
                     onClick={() => toggleExpand(performance.userId)}
                   >
@@ -631,8 +631,8 @@ const TeamPerformance: React.FC = () => {
                         <td>
                           <div className="table-completion-cell">
                             <div className="table-completion-bar">
-                              <div 
-                                className="table-completion-fill" 
+                              <div
+                                className="table-completion-fill"
                                 style={{ width: `${performance.completionRate}%` }}
                               ></div>
                             </div>
@@ -646,7 +646,7 @@ const TeamPerformance: React.FC = () => {
                         <td>{performance.ticketsThisWeek}</td>
                         <td>{performance.ticketsThisMonth}</td>
                         <td>
-                          <button 
+                          <button
                             className={`table-expand-btn ${isExpanded ? 'expanded' : ''}`}
                             onClick={() => toggleExpand(performance.userId)}
                           >

@@ -33,7 +33,7 @@ const ClientSiteManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  
+
   // Client Type Form
   const [showClientForm, setShowClientForm] = useState(false);
   const [editingClient, setEditingClient] = useState<ClientType | null>(null);
@@ -127,10 +127,10 @@ const ClientSiteManagement: React.FC = () => {
   };
 
   const handleClearAll = async () => {
-    if (!window.confirm('⚠️ WARNING: This will delete ALL client types and sites. This action cannot be undone. Are you absolutely sure?')) {
+    if (!window.confirm('WARNING: This will delete ALL client types and sites. This action cannot be undone. Are you absolutely sure?')) {
       return;
     }
-    
+
     if (!window.confirm('This is your last chance. Delete ALL data?')) {
       return;
     }
@@ -139,9 +139,9 @@ const ClientSiteManagement: React.FC = () => {
       setLoading(true);
       setError('');
       setSuccess('');
-      
+
       await api.delete('/admin/client-types/all');
-      
+
       setSuccess('All client types and sites have been deleted');
       setExpandedClientId(null);
       fetchClientTypes();
@@ -177,7 +177,7 @@ const ClientSiteManagement: React.FC = () => {
         console.log('Response:', response.data);
         const newClientType = response.data.client_type;
         setSuccess('Client type created successfully');
-        
+
         // Expand the new client type to show site addition form
         if (newClientType && newClientType.id) {
           setExpandedClientId(newClientType.id);
@@ -210,7 +210,7 @@ const ClientSiteManagement: React.FC = () => {
 
       // Use the provided clientId or fall back to siteFormData.client_type_id or expandedClientId
       const targetClientId = clientId || siteFormData.client_type_id || expandedClientId;
-      
+
       if (!targetClientId) {
         setError('Client type ID is missing. Please expand a client type first.');
         return;
@@ -361,7 +361,7 @@ const ClientSiteManagement: React.FC = () => {
               onClick={handleClearAll}
               title="Delete all client types and sites"
             >
-              🗑️ Clear All Data
+              Clear All Data
             </button>
           )}
           <button
@@ -372,14 +372,14 @@ const ClientSiteManagement: React.FC = () => {
               setShowClientForm(true);
             }}
           >
-            ➕ Add Client Type
+            Add Client Type
           </button>
         </div>
       </div>
 
       {error && (
         <div className="alert alert-error">
-          ⚠️ {error}
+          {error}
         </div>
       )}
 
@@ -392,7 +392,7 @@ const ClientSiteManagement: React.FC = () => {
       {/* Client Types List */}
       {clientTypes.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">📋</div>
+
           <h2>No Client Types</h2>
           <p>Get started by adding your first client type</p>
           <button
@@ -403,7 +403,7 @@ const ClientSiteManagement: React.FC = () => {
               setShowClientForm(true);
             }}
           >
-            ➕ Add Your First Client Type
+            Add Your First Client Type
           </button>
         </div>
       ) : (
@@ -429,14 +429,14 @@ const ClientSiteManagement: React.FC = () => {
                     onClick={() => openEditClient(client)}
                     title="Edit Client Type"
                   >
-                    ✏️ Edit
+                    Edit
                   </button>
                   <button
                     className="btn-delete"
                     onClick={() => handleDeleteClient(client.id)}
                     title="Delete Client Type"
                   >
-                    🗑️ Delete
+                    Delete
                   </button>
                   <button
                     className={`btn-expand ${expandedClientId === client.id ? 'expanded' : ''}`}
@@ -473,14 +473,14 @@ const ClientSiteManagement: React.FC = () => {
                                 onClick={() => openEditSite(site)}
                                 title="Edit Site"
                               >
-                                ✏️
+                                Edit
                               </button>
                               <button
                                 className="btn-delete-small"
                                 onClick={() => handleDeleteSite(site.id)}
                                 title="Delete Site"
                               >
-                                🗑️
+                                Delete
                               </button>
                             </div>
                           </div>
@@ -491,7 +491,7 @@ const ClientSiteManagement: React.FC = () => {
 
                   {/* Add/Edit Site Form */}
                   <div className="add-site-form">
-                    <h4>{editingSite ? '✏️ Edit Site' : '➕ Add New Site'}</h4>
+                    <h4>{editingSite ? 'Edit Site' : 'Add New Site'}</h4>
                     <form onSubmit={(e) => handleSiteSubmit(e, client.id)}>
                       <div className="form-row-inline">
                         <div className="form-group">
@@ -594,7 +594,7 @@ const ClientSiteManagement: React.FC = () => {
                     onClick={() => handleDeleteEquipment(eq.id)}
                     title="Delete equipment"
                   >
-                    ✖
+                    Delete
                   </button>
                 </li>
               ))}
@@ -607,7 +607,7 @@ const ClientSiteManagement: React.FC = () => {
       {showClientForm && (
         <div className="modal-overlay" onClick={() => setShowClientForm(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>{editingClient ? '✏️ Edit Client Type' : '➕ Add Client Type'}</h2>
+            <h2>{editingClient ? 'Edit Client Type' : 'Add Client Type'}</h2>
             <form onSubmit={handleClientSubmit}>
               <div className="form-group">
                 <label>Client Type Name <span className="required">*</span></label>

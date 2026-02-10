@@ -2,20 +2,21 @@
 
 .team-performance-page {
   padding: 2rem;
-  padding-top: 7rem; /* Increased for better spacing */
+  padding-top: 7rem;
   max-width: 1600px;
   margin: 0 auto;
-  background: #f5f5f5;
+  background: var(--bg-secondary);
   min-height: 100vh;
 }
 
 /* View Toggle Section */
 .view-toggle-section {
-  background: white;
+  background: var(--bg-tertiary);
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 1.5rem;
+  border: 1px solid var(--border-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -26,7 +27,7 @@
 .view-mode-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #000000;
+  color: var(--text-primary);
 }
 
 .view-mode-buttons {
@@ -36,20 +37,20 @@
 
 .view-mode-btn {
   padding: 0.75rem 1.5rem;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--border-light);
   border-radius: 8px;
-  background: white;
+  background: var(--bg-primary);
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  color: #000000 !important;
+  color: var(--text-primary) !important;
 }
 
 .view-mode-btn:hover {
-  border-color: #76AB3F;
-  color: #000000 !important;
-  background: #f0f9ff;
+  border-color: var(--primary-green);
+  color: var(--primary-green) !important;
+  background: var(--bg-secondary);
 }
 
 .view-mode-btn.active {
@@ -60,12 +61,12 @@
 
 /* Filters Section - Single Line Professional */
 .filters-section {
-  background: white;
+  background: var(--bg-tertiary);
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 2rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-light);
 }
 
 .filters-grid {
@@ -91,7 +92,7 @@
 .filter-label {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-secondary);
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -101,11 +102,11 @@
 .filter-input,
 .filter-select {
   padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-medium);
   border-radius: 8px;
   font-size: 0.875rem;
-  background: white;
-  color: #1f2937;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   transition: all 0.2s ease;
   width: 100%;
   box-sizing: border-box;
@@ -122,8 +123,8 @@
 .filter-input:focus,
 .filter-select:focus {
   outline: none;
-  border-color: #76AB3F;
-  background: #ffffff;
+  border-color: var(--primary-green);
+  background: var(--bg-primary);
   box-shadow: 0 0 0 3px rgba(118, 171, 63, 0.1);
 }
 
@@ -167,20 +168,20 @@
 
 /* Table View Container - Enhanced */
 .table-view-wrapper {
-  background: white;
+  background: var(--bg-tertiary);
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   overflow-x: auto;
   overflow-y: visible;
   margin-top: 1rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-light);
 }
 
 .comparison-table {
   width: 100%;
   border-collapse: collapse;
   min-width: 1400px;
-  background: white;
+  background: var(--bg-tertiary);
 }
 
 .comparison-table thead {
@@ -220,12 +221,12 @@
 }
 
 .comparison-table tbody tr {
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--border-light);
   transition: all 0.15s ease;
 }
 
 .comparison-table tbody tr:hover {
-  background: #f9fafb;
+  background: var(--bg-secondary);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -236,15 +237,15 @@
 .comparison-table td {
   padding: 1.25rem 1rem;
   font-size: 0.9375rem;
-  color: #1f2937;
-  background: white;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
   font-weight: 500;
   transition: background 0.15s ease;
   vertical-align: middle;
 }
 
 .comparison-table tbody tr:hover td {
-  background: #f9fafb;
+  background: var(--bg-secondary);
 }
 
 .comparison-table td:first-child {
@@ -256,12 +257,12 @@
 }
 
 .comparison-table tbody tr {
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-light);
   transition: background 0.2s ease;
 }
 
 .comparison-table tbody tr:hover {
-  background: #f8fafc;
+  background: var(--bg-secondary);
 }
 
 .comparison-table tbody tr:last-child {
@@ -271,15 +272,15 @@
 .comparison-table td {
   padding: 1rem 0.75rem;
   font-size: 0.95rem;
-  color: #000000 !important;
-  background: white;
+  color: var(--text-primary) !important;
+  background: var(--bg-tertiary);
   font-weight: 500;
   transition: background 0.2s ease;
 }
 
 .comparison-table tbody tr:hover td {
-  background: #f8fafc;
-  color: #000000 !important;
+  background: var(--bg-secondary);
+  color: var(--text-primary) !important;
 }
 
 /* Table Cell Content - Enhanced */
@@ -310,7 +311,7 @@
 
 .table-user-name {
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   margin-bottom: 0.25rem;
   font-size: 1rem;
   line-height: 1.2;
@@ -318,7 +319,7 @@
 
 .table-user-email {
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-weight: 500;
   line-height: 1.2;
 }
@@ -397,7 +398,7 @@
 
 .table-user-name {
   font-weight: 700;
-  color: #000000 !important;
+  color: var(--text-primary) !important;
   margin-bottom: 0.125rem;
   font-size: 1rem;
 }
@@ -482,9 +483,10 @@
 
 /* User Performance Card - Very Compact */
 .user-performance-card {
-  background: white;
+  background: var(--bg-tertiary);
   border-radius: 8px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-light);
   overflow: hidden;
   transition: all 0.3s ease;
 }
@@ -500,8 +502,8 @@
   align-items: center;
   gap: 0.625rem;
   padding: 0.875rem;
-  border-bottom: 1px solid #e5e7eb;
-  background: white;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-tertiary);
   transition: none;
 }
 
@@ -544,8 +546,8 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0;
-  border-bottom: 1px solid #e5e7eb;
-  background: white;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-tertiary);
 }
 
 .stat-box {
@@ -558,7 +560,7 @@
 }
 
 .stat-box:hover {
-  background: #f8fafc;
+  background: var(--bg-secondary);
 }
 
 .stat-box:nth-child(2n) {
@@ -586,7 +588,7 @@
 .stat-label {
   font-size: 0.6rem;
   font-weight: 700;
-  color: #000000 !important;
+  color: var(--text-tertiary) !important;
   text-transform: uppercase;
   letter-spacing: 0.3px;
   line-height: 1.2;
@@ -595,15 +597,15 @@
 /* Completion Section - Very Compact */
 .completion-section {
   padding: 0.75rem 0.875rem;
-  border-bottom: 1px solid #e5e7eb;
-  background: white;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-tertiary);
   transition: none;
 }
 
 .completion-label {
   font-size: 0.6rem;
   font-weight: 700;
-  color: #000000 !important;
+  color: var(--text-tertiary) !important;
   text-transform: uppercase;
   letter-spacing: 0.3px;
   margin-bottom: 0.25rem;
@@ -634,8 +636,8 @@
 /* Additional Stats - Very Compact */
 .additional-stats {
   padding: 0.625rem 0.875rem;
-  border-bottom: 1px solid #e5e7eb;
-  background: white;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-tertiary);
 }
 
 .stat-row {
@@ -901,7 +903,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive Design */
@@ -910,11 +914,11 @@
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
   }
-  
+
   .filter-group {
     min-width: 0;
   }
-  
+
   .clear-filters-btn {
     grid-column: 1 / -1;
   }
@@ -925,50 +929,50 @@
     padding: 1rem;
     padding-top: 7rem;
   }
-  
+
   .view-toggle-section {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .view-mode-buttons {
     width: 100%;
   }
-  
+
   .view-mode-btn {
     flex: 1;
   }
-  
+
   .performance-cards-container {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  
+
   .filters-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .filter-tabs {
     flex-direction: column;
   }
-  
+
   .date-filters-inline {
     flex-wrap: wrap;
   }
-  
+
   .ticket-details-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .comparison-table {
     font-size: 0.75rem;
   }
-  
+
   .comparison-table th,
   .comparison-table td {
     padding: 0.5rem 0.375rem;
   }
-  
+
   .table-user-cell {
     flex-direction: column;
     align-items: flex-start;

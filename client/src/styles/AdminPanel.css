@@ -19,7 +19,7 @@
   gap: 15px;
   font-size: 2rem;
   margin-bottom: 5px;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .header-content p {
@@ -52,6 +52,7 @@
   box-shadow: 0 5px 15px rgba(63, 98, 18, 0.35);
   background: linear-gradient(135deg, #4d7c0f 0%, #365314 100%);
 }
+
 .alert {
   display: flex;
   align-items: center;
@@ -81,33 +82,83 @@
 .users-list h2 {
   font-size: 1.5rem;
   margin-bottom: 20px;
-  color: #333;
+  color: var(--text-primary);
 }
 
-.users-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.user-card {
-  background: white;
-  border: 2px solid #e0e0e0;
+.users-table-container {
+  overflow-x: auto;
+  background: var(--bg-tertiary);
   border-radius: 12px;
-  padding: 20px;
-  display: flex;
-  gap: 15px;
-  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-light);
 }
 
-.user-card:hover {
-  border-color: #4d7c0f;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
 }
+
+.users-table th {
+  background: var(--bg-secondary);
+  padding: 15px 20px;
+  text-align: left;
+  font-weight: 700;
+  color: var(--text-primary) !important;
+  border-bottom: 2px solid var(--border-light);
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.users-table td {
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+  color: var(--text-primary) !important;
+  white-space: nowrap;
+}
+
+.users-table tr:last-child td {
+  border-bottom: none;
+}
+
+.users-table tr:hover {
+  background-color: var(--bg-secondary);
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-cell-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--text-primary) !important;
+  font-size: 0.95rem;
+}
+
+.user-email {
+  color: var(--text-secondary) !important;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* Card styles removed for table view */
+
 .user-icon {
-  width: 50px;
-  height: 50px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: linear-gradient(135deg, #65a30d 0%, #3f6212 100%);
   display: flex;
@@ -122,14 +173,14 @@
 }
 
 .user-info h3 {
-  font-size: 1.1rem;
-  margin-bottom: 5px;
+  font-size: 0.85rem;
+  margin-bottom: 3px;
   color: #333;
 }
 
 .user-email {
   color: #666;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   margin-bottom: 8px;
 }
 
@@ -157,12 +208,13 @@
   gap: 5px;
   margin-top: 8px;
   padding: 4px 10px;
-  background: #fff3cd;
-  color: #856404;
+  background: var(--bg-secondary);
+  color: var(--status-warning);
   border-radius: 4px;
   font-size: 0.8rem;
   display: inline-flex;
 }
+
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
@@ -179,7 +231,7 @@
 }
 
 .modal-content {
-  background: white;
+  background: var(--bg-primary);
   border-radius: 15px;
   padding: 30px;
   max-width: 500px;
@@ -218,15 +270,30 @@
 .form-group input {
   width: 100%;
   padding: 12px 15px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--border-medium);
   border-radius: 8px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
-.form-group input:focus {
+
+.form-group input:focus,
+.role-select:focus {
   outline: none;
   border-color: #4d7c0f;
   box-shadow: 0 0 0 3px rgba(77, 124, 15, 0.15);
+}
+
+.role-select {
+  width: 100%;
+  padding: 12px 15px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 15px;
 }
 
 .password-input-group {
@@ -247,7 +314,7 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #666;
+  color: var(--text-tertiary);
   cursor: pointer;
   padding: 5px;
   display: flex;
@@ -263,8 +330,8 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: #f5f5f5;
-  border: 1px solid #ddd;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
   border-radius: 6px;
   color: #3f6212;
   cursor: pointer;
@@ -278,9 +345,10 @@
   color: white;
   border-color: #4d7c0f;
 }
+
 .password-note {
   display: block;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 0.85rem;
   margin-top: 8px;
 }
@@ -291,7 +359,9 @@
   margin-top: 10px;
 }
 
-.btn-cancel, .btn-create, .btn-done {
+.btn-cancel,
+.btn-create,
+.btn-done {
   flex: 1;
   padding: 12px;
   border: none;
@@ -302,39 +372,42 @@
 }
 
 .btn-cancel {
-  background: #f5f5f5;
-  color: #666;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
 }
 
 .btn-cancel:hover:not(:disabled) {
-  background: #e0e0e0;
+  background: var(--border-light);
 }
 
-.btn-create, .btn-done {
+.btn-create,
+.btn-done {
   background: linear-gradient(135deg, #65a30d 0%, #3f6212 100%);
   color: white;
 }
 
-.btn-create:hover:not(:disabled), .btn-done:hover {
+.btn-create:hover:not(:disabled),
+.btn-done:hover {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(63, 98, 18, 0.35);
 }
 
-.btn-create:disabled, .btn-cancel:disabled {
+.btn-create:disabled,
+.btn-cancel:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
 .admin-panel .btn-create {
-  background: #ffffff !important;
-  color: #000000 !important;
-  border: 2px solid #3f6212 !important;
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border: 2px solid var(--primary-green) !important;
   text-shadow: none !important;
   box-shadow: none !important;
 }
 
 .admin-panel .btn-create * {
-  color: #000000 !important;
+  color: var(--text-primary) !important;
 }
 
 .admin-panel .btn-create:hover:not(:disabled) {
@@ -343,6 +416,7 @@
   border-color: #365314 !important;
   box-shadow: 0 5px 15px rgba(54, 83, 20, 0.2) !important;
 }
+
 /* Credentials Modal */
 .credentials-modal {
   text-align: center;
@@ -361,14 +435,14 @@
 }
 
 .credentials-info {
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 25px;
   line-height: 1.6;
 }
 
 .credentials-box {
-  background: #f8f9fa;
-  border: 2px solid #e0e0e0;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-light);
   border-radius: 10px;
   padding: 20px;
   margin-bottom: 20px;
@@ -386,7 +460,7 @@
 .credential-item label {
   display: block;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary) !important;
   margin-bottom: 8px;
   font-size: 0.9rem;
 }
@@ -397,10 +471,11 @@
   justify-content: space-between;
   gap: 10px;
   padding: 12px 15px;
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
   border-radius: 6px;
 }
+
 .credential-value span {
   flex: 1;
   font-family: 'Courier New', monospace;
@@ -500,9 +575,9 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-  color: #0f172a;
+  border: 1px solid var(--border-light);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-size: 20px;
   font-weight: 700;
   cursor: pointer;
@@ -514,7 +589,7 @@
 }
 
 .modal-close-btn:hover {
-  background: #e2e8f0;
+  background: var(--bg-secondary);
   transform: rotate(90deg);
 }
 
@@ -523,8 +598,8 @@
   align-items: flex-start;
   gap: 12px;
   padding: 15px;
-  background: #fff3cd;
-  border: 1px solid #ffc107;
+  background: var(--bg-secondary);
+  border: 1px solid var(--status-warning);
   border-radius: 8px;
   margin-bottom: 20px;
 }
@@ -537,217 +612,150 @@
 }
 
 /* Responsive Design */
+/* Responsive Design */
 @media (max-width: 768px) {
   .admin-panel {
-    padding: 20px 15px;
+    padding: 15px;
+    /* Add top margin to prevent overlap with fixed header */
+    margin-top: 160px;
   }
 
+  .admin-panel.with-sidebar {
+    margin-top: 20px;
+    /* If sidebar pushes content, this might need adjustment, but assuming fixed header overlays */
+  }
+
+  /* Ensure header stack properly */
   .admin-panel-header {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 15px;
+  }
+
+  .header-content h1 {
+    font-size: 1.5rem;
   }
 
   .create-user-btn {
     width: 100%;
-  }
-
-  .users-grid {
-    grid-template-columns: 1fr;
+    justify-content: center;
   }
 
   .modal-content {
     padding: 20px;
+    width: 95%;
+    max-height: 85vh;
   }
-}/* Fix all text colors to be black and visible */
 
-.admin-panel * {
-  color: #000 !important;
-}
+  /* --- Table to Card Transformation --- */
+  .users-table-container {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    overflow-x: visible;
+    /* Remove scroll, we want stacking */
+  }
 
-.admin-panel h1,
-.admin-panel h2,
-.admin-panel h3,
-.admin-panel p,
-.admin-panel span,
-.admin-panel label,
-.admin-panel button {
-  color: #000 !important;
-}
+  .users-table {
+    display: block;
+    /* Allow block layout */
+  }
 
-.admin-panel .alert span,
-.admin-panel .alert {
-  color: #000 !important;
-}
+  .users-table thead {
+    display: none;
+    /* Hide header on mobile */
+  }
 
-.admin-panel .user-card h3,
-.admin-panel .user-card p,
-.admin-panel .user-card span {
-  color: #000 !important;
-}
+  .users-table tbody {
+    display: block;
+    width: 100%;
+  }
 
-.admin-panel .modal-content h2,
-.admin-panel .modal-content label,
-.admin-panel .modal-content p,
-.admin-panel .modal-content span {
-  color: #000 !important;
-}
+  .users-table tr {
+    display: block;
+    margin-bottom: 15px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
 
-.admin-panel .credentials-box label,
-.admin-panel .credentials-box span {
-  color: #000 !important;
-}
+  .users-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-light);
+    text-align: right;
+    white-space: normal;
+    /* Allow wrapping in cards */
+  }
 
-.admin-panel .warning-box,
-.admin-panel .warning-box p {
-  color: #000 !important;
-}
+  .users-table td:last-child {
+    border-bottom: none;
+    background: var(--bg-secondary);
+    /* Slight contrast for actions */
+    justify-content: flex-end;
+  }
 
-.admin-panel .form-group label,
-.admin-panel .form-group input {
-  color: #000 !important;
-}
+  .users-table td::before {
+    content: attr(data-label);
+    /* Show column name */
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-align: left;
+    margin-right: 15px;
+    min-width: 80px;
+    /* Consistency */
+  }
 
-.admin-panel .password-note {
-  color: #000 !important;
+  /* Specific adjustments */
+  .user-cell {
+    flex-direction: row;
+    /* Keep user icon/info side-by-side */
+    justify-content: flex-end;
+    /* Align to right */
+    text-align: right;
+    width: 100%;
+  }
+
+  .user-cell-info {
+    align-items: flex-end;
+    /* Right align text */
+  }
+
+  .user-email {
+    font-size: 0.8rem;
+  }
+
+  /* Actions adjustment */
+  .action-buttons {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }
 
 /* Keep button text white for contrast */
 .admin-panel .btn-done,
 .admin-panel .copy-btn {
-  color: #fff !important;
+  color: white !important;
 }
 
 .admin-panel .btn-cancel {
-  color: #000 !important;
-}/* ADMIN PANEL - FORCE ALL TEXT TO BE BLACK */
-
-.admin-panel {
-  padding: 30px;
-  max-width: 1400px;
-  margin: 0 auto;
-  background: #fff;
-}
-
-.admin-panel * {
-  color: #000 !important;
-}
-
-.admin-panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #e0e0e0;
-}
-
-.header-content h1 {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  font-size: 2rem;
-  margin-bottom: 5px;
-  color: #000 !important;
-  font-weight: 700 !important;
-}
-
-.header-content p {
-  color: #000 !important;
-  margin-left: 47px;
-  font-weight: 500 !important;
-}
-
-.create-user-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 24px;
-  background: #ffffff;
-  color: #000000 !important;
-  border: 2px solid #3f6212;
-  border-radius: 8px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.create-user-btn:hover {
-  background: #ecfccb;
-  color: #3f6212 !important;
-  border-color: #365314;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(54, 83, 20, 0.2);
-}
-
-.admin-panel .create-user-btn,
-.admin-panel .create-user-btn * {
-  color: #000000 !important;
-}
-
-.users-list h2 {
-  color: #000 !important;
-  font-weight: 700 !important;
-  font-size: 1.5rem !important;
-  margin-bottom: 20px !important;
-}
-
-.user-card {
-  background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 20px;
-  transition: all 0.3s ease;
-}
-
-.user-card * {
-  color: #000 !important;
-}
-
-.user-card h3 {
-  color: #000 !important;
-  font-weight: 700 !important;
-  font-size: 1.1rem !important;
-}
-
-.user-card p {
-  color: #000 !important;
-  font-weight: 500 !important;
-}
-
-.user-email {
-  color: #000 !important;
-  font-size: 0.9rem !important;
-}
-
-.user-role {
-  color: #000 !important;
-  font-weight: 600 !important;
-}
-
-.modal-content h2 {
-  color: #000 !important;
-  font-weight: 700 !important;
-}
-
-.form-group label {
-  color: #000 !important;
-  font-weight: 600 !important;
-}
-
-.password-note,
-small {
-  color: #000 !important;
+  color: var(--text-primary) !important;
 }
 
 .btn-edit-user {
-  background: #fef3c7;
-  color: #78350f !important;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   border: 1px solid #fbbf24;
   border-radius: 6px;
+  padding: 6px 12px;
   cursor: pointer;
   font-weight: 600;
   transition: all 0.2s;
+  font-size: 0.85rem;
 }
 
 .btn-edit-user:hover {
@@ -760,9 +768,11 @@ small {
   color: #7f1d1d !important;
   border: 1px solid #fca5a5;
   border-radius: 6px;
+  padding: 6px 12px;
   cursor: pointer;
   font-weight: 600;
   transition: all 0.2s;
+  font-size: 0.85rem;
 }
 
 .btn-delete-user:hover {
@@ -791,3 +801,5 @@ small {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* End of AdminPanel.css */

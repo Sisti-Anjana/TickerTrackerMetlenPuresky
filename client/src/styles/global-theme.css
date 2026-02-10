@@ -8,27 +8,105 @@
   --primary-green-light: #8bc34a;
   --primary-green-lighter: #a5d165;
   --primary-green-pale: #e8f5e9;
-  
+
   /* Background Colors */
   --bg-primary: #ffffff;
   --bg-secondary: #f8fafc;
   --bg-tertiary: #f1f5f9;
-  
+
   /* Text Colors */
   --text-primary: #1e293b;
   --text-secondary: #64748b;
   --text-tertiary: #94a3b8;
-  
+
   /* Border Colors */
   --border-light: #e2e8f0;
   --border-medium: #cbd5e1;
   --border-dark: #94a3b8;
-  
+
   /* Status Colors */
   --status-success: #16a34a;
   --status-warning: #f59e0b;
   --status-error: #dc2626;
   --status-info: #76AB3F;
+}
+
+/* Dark Mode Theme Overrides */
+/* Dark Mode Theme Overrides - Professional Slate Palette */
+[data-theme='dark'] {
+  /* Backgrounds - creating depth */
+  --bg-primary: #0f172a;
+  /* Slate 900 - Main Page Background */
+  --bg-secondary: #1e293b;
+  /* Slate 800 - Sidebar, Headers */
+  --bg-tertiary: #334155;
+  /* Slate 700 - Cards, Inputs, Elevated elements */
+
+  /* Text - High Contrast & Legibility */
+  --text-primary: #f8fafc;
+  /* Slate 50 - Main Headings */
+  --text-secondary: #e2e8f0;
+  /* Slate 200 - Body Text */
+  --text-tertiary: #94a3b8;
+  /* Slate 400 - Metadata, Placeholders */
+
+  /* Borders - Subtle separation */
+  --border-light: #334155;
+  /* Slate 700 - Subtle dividers */
+  --border-medium: #475569;
+  /* Slate 600 - Input borders */
+  --border-dark: #64748b;
+  /* Slate 500 - Active borders */
+
+  /* Primary Brand Interactions in Dark Mode */
+  --primary-green: #84cc16;
+  /* Lime/Green 500 - Brighter for dark backgrounds */
+  --primary-green-dark: #65a30d;
+  /* Lime 600 - Hover state */
+  --primary-green-light: #a3e635;
+
+  /* Status Colors adjustment for dark mode */
+  --status-success: #4ade80;
+  --status-warning: #fbbf24;
+  --status-error: #f87171;
+  --status-info: #38bdf8;
+}
+
+/* Global text settings */
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text-primary);
+}
+
+p,
+span,
+label {
+  color: var(--text-secondary);
+}
+
+/* Icons should use currentColor from their parents */
+.nav-icon,
+.menu-icon,
+.header-icon {
+  color: inherit;
+}
+
+/* Prevent inputs from having white backgrounds in dark mode */
+input,
+textarea,
+select {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-medium);
 }
 
 /* Override all blue buttons with green */
@@ -103,12 +181,7 @@ button:focus {
   border-color: var(--primary-green) !important;
 }
 
-/* Navigation active states */
-.nav-item.active {
-  color: white !important;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0%, transparent 100%) !important;
-  border-right: 3px solid white !important;
-}
+/* Navigation active states handled in enhanced-sidebar.css */
 
 /* Tab buttons */
 .tab-button.active {
@@ -128,16 +201,8 @@ input[type="radio"]:checked {
   border-color: var(--primary-green) !important;
 }
 
-/* Remove all emojis globally */
-.nav-icon,
-.stat-icon,
-.card-icon,
-.section-icon {
-  font-family: 'Font Awesome 5 Free', 'Font Awesome 5 Pro', sans-serif;
-}
-
-/* Hide emoji spans if they exist */
+/* Emojis should be visible */
 span[role="img"],
 .emoji {
-  display: none !important;
+  display: inline-block !important;
 }

@@ -22,8 +22,8 @@
   align-items: center;
   position: relative;
   height: 44px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   padding: 0 16px;
   transition: all 0.2s ease;
@@ -66,7 +66,7 @@
 .date-separator-label {
   font-size: 12px;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
@@ -80,17 +80,17 @@
 
 .filter-select {
   padding: 10px 16px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
-  background: #ffffff;
+  background: var(--bg-primary);
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 150px;
   max-width: 180px;
   height: 44px;
-  color: #1f2937;
+  color: var(--text-primary);
   flex-shrink: 0;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
@@ -104,22 +104,23 @@
 
 .filter-select:focus {
   outline: none;
-  border-color: #76AB3F;
+  border-color: var(--primary-green);
+  background: var(--bg-primary);
   box-shadow: 0 0 0 3px rgba(118, 171, 63, 0.1);
 }
 
 .filter-input.date-input {
   padding: 10px 16px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
-  background: #ffffff;
+  background: var(--bg-primary);
   transition: all 0.2s ease;
   width: 170px;
   max-width: 170px;
   height: 44px;
-  color: #1f2937;
+  color: var(--text-primary);
   flex-shrink: 0;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
@@ -133,8 +134,8 @@
 
 .filter-input.date-input:focus {
   outline: none;
-  border-color: #76AB3F;
-  background: #ffffff;
+  border-color: var(--primary-green);
+  background: var(--bg-primary);
   box-shadow: 0 0 0 3px rgba(118, 171, 63, 0.1);
 }
 
@@ -158,7 +159,7 @@
 
 .filter-input.date-input::-webkit-datetime-edit-text {
   padding: 0 2px;
-  color: #374151;
+  color: var(--text-primary);
 }
 
 .filter-input.date-input::-webkit-datetime-edit-month-field,
@@ -288,30 +289,30 @@
     gap: 12px;
     padding: 0;
   }
-  
+
   .search-container {
     flex: 0 1 400px;
     min-width: 260px;
     max-width: 450px;
   }
-  
+
   .inline-filters {
     justify-content: flex-start;
     gap: 10px;
   }
-  
+
   .filter-select {
     min-width: 140px;
     max-width: 160px;
     font-size: 13px;
   }
-  
+
   .filter-input.date-input {
     width: 160px;
     max-width: 160px;
     font-size: 13px;
   }
-  
+
   .search-results-count {
     margin-left: 0;
     margin-top: 8px;
@@ -326,39 +327,39 @@
   .search-and-filters-container {
     gap: 10px;
   }
-  
+
   .search-container {
     flex: 0 1 380px;
     max-width: 400px;
     height: 42px;
   }
-  
+
   .search-icon {
     font-size: 18px;
   }
-  
+
   .search-input {
     font-size: 13px;
   }
-  
+
   .inline-filters {
     gap: 10px;
     flex-wrap: wrap;
   }
-  
+
   .filter-select {
     min-width: 130px;
     max-width: 150px;
     height: 42px;
     padding: 8px 14px;
   }
-  
+
   .filter-input.date-input {
     width: 150px;
     max-width: 150px;
     height: 42px;
   }
-  
+
   .filter-group,
   .date-filters {
     height: 42px;
@@ -372,7 +373,7 @@
     gap: 12px;
     margin-bottom: 20px;
   }
-  
+
   .search-container {
     flex: 1 1 100%;
     width: 100%;
@@ -381,33 +382,33 @@
     margin-bottom: 0;
     height: 44px;
   }
-  
+
   .search-icon {
     font-size: 18px;
     margin-right: 10px;
   }
-  
+
   .search-input {
     font-size: 14px;
   }
-  
+
   .search-input::placeholder {
     font-size: 13px;
   }
-  
+
   .inline-filters {
     flex-direction: row;
     flex-wrap: wrap;
     width: 100%;
     gap: 10px;
   }
-  
+
   .filter-group {
     flex: 1 1 calc(50% - 5px);
     min-width: 140px;
     height: 44px;
   }
-  
+
   .filter-select {
     width: 100%;
     min-width: 100%;
@@ -415,7 +416,7 @@
     height: 44px;
     font-size: 14px;
   }
-  
+
   .date-separator-label {
     flex: 0 0 100%;
     width: 100%;
@@ -424,12 +425,12 @@
     height: auto;
     font-size: 11px;
   }
-  
+
   .date-filters {
     width: 100%;
     flex-wrap: wrap;
   }
-  
+
   .filter-input.date-input {
     flex: 1 1 calc(50% - 6px);
     width: 100%;
@@ -438,14 +439,14 @@
     height: 44px;
     font-size: 14px;
   }
-  
+
   .clear-all-filters {
     width: 100%;
     margin-top: 0;
     height: 44px;
     font-size: 13px;
   }
-  
+
   .search-results-count {
     text-align: left;
     width: 100%;
@@ -460,54 +461,54 @@
     padding: 0;
     gap: 10px;
   }
-  
+
   .search-container {
     height: 42px;
     padding: 0 12px;
   }
-  
+
   .search-icon {
     font-size: 16px;
     margin-right: 8px;
   }
-  
+
   .search-input {
     font-size: 13px;
   }
-  
+
   .search-input::placeholder {
     font-size: 12px;
   }
-  
+
   .filter-select {
     padding: 8px 12px;
     font-size: 13px;
     height: 42px;
   }
-  
+
   .filter-input.date-input {
     height: 42px;
     font-size: 13px;
     padding: 8px 12px;
   }
-  
+
   .filter-group {
     flex: 1 1 100%;
     min-width: 100%;
     height: 42px;
   }
-  
+
   .date-separator-label {
     font-size: 10px;
     padding: 6px 0;
   }
-  
+
   .clear-all-filters {
     height: 42px;
     font-size: 12px;
     padding: 8px 12px;
   }
-  
+
   .search-results-count {
     font-size: 11px;
   }
@@ -525,7 +526,7 @@
 }
 
 /* Ensure consistent alignment */
-.search-and-filters-container > * {
+.search-and-filters-container>* {
   align-self: center;
 }
 
@@ -542,29 +543,29 @@
   .search-and-filters-container {
     grid-template-areas: "search status priority date-start date-end clear results";
   }
-  
+
   .search-container {
     grid-area: search;
   }
-  
+
   .filter-group:nth-of-type(1) {
     grid-area: status;
   }
-  
+
   .filter-group:nth-of-type(2) {
     grid-area: priority;
   }
-  
+
   .date-filters {
     grid-area: date-start / date-start / date-end / date-end;
     display: flex;
     gap: 8px;
   }
-  
+
   .clear-all-filters {
     grid-area: clear;
   }
-  
+
   .search-results-count {
     grid-area: results;
   }
@@ -575,22 +576,22 @@
   .search-and-filters-container {
     gap: 10px;
   }
-  
+
   .search-container {
     flex: 0 1 350px;
     max-width: 400px;
   }
-  
+
   .inline-filters {
     gap: 8px;
     flex-wrap: wrap;
   }
-  
+
   .filter-select {
     min-width: 130px;
     max-width: 140px;
   }
-  
+
   .filter-input.date-input {
     width: 135px;
     max-width: 135px;
@@ -611,37 +612,37 @@
   .search-and-filters-container {
     padding: 0;
   }
-  
+
   .search-container {
     padding: 0;
   }
-  
+
   .search-input {
     font-size: 12px;
     padding: 0 110px 0 38px;
   }
-  
+
   .search-icon {
     left: 10px;
     font-size: 16px;
   }
-  
+
   .search-input::placeholder {
     font-size: 11px;
   }
-  
+
   .filter-select {
     padding: 10px;
     font-size: 14px;
     width: 100%;
     max-width: 100%;
   }
-  
+
   .filter-input.date-input {
     width: 100%;
     max-width: 100%;
   }
-  
+
   .filter-group {
     flex: 1 1 100%;
   }

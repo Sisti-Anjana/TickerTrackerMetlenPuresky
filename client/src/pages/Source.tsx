@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import TopHeader from '../components/TopHeader';
+
 import BackButton from '../components/BackButton';
 import api from '../services/api';
 import '../styles/source.css';
@@ -40,7 +40,7 @@ interface SiteData {
 const Source: React.FC = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
-  const [clientTypes, setClientTypes] = useState<Array<{id: number | string, name: string}>>([]);
+  const [clientTypes, setClientTypes] = useState<Array<{ id: number | string, name: string }>>([]);
   const [loadingClientTypes, setLoadingClientTypes] = useState(true);
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [selectedSite, setSelectedSite] = useState<string | null>(null);
@@ -76,13 +76,13 @@ const Source: React.FC = () => {
       setLoadingClientTypes(true);
       const response = await api.get('/tickets/client-types');
       const clientTypesData = response.data.client_types || [];
-      
+
       // Extract unique client type names from the API response
       const uniqueClientTypes = clientTypesData.map((ct: any) => ({
         id: ct.id,
         name: ct.name
       }));
-      
+
       setClientTypes(uniqueClientTypes);
       console.log('✅ Fetched client types for Source page:', uniqueClientTypes.length);
     } catch (error) {
@@ -95,7 +95,7 @@ const Source: React.FC = () => {
   };
 
   const getClientTicketCount = (clientType: string): number => {
-    return tickets.filter(t => 
+    return tickets.filter(t =>
       t.customer_type === clientType || t.customer_name === clientType
     ).length;
   };
@@ -122,14 +122,14 @@ const Source: React.FC = () => {
   };
 
   const getSitesData = (): SiteData[] => {
-    const clientTickets = tickets.filter(t => 
+    const clientTickets = tickets.filter(t =>
       t.customer_type === selectedClient || t.customer_name === selectedClient
     );
 
     const filteredTickets = filterTicketsByDate(clientTickets);
 
     const siteMap = new Map<string, Ticket[]>();
-    
+
     filteredTickets.forEach(ticket => {
       const site = ticket.site_name || 'Unknown Site';
       if (!siteMap.has(site)) {
@@ -141,7 +141,7 @@ const Source: React.FC = () => {
     return Array.from(siteMap.entries()).map(([siteName, siteTickets]) => {
       const openTickets = siteTickets.filter(t => t.ticket_status?.toLowerCase() === 'open').length;
       const closedTickets = siteTickets.filter(t => t.ticket_status?.toLowerCase() === 'closed').length;
-      const latestTicket = siteTickets.reduce((latest, current) => 
+      const latestTicket = siteTickets.reduce((latest, current) =>
         new Date(current.created_at) > new Date(latest.created_at) ? current : latest
       );
 
@@ -158,14 +158,14 @@ const Source: React.FC = () => {
 
   const formatDuration = (startTime?: string, endTime?: string, totalDuration?: string): string => {
     if (totalDuration) return totalDuration;
-    
+
     if (startTime) {
       const start = new Date(startTime);
       const end = endTime ? new Date(endTime) : new Date();
       const diffMs = end.getTime() - start.getTime();
-      
+
       if (diffMs < 0) return 'N/A';
-      
+
       const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
       const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
       return `${diffHours}h ${diffMinutes}m`;
@@ -181,10 +181,10 @@ const Source: React.FC = () => {
     const category = ticket.category || 'general maintenance';
     const kwDown = ticket.kw_down || 0;
     const customer = ticket.customer_name || 'the customer';
-    
+
     // Extract first name from customer name (e.g., "Kushal Mareedu" -> "Kushal")
     const firstName = customer.split(' ')[0] || customer;
-    
+
     // Calculate duration
     let durationText = 'Duration unknown';
     if (ticket.issue_start_time) {
@@ -216,19 +216,19 @@ const Source: React.FC = () => {
 
     // Build summary based on ticket data
     let summary = `This is a ${priority.toLowerCase()} priority ${status.toLowerCase()} ticket by ${firstName} for ${site}. `;
-    
+
     if (ticket.issue_description) {
       summary += `\n\nIssue Details: ${ticket.issue_description}\n\n`;
     }
-    
+
     summary += `The issue involves ${equipment} and is categorized as ${category}. `;
-    
+
     if (kwDown > 0) {
       summary += `This incident has resulted in ${kwDown} KW of power being down, which impacts production capacity. `;
     }
-    
+
     summary += `${responseText}`;
-    
+
     if (status.toLowerCase() === 'closed') {
       summary += `The issue was resolved and the ticket is now closed. Total downtime was ${durationText}.`;
     } else if (status.toLowerCase() === 'open') {
@@ -239,14 +239,14 @@ const Source: React.FC = () => {
 
     // Add impact assessment
     if (kwDown > 500) {
-      summary += `\n\n⚠️ High Impact: Significant power loss detected. Immediate attention recommended.`;
+      summary += `\n\nHigh Impact: Significant power loss detected. Immediate attention recommended.`;
     } else if (kwDown > 0) {
       summary += `\n\n⚡ Moderate Impact: Power loss is affecting site operations.`;
     }
 
     // Add priority note
     if (priority.toLowerCase() === 'urgent' || priority.toLowerCase() === 'high') {
-      summary += `\n\n🔴 Priority Alert: This is a ${priority.toLowerCase()} priority issue requiring immediate attention.`;
+      summary += `\n\nPriority Alert: This is a ${priority.toLowerCase()} priority issue requiring immediate attention.`;
     }
 
     if (ticket.additional_notes) {
@@ -269,7 +269,7 @@ const Source: React.FC = () => {
   if (loading || loadingClientTypes) {
     return (
       <>
-        <TopHeader />
+
         <div className="source-container">
           <div className="loading-container">
             <div className="spinner"></div>
@@ -284,7 +284,7 @@ const Source: React.FC = () => {
   if (!selectedClient) {
     return (
       <>
-        <TopHeader />
+
         <div className="source-container">
           <div style={{ marginBottom: '20px' }}>
             <BackButton label="Back to Dashboard" to="/dashboard" />
@@ -292,7 +292,7 @@ const Source: React.FC = () => {
           <div className="client-selection-screen">
             <h1 className="selection-title">Select Client Type</h1>
             <p className="selection-subtitle">Choose a client to view their site data and tickets</p>
-            
+
             <div className="client-options">
               {clientTypes.length === 0 ? (
                 <div className="no-clients-message">
@@ -323,7 +323,7 @@ const Source: React.FC = () => {
   // Site Selection Screen
   const sitesData = getSitesData();
   const selectedSiteData = sitesData.find(s => s.siteName === selectedSite);
-  
+
   // Filter tickets based on status filter
   const getFilteredTickets = (siteTickets: Ticket[]): Ticket[] => {
     if (statusFilter === 'all') return siteTickets;
@@ -335,7 +335,7 @@ const Source: React.FC = () => {
     }
     return siteTickets;
   };
-  
+
   const filteredSiteData = selectedSiteData ? {
     ...selectedSiteData,
     tickets: getFilteredTickets(selectedSiteData.tickets)
@@ -343,7 +343,7 @@ const Source: React.FC = () => {
 
   return (
     <>
-      <TopHeader />
+
       <div className="source-container">
         <div className="site-header">
           <h1 className="site-title">{selectedClient} - Site Overview</h1>
@@ -393,7 +393,7 @@ const Source: React.FC = () => {
                 </button>
               )}
             </div>
-            
+
             <div className="filter-group search-filter-group">
               <span className="filter-label">Search Sites</span>
               <div className="search-input-wrapper">
@@ -404,7 +404,7 @@ const Source: React.FC = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <span className="search-icon">🔍</span>
+
               </div>
             </div>
           </div>
@@ -413,68 +413,68 @@ const Source: React.FC = () => {
         {/* Site Cards Grid */}
         <div className="site-cards-grid">
           {sitesData
-            .filter(site => 
-              searchQuery === '' || 
+            .filter(site =>
+              searchQuery === '' ||
               site.siteName.toLowerCase().includes(searchQuery.toLowerCase())
             )
             .length === 0 ? (
-              <div className="no-results-message">
-                <span className="no-results-icon">🔍</span>
-                <h3>No sites found</h3>
-                <p>Try adjusting your search or date filters</p>
-              </div>
-            ) : (
+            <div className="no-results-message">
+
+              <h3>No sites found</h3>
+              <p>Try adjusting your search or date filters</p>
+            </div>
+          ) : (
             sitesData
-              .filter(site => 
-                searchQuery === '' || 
+              .filter(site =>
+                searchQuery === '' ||
                 site.siteName.toLowerCase().includes(searchQuery.toLowerCase())
               )
               .map(site => (
-            <div
-              key={site.siteName}
-              className={`site-card ${selectedSite === site.siteName ? 'selected' : ''}`}
-            >
-              <div className="site-card-header-new">
-                <h3 className="site-name-display-new">{site.siteName}</h3>
-              </div>
-              
-              <div className="site-card-stats-new">
-                <div 
-                  className="site-stat-clickable"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedSite(site.siteName);
-                    setStatusFilter('all');
-                  }}
+                <div
+                  key={site.siteName}
+                  className={`site-card ${selectedSite === site.siteName ? 'selected' : ''}`}
                 >
-                  <span className="site-stat-value-new">{site.tickets.length}</span>
-                  <span className="site-stat-label-new">Total</span>
+                  <div className="site-card-header-new">
+                    <h3 className="site-name-display-new">{site.siteName}</h3>
+                  </div>
+
+                  <div className="site-card-stats-new">
+                    <div
+                      className="site-stat-clickable"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSite(site.siteName);
+                        setStatusFilter('all');
+                      }}
+                    >
+                      <span className="site-stat-value-new">{site.tickets.length}</span>
+                      <span className="site-stat-label-new">Total</span>
+                    </div>
+                    <div
+                      className="site-stat-clickable"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSite(site.siteName);
+                        setStatusFilter('open');
+                      }}
+                    >
+                      <span className="site-stat-value-new">{site.openTickets}</span>
+                      <span className="site-stat-label-new">Open</span>
+                    </div>
+                    <div
+                      className="site-stat-clickable"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSite(site.siteName);
+                        setStatusFilter('closed');
+                      }}
+                    >
+                      <span className="site-stat-value-new">{site.closedTickets}</span>
+                      <span className="site-stat-label-new">Closed</span>
+                    </div>
+                  </div>
                 </div>
-                <div 
-                  className="site-stat-clickable"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedSite(site.siteName);
-                    setStatusFilter('open');
-                  }}
-                >
-                  <span className="site-stat-value-new">{site.openTickets}</span>
-                  <span className="site-stat-label-new">Open</span>
-                </div>
-                <div 
-                  className="site-stat-clickable"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedSite(site.siteName);
-                    setStatusFilter('closed');
-                  }}
-                >
-                  <span className="site-stat-value-new">{site.closedTickets}</span>
-                  <span className="site-stat-label-new">Closed</span>
-                </div>
-              </div>
-            </div>
-          ))
+              ))
           )}
         </div>
 
@@ -524,7 +524,7 @@ const Source: React.FC = () => {
                 {statusFilter !== 'all' && (
                   <div className="status-filter-indicator">
                     Showing {statusFilter === 'open' ? 'Open' : 'Closed'} tickets only
-                    <button 
+                    <button
                       className="clear-status-filter-btn"
                       onClick={() => setStatusFilter('all')}
                     >
@@ -533,7 +533,7 @@ const Source: React.FC = () => {
                   </div>
                 )}
               </div>
-              <button 
+              <button
                 className="close-detailed-btn"
                 onClick={() => {
                   setSelectedSite(null);
@@ -571,57 +571,57 @@ const Source: React.FC = () => {
                   </tr>
                 ) : (
                   filteredSiteData.tickets.map(ticket => (
-                  <React.Fragment key={ticket.id}>
-                    <tr>
-                      <td><strong>{ticket.ticket_number || ticket.id.slice(0, 8)}</strong></td>
-                      <td style={{ maxWidth: '400px' }}>
-                        <div style={{ 
-                          whiteSpace: 'pre-wrap',
-                          wordWrap: 'break-word',
-                          color: '#000000',
-                          fontWeight: 500,
-                          lineHeight: '1.6'
-                        }}>
-                          {ticket.issue_description || 'No description'}
-                        </div>
-                      </td>
-                      <td>{ticket.equipment || 'N/A'}</td>
-                      <td>
-                        <span className={`site-badge ${ticket.ticket_status?.toLowerCase()}`}>
-                          {ticket.ticket_status}
-                        </span>
-                      </td>
-                      <td>{ticket.priority}</td>
-                      <td>{ticket.category || 'N/A'}</td>
-                      <td>{formatDuration(ticket.issue_start_time, ticket.issue_end_time, ticket.total_duration)}</td>
-                      <td>{ticket.kw_down ? `${ticket.kw_down} KW` : 'N/A'}</td>
-                      <td>{formatDate(ticket.created_at)}</td>
-                      <td>
-                        <button
-                          className="detail-arrow-btn"
-                          onClick={() => setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)}
-                          title="View Details"
-                        >
-                          {expandedTicket === ticket.id ? '▼' : '▶'}
-                        </button>
-                      </td>
-                    </tr>
-                    {expandedTicket === ticket.id && (
-                      <tr className="expanded-detail-row">
-                        <td colSpan={10}>
-                          <div className="ticket-detail-panel">
-                            <h4 className="detail-panel-title">📋 Auto-Generated Ticket Summary - {ticket.ticket_number}</h4>
-                            
-                            <div className="detail-section full-width">
-                              <div className="summary-box">
-                                {generateTicketSummary(ticket)}
-                              </div>
-                            </div>
+                    <React.Fragment key={ticket.id}>
+                      <tr>
+                        <td><strong>{ticket.ticket_number || ticket.id.slice(0, 8)}</strong></td>
+                        <td style={{ maxWidth: '400px' }}>
+                          <div style={{
+                            whiteSpace: 'pre-wrap',
+                            wordWrap: 'break-word',
+                            color: '#000000',
+                            fontWeight: 500,
+                            lineHeight: '1.6'
+                          }}>
+                            {ticket.issue_description || 'No description'}
                           </div>
                         </td>
+                        <td>{ticket.equipment || 'N/A'}</td>
+                        <td>
+                          <span className={`site-badge ${ticket.ticket_status?.toLowerCase()}`}>
+                            {ticket.ticket_status}
+                          </span>
+                        </td>
+                        <td>{ticket.priority}</td>
+                        <td>{ticket.category || 'N/A'}</td>
+                        <td>{formatDuration(ticket.issue_start_time, ticket.issue_end_time, ticket.total_duration)}</td>
+                        <td>{ticket.kw_down ? `${ticket.kw_down} KW` : 'N/A'}</td>
+                        <td>{formatDate(ticket.created_at)}</td>
+                        <td>
+                          <button
+                            className="detail-arrow-btn"
+                            onClick={() => setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)}
+                            title="View Details"
+                          >
+                            {expandedTicket === ticket.id ? '▼' : '▶'}
+                          </button>
+                        </td>
                       </tr>
-                    )}
-                  </React.Fragment>
+                      {expandedTicket === ticket.id && (
+                        <tr className="expanded-detail-row">
+                          <td colSpan={10}>
+                            <div className="ticket-detail-panel">
+                              <h4 className="detail-panel-title">Auto-Generated Ticket Summary - {ticket.ticket_number}</h4>
+
+                              <div className="detail-section full-width">
+                                <div className="summary-box">
+                                  {generateTicketSummary(ticket)}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))
                 )}
               </tbody>
@@ -630,7 +630,7 @@ const Source: React.FC = () => {
             {/* Detailed Explanation */}
             <div className="detailed-explanation">
               <h3 className="explanation-title">
-                📊 Site Analysis & Summary
+                Site Analysis & Summary
               </h3>
               <div className="explanation-content">
                 <p>
@@ -653,7 +653,7 @@ const Source: React.FC = () => {
                     Most recent activity: {selectedSiteData?.lastUpdate || 'N/A'}
                   </li>
                   <li>
-                    Resolution rate: {selectedSiteData && selectedSiteData.tickets.length > 0 
+                    Resolution rate: {selectedSiteData && selectedSiteData.tickets.length > 0
                       ? Math.round((selectedSiteData.closedTickets / selectedSiteData.tickets.length) * 100)
                       : 0}%
                   </li>
@@ -665,8 +665,8 @@ const Source: React.FC = () => {
                   </li>
                 </ul>
                 <p>
-                  <strong>Recommendations:</strong> Monitor open tickets closely and prioritize high-priority 
-                  issues to minimize downtime and power loss. Regular maintenance checks can help prevent 
+                  <strong>Recommendations:</strong> Monitor open tickets closely and prioritize high-priority
+                  issues to minimize downtime and power loss. Regular maintenance checks can help prevent
                   recurring issues at this site.
                 </p>
               </div>

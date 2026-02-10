@@ -7,21 +7,21 @@ const apiBaseURL = (() => {
   if (process.env.REACT_APP_API_BASE_URL) {
     return process.env.REACT_APP_API_BASE_URL;
   }
-  
+
   // Check for window variable (for runtime configuration)
   if (typeof window !== 'undefined' && (window as any).__API_BASE_URL__) {
     return (window as any).__API_BASE_URL__;
   }
-  
+
   // For production builds, always use relative path
   // This ensures Netlify redirects work properly
-  if (process.env.NODE_ENV === 'production' || 
-      (typeof window !== 'undefined' && window.location.hostname !== 'localhost')) {
+  if (process.env.NODE_ENV === 'production' ||
+    (typeof window !== 'undefined' && window.location.hostname !== 'localhost')) {
     return '/api';
   }
-  
+
   // Default to localhost for development
-  return 'http://localhost:5001/api';
+  return 'http://localhost:5003/api';
 })();
 
 // Debug logging for API configuration

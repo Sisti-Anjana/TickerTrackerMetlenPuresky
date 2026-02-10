@@ -21,17 +21,13 @@ import AdminPanel from './pages/AdminPanel';
 import TeamPerformance from './pages/TeamPerformance';
 import Source from './pages/Source';
 import ClientSiteManagement from './pages/ClientSiteManagement';
-import './styles/force-black-text.css';
 import './App.css';
-import './styles/quick-fix.css';
 import './styles/global-theme.css';
-import './styles/no-truncation.css';
-import './styles/global-text-fix.css';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="loading">
@@ -39,13 +35,13 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
       </div>
     );
   }
-  
+
   return user ? <>{children}</> : <Navigate to="/" />;
 };
 // Public Route Component (redirect to dashboard if already logged in)
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="loading">
@@ -53,28 +49,24 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </div>
     );
   }
-  
+
   return user ? <Navigate to="/dashboard" /> : <>{children}</>;
 };
 
 // Layout Component with Sidebar
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // On mobile, open sidebar by default so it's visible; on desktop start closed overlay
-  const [sidebarOpen, setSidebarOpen] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.innerWidth <= 1024;
-  });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="app-layout">
-      {/* Show Navbar only on mobile */}
-      <div className="mobile-navbar">
-        <Navbar onMenuClick={() => setSidebarOpen(true)} />
-      </div>
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <main className="main-content">
-        {children}
-      </main>
+      <div className="main-content-wrapper">
+        <Navbar onMenuClick={() => setSidebarOpen(true)} />
+        <main className="main-content">
+          {children}
+        </main>
+      </div>
     </div>
   );
 };
@@ -91,20 +83,20 @@ function App() {
                 <UserLogin />
               </PublicRoute>
             } />
-            
+
             <Route path="/user-login" element={
               <PublicRoute>
                 <UserLogin />
               </PublicRoute>
             } />
-            
+
             {/* Admin Login */}
             <Route path="/admin-login" element={
               <PublicRoute>
                 <AdminLogin />
               </PublicRoute>
             } />
-            
+
             {/* Legacy routes for backward compatibility */}
             <Route path="/login" element={<Navigate to="/" replace />} />
             <Route path="/register" element={
@@ -120,7 +112,7 @@ function App() {
             <Route path="/reset-password" element={
               <ResetPassword />
             } />
-            
+
             {/* Protected Routes */}
             <Route path="/admin-panel" element={
               <ProtectedRoute>
