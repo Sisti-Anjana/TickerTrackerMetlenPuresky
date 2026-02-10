@@ -4,7 +4,7 @@ import api from '../services/api';
 import '../styles/AdminPanel.css';
 
 interface UserType {
-  id: number;
+  id: string | number;
   name: string;
   email: string;
   role: string;
@@ -26,7 +26,8 @@ const AdminPanel: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    role: 'user'
   });
 
   useEffect(() => {
@@ -37,7 +38,7 @@ const AdminPanel: React.FC = () => {
     try {
       setLoading(true);
       setError('');
-      
+
       // Try the admin endpoint first (requires auth, returns only 'user' role)
       try {
         const response = await api.get('/admin/users');
@@ -49,7 +50,7 @@ const AdminPanel: React.FC = () => {
       } catch (adminError: any) {
         console.log('Admin endpoint failed, trying debug endpoint:', adminError.message);
       }
-      
+
       // Fallback to debug endpoint (returns all users including admins)
       const response = await api.get('/auth/debug/users');
       if (response.data && response.data.users) {
@@ -93,10 +94,11 @@ const AdminPanel: React.FC = () => {
           password: formData.password
         });
 
-        setFormData({ name: '', email: '', password: '' });
+        setFormData({ name: '', email: '', password: '', role: 'user' });
         await fetchUsers();
       }
     } catch (err: any) {
+      console.error('Create user error details:', err.response?.data || err);
       setError(err.response?.data?.message || err.message || 'Failed to create user');
     } finally {
       setLoading(false);
@@ -119,7 +121,8 @@ const AdminPanel: React.FC = () => {
     setFormData({
       name: user.name,
       email: user.email,
-      password: '' // Don't pre-fill password
+      password: '', // Don't pre-fill password
+      role: user.role
     });
     setShowCreateForm(true);
   };
@@ -136,7 +139,8 @@ const AdminPanel: React.FC = () => {
       const token = localStorage.getItem('token');
       const updateData: any = {
         name: formData.name,
-        email: formData.email
+        email: formData.email,
+        role: formData.role
       };
 
       // Only include password if it's provided
@@ -152,12 +156,13 @@ const AdminPanel: React.FC = () => {
 
       setSuccess('User updated successfully!');
       setEditingUser(null);
-      setFormData({ name: '', email: '', password: '' });
+      setFormData({ name: '', email: '', password: '', role: 'user' });
       setShowCreateForm(false);
       fetchUsers();
 
     } catch (err: any) {
-      setError(err.message || 'Failed to update user');
+      console.error('Update user error details:', err.response?.data || err);
+      setError(err.response?.data?.message || err.message || 'Failed to update user');
     } finally {
       setLoading(false);
     }
@@ -194,7 +199,7 @@ const AdminPanel: React.FC = () => {
       </div>
       <div className="admin-panel-header">
         <div className="header-content">
-          <h1>👥 User Management</h1>
+          <h1>User Management</h1>
           <p>Create and manage user accounts</p>
         </div>
         <button
@@ -202,22 +207,22 @@ const AdminPanel: React.FC = () => {
           onClick={() => {
             setShowCreateForm(true);
             setEditingUser(null);
-            setFormData({ name: '', email: '', password: '' });
+            setFormData({ name: '', email: '', password: '', role: 'user' });
           }}
         >
-          ➕ Create New User
+          Create New User
         </button>
       </div>
 
       {error && (
         <div className="alert alert-error">
-          ⚠️ {error}
+          {error}
         </div>
       )}
 
       {success && !createdCredentials && (
         <div className="alert alert-success">
-          ✅ {success}
+          {success}
         </div>
       )}
 
@@ -229,8 +234,8 @@ const AdminPanel: React.FC = () => {
             <p>Loading users...</p>
           </div>
         ) : users.length === 0 ? (
-          <div style={{ 
-            textAlign: 'center', 
+          <div style={{
+            textAlign: 'center',
             padding: '3rem 2rem',
             background: '#f8f9fa',
             borderRadius: '8px',
@@ -243,44 +248,71 @@ const AdminPanel: React.FC = () => {
             </p>
           </div>
         ) : (
-          <div className="users-grid">
-            {users.map((user) => (
-            <div key={user.id} className="user-card">
-              <div className="user-icon">
-                👤
-              </div>
-              <div className="user-info">
-                <h3>{user.name}</h3>
-                <p className="user-email">{user.email}</p>
-                <span className={`user-role ${user.role}`}>
-                  {user.role === 'admin' ? '👑 Admin' : '👤 User'}
-                </span>
-                {user.must_change_password && (
-                  <span className="password-status">
-                    🔑 Must change password
-                  </span>
-                )}
-                {user.role !== 'admin' && (
-                  <div className="user-actions" style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                    <button
-                      className="btn-delete-user"
-                      onClick={() => setShowDeleteConfirm(user)}
-                      style={{ padding: '6px 12px', fontSize: '0.85rem' }}
-                    >
-                      🗑️ Delete
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-            ))}
+          <div className="users-table-container">
+            <table className="users-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id}>
+                    <td data-label="User">
+                      <div className="user-cell">
+                        <div className="user-cell-info">
+                          <span className="user-name">{user.name}</span>
+                          <p className="user-email">{user.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td data-label="Role">
+                      <span className={`user-role ${user.role}`}>
+                        {user.role === 'admin' ? 'Admin' : 'User'}
+                      </span>
+                    </td>
+                    <td data-label="Status">
+                      {user.must_change_password ? (
+                        <span className="password-status">
+                          Must change password
+                        </span>
+                      ) : (
+                        <span style={{ color: '#28a745', fontSize: '0.85rem' }}>Active</span>
+                      )}
+                    </td>
+                    <td data-label="Actions">
+                      <div className="action-buttons">
+                        <button
+                          className="btn-edit-user"
+                          onClick={() => handleEditUser(user)}
+                          title="Edit User"
+                        >
+                          Edit
+                        </button>
+                        {user.role !== 'admin' && (
+                          <button
+                            className="btn-delete-user"
+                            onClick={() => setShowDeleteConfirm(user)}
+                            title="Delete User"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
-
       {/* Create User Modal */}
       {showCreateForm && (
-        <div className="modal-overlay" onClick={() => !createdCredentials && setShowCreateForm(false)}>
+        <div className="modal-overlay">
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button
               className="modal-close-btn"
@@ -290,16 +322,15 @@ const AdminPanel: React.FC = () => {
             >
               ×
             </button>
-            <h2 style={{ color: '#000' }}>{editingUser ? '✏️ Edit User Account' : '➕ Create New User Account'}</h2>
+            <h2 style={{ color: '#000' }}>{editingUser ? 'Edit User Account' : 'Create New User Account'}</h2>
 
             <form onSubmit={editingUser ? handleUpdateUser : handleCreateUser} className="create-user-form">
               <div className="form-group">
                 <label>
-                  👤 Full Name
+                  Full Name
                 </label>
                 <input
                   type="text"
-                  placeholder="Enter user's full name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
@@ -308,29 +339,45 @@ const AdminPanel: React.FC = () => {
 
               <div className="form-group">
                 <label>
-                  📧 Email Address
+                  Email Address
                 </label>
                 <input
                   type="email"
-                  placeholder="user@company.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
+                  autoComplete="off"
                 />
               </div>
 
               <div className="form-group">
                 <label>
-                  🔑 {editingUser ? 'New Password (leave empty to keep current)' : 'Temporary Password'}
+                  User Role
+                </label>
+                <select
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  className="role-select"
+                  required
+                  style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da' }}
+                >
+                  <option value="user">Regular User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  {editingUser ? 'New Password (leave empty to keep current)' : 'Temporary Password'}
                 </label>
                 <div className="password-input-group">
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    placeholder={editingUser ? "Enter new password (optional)" : "Enter or generate password"}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required={!editingUser}
                     minLength={6}
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -347,7 +394,7 @@ const AdminPanel: React.FC = () => {
                       className="generate-password-btn"
                       onClick={generateRandomPassword}
                     >
-                      🔑 Generate Random Password
+                      Generate Random Password
                     </button>
                     <small className="password-note">
                       User will be required to change this password on first login
@@ -391,9 +438,6 @@ const AdminPanel: React.FC = () => {
             >
               ×
             </button>
-            <div className="success-icon">
-              ✅
-            </div>
             <h2>User Account Created!</h2>
             <p className="credentials-info">
               Please save these credentials and provide them to the user.
@@ -424,7 +468,7 @@ const AdminPanel: React.FC = () => {
                     onClick={() => copyToClipboard(createdCredentials.email, 'Email')}
                     style={{ color: '#ffffff' }}
                   >
-                    📋 Copy
+                    Copy
                   </button>
                 </div>
               </div>
@@ -438,7 +482,7 @@ const AdminPanel: React.FC = () => {
                     onClick={() => copyToClipboard(createdCredentials.password, 'Password')}
                     style={{ color: '#ffffff' }}
                   >
-                    📋 Copy
+                    Copy
                   </button>
                 </div>
               </div>
@@ -456,17 +500,17 @@ const AdminPanel: React.FC = () => {
                     )
                   }
                 >
-                  📋 Copy Both
+                  Copy Both
                 </button>
               </div>
               <pre className="credential-code">
-Username: {createdCredentials.email}
-Password: {createdCredentials.password}
+                Username: {createdCredentials.email}
+                Password: {createdCredentials.password}
               </pre>
             </div>
 
             <div className="warning-box">
-              ⚠️ Make sure to save these credentials now. You won't be able to see the password again!
+              Make sure to save these credentials now. You won't be able to see the password again!
             </div>
 
             <button
@@ -484,7 +528,7 @@ Password: {createdCredentials.password}
       {showDeleteConfirm && (
         <div className="modal-overlay">
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ color: '#000' }}>🗑️ Delete User</h2>
+            <h2 style={{ color: '#000' }}>Delete User</h2>
             <p style={{ color: '#000', marginBottom: '20px' }}>
               Are you sure you want to delete <strong>{showDeleteConfirm.name}</strong> ({showDeleteConfirm.email})?
               <br />

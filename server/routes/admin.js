@@ -8,27 +8,36 @@ const verifyAdmin = async (req, res, next) => {
     const jwt = require('jsonwebtoken');
     const authHeader = req.header('Authorization');
     const token = authHeader?.replace('Bearer ', '');
-    
+
     if (!token) {
       return res.status(401).json({ message: 'No token provided' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
-    
+
     const { supabase } = require('../../config/supabase');
+    // Verify admin role from database
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, role')
+      .select('id, email, role')
       .eq('id', decoded.userId)
       .single();
 
+    // Fallback: If role column is missing (it shouldn't be now), treat admin@system.local as admin
+    if (user && user.email === 'admin@system.local' && !user.role) {
+      user.role = 'admin';
+    }
+
     if (error || !user || user.role !== 'admin') {
+      console.log('❌ verifyAdmin: Access denied or user not found');
       return res.status(403).json({ message: 'Access denied. Admin privileges required.' });
     }
 
+    console.log(`✅ verifyAdmin: User is admin (ID: ${user.id}). Proceeding...`);
     req.userId = user.id;
     next();
   } catch (error) {
+    console.error('❌ verifyAdmin EXCEPTION:', error);
     res.status(401).json({ message: 'Invalid token' });
   }
 };
@@ -36,32 +45,52 @@ const verifyAdmin = async (req, res, next) => {
 // CREATE USER (Admin only)
 router.post('/create-user', verifyAdmin, async (req, res) => {
   try {
+    console.log('--- CREATE USER ATTEMPT ---');
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+
     const { name, email, password } = req.body;
 
     // Validation
-    if (!name) return res.status(400).json({ message: 'Name is required' });
-    if (!email) return res.status(400).json({ message: 'Email is required' });
-    if (!password) return res.status(400).json({ message: 'Password is required' });
+    if (!name) {
+      console.log('❌ Create user: Missing name');
+      return res.status(400).json({ message: 'Name is required' });
+    }
+    if (!email) {
+      console.log('❌ Create user: Missing email');
+      return res.status(400).json({ message: 'Email is required' });
+    }
+    if (!password) {
+      console.log('❌ Create user: Missing password');
+      return res.status(400).json({ message: 'Password is required' });
+    }
     if (password.length < 6) {
+      console.log('❌ Create user: Password too short');
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
+      console.log('❌ Create user: Invalid email format');
       return res.status(400).json({ message: 'Please enter a valid email address' });
     }
 
     const { supabase } = require('../../config/supabase');
 
     // Check if user already exists
-    const { data: existingUser } = await supabase
+    console.log('Checking if user exists:', email.toLowerCase().trim());
+    const { data: existingUser, error: checkError } = await supabase
       .from('users')
       .select('id')
       .eq('email', email.toLowerCase().trim())
       .single();
 
     if (existingUser) {
+      console.log('❌ Create user: Email already exists');
       return res.status(400).json({ message: 'A user with this email already exists' });
+    }
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Check user error:', checkError);
     }
 
     // Hash password
@@ -69,23 +98,34 @@ router.post('/create-user', verifyAdmin, async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create user with must_change_password flag
+    console.log('Inserting new user into database...');
     const { data: newUser, error: insertError } = await supabase
       .from('users')
       .insert([{
         name: name.trim(),
         email: email.toLowerCase().trim(),
         password: hashedPassword,
-        role: 'user',
+        role: req.body.role || 'user',
         must_change_password: true
       }])
       .select('id, name, email, role')
       .single();
 
-    if (insertError || !newUser) {
-      console.error('Insert error:', insertError);
-      return res.status(500).json({ message: 'Failed to create user account' });
+    if (insertError) {
+      console.error('❌ Create user: INSERT error:', insertError);
+      return res.status(400).json({
+        message: 'Failed to create user account',
+        details: insertError.message,
+        code: insertError.code
+      });
     }
 
+    if (!newUser) {
+      console.log('❌ Create user: No user returned after insert');
+      return res.status(500).json({ message: 'Failed to create user account - no data returned' });
+    }
+
+    console.log(`✅ Create user SUCCESS: ${newUser.id}`);
     res.status(201).json({
       message: 'User created successfully',
       user: {
@@ -100,8 +140,8 @@ router.post('/create-user', verifyAdmin, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Create user error:', error);
-    res.status(500).json({ message: 'Failed to create user', error: error.message });
+    console.error('❌ Create user route EXCEPTION:', error);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });
 
@@ -111,8 +151,7 @@ router.get('/users', verifyAdmin, async (req, res) => {
     const { supabase } = require('../../config/supabase');
     const { data: users, error } = await supabase
       .from('users')
-      .select('id, name, email, role, created_at, last_password_change, must_change_password')
-      .eq('role', 'user')
+      .select('id, name, email, role, created_at, must_change_password')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -126,21 +165,57 @@ router.get('/users', verifyAdmin, async (req, res) => {
   }
 });
 
+// GET SINGLE USER (Admin only)
+router.get('/users/:id', verifyAdmin, async (req, res) => {
+  try {
+    const { supabase } = require('../../config/supabase');
+    console.log(`🔍 GET /users/:id - Fetching user ID: ${req.params.id} (type: ${typeof req.params.id})`);
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, name, email, role, created_at, must_change_password')
+      .eq('id', req.params.id)
+      .single();
+
+    if (error) {
+      console.error(`❌ GET /users/:id - Supabase Error:`, error);
+      return res.status(error.code === 'PGRST116' ? 404 : 500).json({
+        message: 'Database error fetching user',
+        error: error.message
+      });
+    }
+
+    if (!user) {
+      console.log(`❌ GET /users/:id - User NOT FOUND: ${req.params.id}`);
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    console.log(`✅ Get user SUCCESS for ID: ${req.params.id}`);
+    res.json({ user });
+  } catch (error) {
+    console.error(`❌ Get user route EXCEPTION for ID: ${req.params.id}:`, error);
+    res.status(500).json({
+      message: 'Failed to fetch user',
+      error: error.message,
+      stack: error.stack // Temporarily expose for debugging
+    });
+  }
+});
+
 // UPDATE USER (Admin only)
 router.put('/users/:id', verifyAdmin, async (req, res) => {
   try {
-    const userIdParam = parseInt(req.params.id, 10);
-    if (Number.isNaN(userIdParam)) {
-      return res.status(400).json({ message: 'Invalid user ID' });
+    const userIdParam = req.params.id;
+    if (!userIdParam) {
+      return res.status(400).json({ message: 'User ID is required' });
     }
     const { name, email, password } = req.body;
 
     const { supabase } = require('../../config/supabase');
-    
-    // Check if user exists
+
+    // Check if user exists (role column excluded to prevent 404s if missing in DB)
     const { data: user, error: userError } = await supabase
       .from('users')
-      .select('id, role, name as current_name, email as current_email')
+      .select('id, name, email')
       .eq('id', userIdParam)
       .single();
 
@@ -148,12 +223,23 @@ router.put('/users/:id', verifyAdmin, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Map fields for compatibility
+    user.current_name = user.name;
+    user.current_email = user.email;
+    user.current_role = user.role || 'user'; // role might be undefined, that's fine
+
+
     // Build update object and track changes
     const updateData = {};
     let changes = 0;
 
     if (name && name.trim() && name.trim() !== user.current_name) {
       updateData.name = name.trim();
+      changes++;
+    }
+
+    if (req.body.role && req.body.role !== user.current_role) {
+      updateData.role = req.body.role;
       changes++;
     }
 
@@ -182,7 +268,6 @@ router.put('/users/:id', verifyAdmin, async (req, res) => {
       if (password.length < 6) {
         return res.status(400).json({ message: 'Password must be at least 6 characters' });
       }
-      const bcrypt = require('bcrypt');
       const salt = await bcrypt.genSalt(10);
       updateData.password = await bcrypt.hash(password, salt);
       updateData.must_change_password = true; // Require password change if password is updated
@@ -220,7 +305,7 @@ router.delete('/users/:id', verifyAdmin, async (req, res) => {
     const userId = req.params.id;
 
     const { supabase } = require('../../config/supabase');
-    
+
     // Check if user exists and is not an admin
     const { data: user } = await supabase
       .from('users')
@@ -283,7 +368,7 @@ router.post('/users/:id/reset-password', verifyAdmin, async (req, res) => {
       return res.status(500).json({ message: 'Failed to reset password' });
     }
 
-    res.json({ 
+    res.json({
       message: 'Password reset successfully',
       newPassword: newPassword
     });
@@ -299,7 +384,7 @@ router.post('/users/:id/reset-password', verifyAdmin, async (req, res) => {
 router.get('/client-types', verifyAdmin, async (req, res) => {
   try {
     const { supabase } = require('../../config/supabase');
-    
+
     // Get all client types with their sites
     const { data: clientTypes, error: clientError } = await supabase
       .from('client_types')
@@ -353,7 +438,7 @@ router.post('/client-types', verifyAdmin, async (req, res) => {
     console.log('=== CREATE CLIENT TYPE REQUEST ===');
     console.log('Request body:', req.body);
     console.log('Request headers:', req.headers);
-    
+
     const { name, status } = req.body;
 
     if (!name || name.trim() === '') {
@@ -372,13 +457,13 @@ router.post('/client-types', verifyAdmin, async (req, res) => {
     if (tableCheckError) {
       console.error('Table check error:', tableCheckError);
       if (tableCheckError.code === '42P01' || tableCheckError.message?.includes('does not exist')) {
-        return res.status(500).json({ 
+        return res.status(500).json({
           message: 'Database table "client_types" does not exist. Please run the migration script first.',
           error: tableCheckError.message,
           code: tableCheckError.code
         });
       }
-      return res.status(500).json({ 
+      return res.status(500).json({
         message: 'Database error',
         error: tableCheckError.message,
         code: tableCheckError.code
@@ -396,16 +481,16 @@ router.post('/client-types', verifyAdmin, async (req, res) => {
       console.error('Error checking existing client type:', checkError);
       // If it's a "not found" error, that's fine - continue
       if (checkError.code !== 'PGRST116') {
-        return res.status(500).json({ 
-          message: 'Error checking for existing client type', 
+        return res.status(500).json({
+          message: 'Error checking for existing client type',
           error: checkError.message,
-          code: checkError.code 
+          code: checkError.code
         });
       }
     }
 
     if (existing) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: `Client type "${name.trim()}" already exists. Please use a different name or edit the existing client type.`,
         existingId: existing.id
       });
@@ -416,7 +501,7 @@ router.post('/client-types', verifyAdmin, async (req, res) => {
     const insertData = {
       name: name.trim()
     };
-    
+
     // Only include status if provided (let DB default handle it if column doesn't exist)
     // If status column doesn't exist, this will fail, but we'll catch it below
     if (status) {
@@ -424,7 +509,7 @@ router.post('/client-types', verifyAdmin, async (req, res) => {
     } else {
       insertData.status = 'active'; // Default value
     }
-    
+
     console.log('Inserting client type:', insertData);
     const { data: newClientType, error: insertError } = await supabase
       .from('client_types')
@@ -436,7 +521,7 @@ router.post('/client-types', verifyAdmin, async (req, res) => {
       console.error('Insert error:', insertError);
       console.error('Error code:', insertError.code);
       console.error('Error details:', insertError.details);
-      
+
       // Check if error is about missing status column or any column issue
       if (insertError.code === 'PGRST204' || insertError.message?.includes('column') || insertError.message?.includes('status')) {
         // Try again without status column - just insert the name
@@ -446,10 +531,10 @@ router.post('/client-types', verifyAdmin, async (req, res) => {
           .insert([{ name: name.trim() }])
           .select()
           .single();
-          
+
         if (retryError) {
           console.error('Retry also failed:', retryError);
-          return res.status(500).json({ 
+          return res.status(500).json({
             message: 'Failed to create client type. Please check: 1) Table exists, 2) Run ADD_STATUS_COLUMN.sql if status column is missing, 3) Check database connection.',
             error: retryError.message,
             code: retryError.code,
@@ -457,13 +542,13 @@ router.post('/client-types', verifyAdmin, async (req, res) => {
             originalError: insertError.message
           });
         }
-        
+
         // Success without status - add default status in response
         const clientTypeWithStatus = {
           ...retryClientType,
           status: 'active' // Add default status for response
         };
-        
+
         console.log('✅ Client type created successfully (without status column):', clientTypeWithStatus);
         return res.status(201).json({
           message: 'Client type created successfully',
@@ -471,8 +556,8 @@ router.post('/client-types', verifyAdmin, async (req, res) => {
           note: 'Status column not found in database - please run ADD_STATUS_COLUMN.sql to add it for full functionality'
         });
       }
-      
-      return res.status(500).json({ 
+
+      return res.status(500).json({
         message: 'Failed to create client type',
         error: insertError.message,
         code: insertError.code,
@@ -689,14 +774,14 @@ router.post('/sites', verifyAdmin, async (req, res) => {
       location: location ? location.trim() : null,
       client_type_id: client_type_id
     };
-    
+
     // Only include status if column exists (handle gracefully)
     if (status) {
       insertData.status = status;
     } else {
       insertData.status = 'active'; // Default
     }
-    
+
     const { data: newSite, error: insertError } = await supabase
       .from('sites')
       .insert([insertData])
@@ -708,7 +793,7 @@ router.post('/sites', verifyAdmin, async (req, res) => {
       console.error('Error code:', insertError.code);
       console.error('Error message:', insertError.message);
       console.error('Error details:', insertError.details);
-      
+
       // Check if error is about missing status column
       if (insertError.code === 'PGRST204' && insertError.message?.includes('status')) {
         // Retry without status column
@@ -722,24 +807,24 @@ router.post('/sites', verifyAdmin, async (req, res) => {
           }])
           .select()
           .single();
-          
+
         if (retryError) {
           console.error('Retry also failed:', retryError);
           // Check what the actual error is
           if (retryError.code === '42P01' || retryError.message?.includes('does not exist')) {
-            return res.status(500).json({ 
+            return res.status(500).json({
               message: 'The sites table does not exist. Please run CREATE_CLIENT_SITE_TABLES.sql script first.',
               error: retryError.message,
               code: retryError.code
             });
           } else if (retryError.code === '23503' || retryError.message?.includes('foreign key')) {
-            return res.status(500).json({ 
+            return res.status(500).json({
               message: 'Invalid client type ID. The client type may have been deleted.',
               error: retryError.message,
               code: retryError.code
             });
           } else {
-            return res.status(500).json({ 
+            return res.status(500).json({
               message: 'Failed to create site. Please check: 1) Run ADD_STATUS_COLUMN.sql if status column is missing, 2) Verify client_type_id is valid, 3) Check database connection.',
               error: retryError.message,
               code: retryError.code,
@@ -747,7 +832,7 @@ router.post('/sites', verifyAdmin, async (req, res) => {
             });
           }
         }
-        
+
         // Success without status
         const siteWithStatus = {
           ...retrySite,
@@ -758,8 +843,8 @@ router.post('/sites', verifyAdmin, async (req, res) => {
           site: siteWithStatus
         });
       }
-      
-      return res.status(500).json({ 
+
+      return res.status(500).json({
         message: 'Failed to create site',
         error: insertError.message,
         code: insertError.code,

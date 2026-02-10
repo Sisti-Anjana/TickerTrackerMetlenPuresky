@@ -25,6 +25,7 @@ interface Ticket {
   additional_notes?: string;
   priority?: string;
   created_at: string;
+  updated_at?: string;
   closed_at?: string;
   users?: {
     name: string;
@@ -36,7 +37,7 @@ const EditTicket: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  
+
   const [originalTicket, setOriginalTicket] = useState<Ticket | null>(null);
   const [formData, setFormData] = useState({
     customerName: '',
@@ -54,7 +55,8 @@ const EditTicket: React.FC = () => {
     caseNumber: '',
     issueDescription: '',
     additionalNotes: '',
-    closedAt: ''
+    closedAt: '',
+    reason: ''
   });
 
   const [loading, setLoading] = useState(true);
@@ -64,14 +66,14 @@ const EditTicket: React.FC = () => {
 
   // Customer Type Options
   const customerTypes = ['Puresky', 'Metlen'];
-  
+
   // Site Options
   const siteOptions = ['Site 1', 'Site 2'];
-  
+
   // Equipment Options
   const equipmentOptions = [
     'Production Meter',
-    'Inverter', 
+    'Inverter',
     'Combining Box/String Box',
     'Weather Station',
     'Tracker'
@@ -102,9 +104,9 @@ const EditTicket: React.FC = () => {
       setLoading(true);
       const response = await api.get(`/tickets/${id}`);
       const ticket = response.data;
-      
+
       setOriginalTicket(ticket);
-      
+
       // Convert ticket data to form format
       setFormData({
         customerName: ticket.customer_name || '',
@@ -115,19 +117,20 @@ const EditTicket: React.FC = () => {
         category: ticket.category || '',
         siteOutage: ticket.site_outage || '',
         ticketStatus: ticket.ticket_status || '',
-        issueStartTime: ticket.issue_start_time ? 
+        issueStartTime: ticket.issue_start_time ?
           new Date(ticket.issue_start_time).toISOString().slice(0, 16) : '',
-        issueEndTime: ticket.issue_end_time ? 
+        issueEndTime: ticket.issue_end_time ?
           new Date(ticket.issue_end_time).toISOString().slice(0, 16) : '',
         totalDuration: ticket.total_duration || '',
         kwDown: ticket.kw_down?.toString() || '',
         caseNumber: ticket.case_number || '',
         issueDescription: ticket.issue_description || '',
         additionalNotes: ticket.additional_notes || '',
-        closedAt: ticket.closed_at ? 
-          new Date(ticket.closed_at).toISOString().slice(0, 16) : ''
+        closedAt: ticket.closed_at ?
+          new Date(ticket.closed_at).toISOString().slice(0, 16) : '',
+        reason: ''
       });
-      
+
     } catch (error: any) {
       console.error('Error fetching ticket:', error);
       setError('Failed to load ticket');
@@ -143,7 +146,7 @@ const EditTicket: React.FC = () => {
       const endTime = new Date(formData.issueEndTime);
       const diffInMilliseconds = endTime.getTime() - startTime.getTime();
       const diffInHours = diffInMilliseconds / (1000 * 60 * 60);
-      
+
       if (diffInHours > 0) {
         const hours = Math.floor(diffInHours);
         const minutes = Math.floor((diffInHours - hours) * 60);
@@ -172,21 +175,21 @@ const EditTicket: React.FC = () => {
       ...prev,
       ticketStatus: newStatus,
       // Auto-set closed date when status changes to Closed or Resolved
-      closedAt: (newStatus === 'Closed' || newStatus === 'Resolved') && !prev.closedAt ? 
-        new Date().toISOString().slice(0, 16) : 
+      closedAt: (newStatus === 'Closed' || newStatus === 'Resolved') && !prev.closedAt ?
+        new Date().toISOString().slice(0, 16) :
         (newStatus !== 'Closed' && newStatus !== 'Resolved') ? '' : prev.closedAt
     }));
   };
 
   const handlePreview = () => {
     // Validate required fields
-    if (!formData.customerName || !formData.customerType || !formData.siteName || 
-        !formData.equipment || !formData.category || !formData.siteOutage || 
-        !formData.issueStartTime || !formData.issueDescription) {
+    if (!formData.customerName || !formData.customerType || !formData.siteName ||
+      !formData.equipment || !formData.category || !formData.siteOutage ||
+      !formData.issueStartTime || !formData.issueDescription) {
       setError('Please fill in all required fields');
       return;
     }
-    
+
     // Validate end time logic only if end time is provided
     if (formData.issueStartTime && formData.issueEndTime) {
       const startTime = new Date(formData.issueStartTime);
@@ -196,7 +199,7 @@ const EditTicket: React.FC = () => {
         return;
       }
     }
-    
+
     setError('');
     setShowPreview(true);
   };
@@ -222,20 +225,21 @@ const EditTicket: React.FC = () => {
         case_number: formData.caseNumber,
         issue_description: formData.issueDescription,
         additional_notes: formData.additionalNotes,
-        closed_at: formData.closedAt || null
+        closed_at: formData.closedAt || null,
+        reason: formData.reason
       };
 
       console.log('Updating ticket with data:', ticketData);
       const response = await api.put(`/tickets/${id}`, ticketData);
-      
+
       console.log('Ticket updated successfully:', response.data);
-      
+
       // Show success message
       alert(`Ticket updated successfully!`);
-      
+
       // Navigate back to ticket detail
       navigate(`/tickets/${id}`);
-      
+
     } catch (err: any) {
       console.error('Error updating ticket:', err);
       console.error('Error response:', err.response?.data);
@@ -311,6 +315,10 @@ const EditTicket: React.FC = () => {
               <span className="preview-value">{formData.additionalNotes}</span>
             </div>
           )}
+          <div className="preview-row" style={{ marginTop: '15px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+            <span className="preview-label" style={{ color: '#eab308' }}>Reason for Edit:</span>
+            <span className="preview-value">{formData.reason}</span>
+          </div>
         </div>
         <div className="preview-actions">
           <button className="btn btn-secondary" onClick={() => setShowPreview(false)}>
@@ -361,7 +369,7 @@ const EditTicket: React.FC = () => {
               <h1 className="form-title" style={{ margin: 0 }}>Edit Ticket #{originalTicket.ticket_number}</h1>
             </div>
             <div className="form-actions">
-              <button 
+              <button
                 onClick={() => navigate(`/tickets/${id}`)}
                 className="btn btn-outline"
               >
@@ -519,6 +527,19 @@ const EditTicket: React.FC = () => {
                   disabled
                 />
               </div>
+
+              {originalTicket?.updated_at && (
+                <div className="form-group">
+                  <label className="form-label">Last Edited At</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={new Date(originalTicket.updated_at).toLocaleString()}
+                    disabled
+                    style={{ backgroundColor: '#f1f5f9', color: '#64748b' }}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Row 6: KW Down, Case Number, and Closed Date */}
@@ -587,6 +608,20 @@ const EditTicket: React.FC = () => {
                 />
               </div>
             </div>
+            {/* Row 9: Reason for Edit - NEW */}
+            <div className="form-row">
+              <div className="form-group full-width">
+                <label className="form-label">Reason for Edit <span className="required">*</span></label>
+                <textarea
+                  className="form-textarea"
+                  value={formData.reason}
+                  onChange={(e) => handleInputChange('reason', e.target.value)}
+                  placeholder="Please explain why you are making these changes"
+                  rows={2}
+                  style={{ border: '2px solid #eab308' }} // Highlight this new required field
+                />
+              </div>
+            </div>
           </div>
 
           {/* Form Actions */}
@@ -611,7 +646,7 @@ const EditTicket: React.FC = () => {
 
       {/* Preview Modal */}
       {showPreview && <PreviewModal />}
-    </div>
+    </div >
   );
 };
 
