@@ -1348,7 +1348,6 @@ const Dashboard = (): JSX.Element => {
                           <Link
                             to={`/tickets/${ticket.id}`}
                             className="btn btn-small btn-outline"
-                            style={{ padding: '6px 10px' }}
                           >
                             View
                           </Link>
