@@ -633,7 +633,7 @@
 }
 
 .description-cell {
-  max-width: none !important;
+  max-width: 500px !important;
   min-width: 200px;
   position: relative;
   word-wrap: break-word !important;
@@ -1274,7 +1274,7 @@
 
 /* Table cell improvements */
 .tickets-table td {
-  padding: 14px 12px;
+  padding: 10px 12px;
   border-bottom: 1px solid #f3f4f6;
   vertical-align: middle;
 }
