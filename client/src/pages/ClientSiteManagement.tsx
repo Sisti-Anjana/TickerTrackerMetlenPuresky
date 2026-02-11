@@ -8,6 +8,7 @@ interface Site {
   id: number;
   name: string;
   location?: string;
+  description?: string;
   client_type_id: number;
   status: 'active' | 'inactive';
   created_at: string;
@@ -16,6 +17,7 @@ interface Site {
 interface ClientType {
   id: number;
   name: string;
+  description?: string;
   status: 'active' | 'inactive';
   created_at: string;
   sites?: Site[];
@@ -39,6 +41,7 @@ const ClientSiteManagement: React.FC = () => {
   const [editingClient, setEditingClient] = useState<ClientType | null>(null);
   const [clientFormData, setClientFormData] = useState({
     name: '',
+    description: '',
     status: 'active' as 'active' | 'inactive'
   });
 
@@ -48,9 +51,16 @@ const ClientSiteManagement: React.FC = () => {
   const [siteFormData, setSiteFormData] = useState({
     name: '',
     location: '',
+    description: '',
     status: 'active' as 'active' | 'inactive',
     client_type_id: 0
   });
+
+  // Bulk Site Form
+  const [showBulkSiteForm, setShowBulkSiteForm] = useState(false);
+  const [bulkSitesText, setBulkSitesText] = useState('');
+  const [bulkClientId, setBulkClientId] = useState<number | null>(null);
+  const [bulkClientName, setBulkClientName] = useState('');
 
   // Equipment management
   const [equipment, setEquipment] = useState<Equipment[]>([]);
@@ -169,7 +179,7 @@ const ClientSiteManagement: React.FC = () => {
         setSuccess('Client type updated successfully');
         setShowClientForm(false);
         setEditingClient(null);
-        setClientFormData({ name: '', status: 'active' });
+        setClientFormData({ name: '', description: '', status: 'active' });
       } else {
         // Create client type
         console.log('Creating client type with data:', clientFormData);
@@ -184,13 +194,14 @@ const ClientSiteManagement: React.FC = () => {
           setSiteFormData({
             name: '',
             location: '',
+            description: '',
             status: 'active',
             client_type_id: newClientType.id
           });
         }
         setShowClientForm(false);
         setEditingClient(null);
-        setClientFormData({ name: '', status: 'active' });
+        setClientFormData({ name: '', description: '', status: 'active' });
       }
 
       fetchClientTypes();
@@ -238,6 +249,7 @@ const ClientSiteManagement: React.FC = () => {
       setSiteFormData({
         name: '',
         location: '',
+        description: '',
         status: 'active',
         client_type_id: targetClientId
       });
@@ -285,6 +297,7 @@ const ClientSiteManagement: React.FC = () => {
     setEditingClient(client);
     setClientFormData({
       name: client.name,
+      description: client.description || '',
       status: client.status
     });
     setShowClientForm(true);
@@ -295,6 +308,7 @@ const ClientSiteManagement: React.FC = () => {
     setSiteFormData({
       name: site.name,
       location: site.location || '',
+      description: site.description || '',
       status: site.status,
       client_type_id: site.client_type_id
     });
@@ -305,16 +319,63 @@ const ClientSiteManagement: React.FC = () => {
     if (expandedClientId === clientId) {
       setExpandedClientId(null);
       setEditingSite(null);
-      setSiteFormData({ name: '', location: '', status: 'active', client_type_id: 0 });
+      setSiteFormData({ name: '', location: '', description: '', status: 'active', client_type_id: 0 });
     } else {
       setExpandedClientId(clientId);
       setEditingSite(null);
       setSiteFormData({
         name: '',
         location: '',
+        description: '',
         status: 'active',
         client_type_id: clientId
       });
+    }
+  };
+
+  const openBulkAdd = (client: ClientType) => {
+    setBulkClientId(client.id);
+    setBulkClientName(client.name);
+    setBulkSitesText('');
+    setShowBulkSiteForm(true);
+  };
+
+  const handleBulkSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!bulkClientId) return;
+
+    const sites = bulkSitesText
+      .split('\n')
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+
+    if (sites.length === 0) {
+      setError('Please enter at least one site name');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+      setSuccess('');
+
+      const response = await api.post('/admin/sites/bulk', {
+        sites,
+        client_type_id: bulkClientId
+      });
+
+      setSuccess(`Successfully added ${response.data.sites?.length || sites.length} sites`);
+      setShowBulkSiteForm(false);
+      fetchClientTypes();
+
+      // Ensure the client is expanded to verify
+      setExpandedClientId(bulkClientId);
+
+    } catch (err: any) {
+      console.error('Error adding sites in bulk:', err);
+      setError(err.response?.data?.message || 'Failed to add sites recursively');
+      setLoading(false);
     }
   };
 
@@ -368,7 +429,7 @@ const ClientSiteManagement: React.FC = () => {
             className="btn-add-client"
             onClick={() => {
               setEditingClient(null);
-              setClientFormData({ name: '', status: 'active' });
+              setClientFormData({ name: '', description: '', status: 'active' });
               setShowClientForm(true);
             }}
           >
@@ -399,7 +460,7 @@ const ClientSiteManagement: React.FC = () => {
             className="btn-add-client"
             onClick={() => {
               setEditingClient(null);
-              setClientFormData({ name: '', status: 'active' });
+              setClientFormData({ name: '', description: '', status: 'active' });
               setShowClientForm(true);
             }}
           >
@@ -455,11 +516,21 @@ const ClientSiteManagement: React.FC = () => {
                   {client.sites && client.sites.length > 0 && (
                     <div className="existing-sites">
                       <h4>Existing Sites ({client.sites.length})</h4>
+                      <button
+                        className="btn-add-client"
+                        style={{ fontSize: '0.8rem', padding: '4px 8px', marginLeft: '10px' }}
+                        onClick={() => openBulkAdd(client)}
+                      >
+                        + Bulk Add Sites
+                      </button>
                       <div className="sites-grid">
                         {client.sites.map((site) => (
                           <div key={site.id} className="site-card">
                             <div className="site-info">
                               <span className="site-name">{site.name}</span>
+                              {site.description && (
+                                <span className="site-description" style={{ fontSize: '0.85rem', color: '#666', display: 'block' }}>{site.description}</span>
+                              )}
                               {site.location && (
                                 <span className="site-location">{site.location}</span>
                               )}
@@ -489,6 +560,19 @@ const ClientSiteManagement: React.FC = () => {
                     </div>
                   )}
 
+                  {/* Empty state for sites if none exist but we want to show bulk add option */}
+                  {(!client.sites || client.sites.length === 0) && (
+                    <div className="no-sites-actions" style={{ marginBottom: '15px' }}>
+                      <button
+                        className="btn-add-client"
+                        style={{ fontSize: '0.8rem', padding: '4px 8px' }}
+                        onClick={() => openBulkAdd(client)}
+                      >
+                        + Bulk Add Sites
+                      </button>
+                    </div>
+                  )}
+
                   {/* Add/Edit Site Form */}
                   <div className="add-site-form">
                     <h4>{editingSite ? 'Edit Site' : 'Add New Site'}</h4>
@@ -514,6 +598,15 @@ const ClientSiteManagement: React.FC = () => {
                           />
                         </div>
                         <div className="form-group">
+                          <label>Relevant Text (Description)</label>
+                          <input
+                            type="text"
+                            value={siteFormData.description}
+                            onChange={(e) => setSiteFormData({ ...siteFormData, description: e.target.value })}
+                            placeholder="Add relevant text for dropdown"
+                          />
+                        </div>
+                        <div className="form-group">
                           <label>Status</label>
                           <select
                             value={siteFormData.status}
@@ -533,6 +626,7 @@ const ClientSiteManagement: React.FC = () => {
                                 setSiteFormData({
                                   name: '',
                                   location: '',
+                                  description: '',
                                   status: 'active',
                                   client_type_id: client.id
                                 });
@@ -553,7 +647,9 @@ const ClientSiteManagement: React.FC = () => {
             </div>
           ))}
         </div>
-      )}
+      )
+      }
+
 
       {/* Equipment management section */}
       <div className="equipment-management">
@@ -604,45 +700,103 @@ const ClientSiteManagement: React.FC = () => {
       </div>
 
       {/* Client Type Modal */}
-      {showClientForm && (
-        <div className="modal-overlay" onClick={() => setShowClientForm(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>{editingClient ? 'Edit Client Type' : 'Add Client Type'}</h2>
-            <form onSubmit={handleClientSubmit}>
-              <div className="form-group">
-                <label>Client Type Name <span className="required">*</span></label>
-                <input
-                  type="text"
-                  value={clientFormData.name}
-                  onChange={(e) => setClientFormData({ ...clientFormData, name: e.target.value })}
-                  placeholder="e.g., Puresky, Metlen"
-                  required
-                  autoFocus
-                />
-              </div>
-              <div className="form-group">
-                <label>Status</label>
-                <select
-                  value={clientFormData.status}
-                  onChange={(e) => setClientFormData({ ...clientFormData, status: e.target.value as 'active' | 'inactive' })}
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="btn-cancel" onClick={() => setShowClientForm(false)}>
-                  Cancel
-                </button>
-                <button type="submit" className="btn-submit">
-                  {editingClient ? 'Update' : 'Create'}
-                </button>
-              </div>
-            </form>
+      {
+        showClientForm && (
+          <div className="modal-overlay" onClick={() => setShowClientForm(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <h2>{editingClient ? 'Edit Client Type' : 'Add Client Type'}</h2>
+              <form onSubmit={handleClientSubmit}>
+                <div className="form-group">
+                  <label>Client Type Name <span className="required">*</span></label>
+                  <input
+                    type="text"
+                    value={clientFormData.name}
+                    onChange={(e) => setClientFormData({ ...clientFormData, name: e.target.value })}
+                    placeholder="e.g., Puresky, Metlen"
+                    required
+                    autoFocus
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Relevant Text (Description)</label>
+                  <input
+                    type="text"
+                    value={clientFormData.description}
+                    onChange={(e) => setClientFormData({ ...clientFormData, description: e.target.value })}
+                    placeholder="Add relevant text for dropdown"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Status</label>
+                  <select
+                    value={clientFormData.status}
+                    onChange={(e) => setClientFormData({ ...clientFormData, status: e.target.value as 'active' | 'inactive' })}
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+                <div className="modal-actions">
+                  <button type="button" className="btn-cancel" onClick={() => setShowClientForm(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-submit">
+                    {editingClient ? 'Update' : 'Create'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+
+      {/* Bulk Site Add Modal */}
+      {
+        showBulkSiteForm && (
+          <div className="modal-overlay" onClick={() => setShowBulkSiteForm(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <h2>Bulk Add Sites for {bulkClientName}</h2>
+              <p style={{ marginBottom: '15px', color: '#666', fontSize: '0.9rem' }}>
+                Enter site names below, one per line.
+              </p>
+              <form onSubmit={handleBulkSubmit}>
+                <div className="form-group">
+                  <label>Site Names <span className="required">*</span></label>
+                  <textarea
+                    value={bulkSitesText}
+                    onChange={(e) => setBulkSitesText(e.target.value)}
+                    placeholder="Site 1&#10;Site 2&#10;Site 3"
+                    className="bulk-site-textarea"
+                    style={{
+                      width: '100%',
+                      minHeight: '200px',
+                      padding: '10px',
+                      borderRadius: '4px',
+                      border: '1px solid #ddd',
+                      fontFamily: 'inherit',
+                      resize: 'vertical'
+                    }}
+                    required
+                    autoFocus
+                  />
+                  <p style={{ marginTop: '5px', fontSize: '0.8rem', color: '#888' }}>
+                    {bulkSitesText.split('\n').filter(s => s.trim().length > 0).length} sites to act.
+                  </p>
+                </div>
+                <div className="modal-actions">
+                  <button type="button" className="btn-cancel" onClick={() => setShowBulkSiteForm(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-submit">
+                    Add Sites
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )
+      }
+    </div >
   );
 };
 

@@ -439,7 +439,7 @@ router.post('/client-types', verifyAdmin, async (req, res) => {
     console.log('Request body:', req.body);
     console.log('Request headers:', req.headers);
 
-    const { name, status } = req.body;
+    const { name, description, status } = req.body;
 
     if (!name || name.trim() === '') {
       console.error('Validation failed: name is empty');
@@ -499,7 +499,8 @@ router.post('/client-types', verifyAdmin, async (req, res) => {
     // Create client type
     // Build insert object - handle status column gracefully
     const insertData = {
-      name: name.trim()
+      name: name.trim(),
+      description: description || null
     };
 
     // Only include status if provided (let DB default handle it if column doesn't exist)
@@ -523,9 +524,16 @@ router.post('/client-types', verifyAdmin, async (req, res) => {
       console.error('Error details:', insertError.details);
 
       // Check if error is about missing status column or any column issue
-      if (insertError.code === 'PGRST204' || insertError.message?.includes('column') || insertError.message?.includes('status')) {
-        // Try again without status column - just insert the name
-        console.log('⚠️ Status column may be missing. Retrying insert with name only...');
+      // Check if error is about missing status or description column
+      const errorMsg = insertError.message?.toLowerCase() || '';
+      const isMissingCol =
+        (insertError.code === 'PGRST103' && (errorMsg.includes('description') || errorMsg.includes('status'))) ||
+        (insertError.code === 'PGRST204' && (errorMsg.includes('description') || errorMsg.includes('status'))) ||
+        (errorMsg.includes('does not exist') && (errorMsg.includes('description') || errorMsg.includes('status')));
+
+      if (isMissingCol) {
+        // Try again with minimum columns- just insert the name
+        console.log('⚠️ Column mismatch. Retrying insert with name only...');
         const { data: retryClientType, error: retryError } = await supabase
           .from('client_types')
           .insert([{ name: name.trim() }])
@@ -585,7 +593,7 @@ router.post('/client-types', verifyAdmin, async (req, res) => {
 router.put('/client-types/:id', verifyAdmin, async (req, res) => {
   try {
     const clientId = req.params.id;
-    const { name, status } = req.body;
+    const { name, description, status } = req.body;
 
     if (!name || name.trim() === '') {
       return res.status(400).json({ message: 'Client type name is required' });
@@ -617,18 +625,41 @@ router.put('/client-types/:id', verifyAdmin, async (req, res) => {
     }
 
     // Update client type
+    const updateData = {
+      name: name.trim(),
+      description: description || null,
+      status: status || 'active'
+    };
+
     const { data: updated, error: updateError } = await supabase
       .from('client_types')
-      .update({
-        name: name.trim(),
-        status: status || 'active'
-      })
+      .update(updateData)
       .eq('id', clientId)
       .select()
       .single();
 
-    if (updateError || !updated) {
-      return res.status(500).json({ message: 'Failed to update client type' });
+    if (updateError) {
+      console.error('Update client type error:', updateError);
+
+      // Retry without description/status if missing
+      const errorMsg = updateError.message?.toLowerCase() || '';
+      if (updateError.code === 'PGRST204' || errorMsg.includes('column') || errorMsg.includes('does not exist')) {
+        console.log('Retrying update with name only...');
+        const { data: retryUpdated, error: retryError } = await supabase
+          .from('client_types')
+          .update({ name: name.trim() })
+          .eq('id', clientId)
+          .select()
+          .single();
+
+        if (!retryError && retryUpdated) {
+          return res.json({
+            message: 'Client type updated successfully (partial)',
+            client_type: retryUpdated
+          });
+        }
+      }
+      return res.status(500).json({ message: 'Failed to update client type', error: updateError.message });
     }
 
     res.json({
@@ -744,7 +775,7 @@ router.get('/sites', verifyAdmin, async (req, res) => {
 // CREATE SITE (Admin only)
 router.post('/sites', verifyAdmin, async (req, res) => {
   try {
-    const { name, location, status, client_type_id } = req.body;
+    const { name, location, description, status, client_type_id } = req.body;
 
     if (!name || name.trim() === '') {
       return res.status(400).json({ message: 'Site name is required' });
@@ -771,7 +802,8 @@ router.post('/sites', verifyAdmin, async (req, res) => {
     console.log('Creating site with data:', { name: name.trim(), location, status, client_type_id });
     const insertData = {
       name: name.trim(),
-      location: location ? location.trim() : null,
+      location: location || null,
+      description: description || null,
       client_type_id: client_type_id
     };
 
@@ -794,67 +826,41 @@ router.post('/sites', verifyAdmin, async (req, res) => {
       console.error('Error message:', insertError.message);
       console.error('Error details:', insertError.details);
 
-      // Check if error is about missing status column
-      if (insertError.code === 'PGRST204' && insertError.message?.includes('status')) {
-        // Retry without status column
-        console.log('Retrying site insert without status column...');
+      const errorMsg = insertError.message?.toLowerCase() || '';
+      const isMissingCol =
+        (insertError.code === 'PGRST103' && (errorMsg.includes('description') || errorMsg.includes('status'))) ||
+        (insertError.code === 'PGRST204' && (errorMsg.includes('description') || errorMsg.includes('status'))) ||
+        (errorMsg.includes('does not exist') && (errorMsg.includes('description') || errorMsg.includes('status')));
+
+      if (isMissingCol) {
+        console.log('Retrying site insert with minimum columns...');
         const { data: retrySite, error: retryError } = await supabase
           .from('sites')
           .insert([{
             name: name.trim(),
-            location: location ? location.trim() : null,
+            location: location || null,
             client_type_id: client_type_id
           }])
           .select()
           .single();
 
         if (retryError) {
-          console.error('Retry also failed:', retryError);
-          // Check what the actual error is
-          if (retryError.code === '42P01' || retryError.message?.includes('does not exist')) {
-            return res.status(500).json({
-              message: 'The sites table does not exist. Please run CREATE_CLIENT_SITE_TABLES.sql script first.',
-              error: retryError.message,
-              code: retryError.code
-            });
-          } else if (retryError.code === '23503' || retryError.message?.includes('foreign key')) {
-            return res.status(500).json({
-              message: 'Invalid client type ID. The client type may have been deleted.',
-              error: retryError.message,
-              code: retryError.code
-            });
-          } else {
-            return res.status(500).json({
-              message: 'Failed to create site. Please check: 1) Run ADD_STATUS_COLUMN.sql if status column is missing, 2) Verify client_type_id is valid, 3) Check database connection.',
-              error: retryError.message,
-              code: retryError.code,
-              details: retryError.details
-            });
-          }
+          return res.status(500).json({
+            message: 'Failed to create site (retry failed)',
+            error: retryError.message
+          });
         }
 
-        // Success without status
-        const siteWithStatus = {
-          ...retrySite,
-          status: 'active'
-        };
         return res.status(201).json({
-          message: 'Site created successfully',
-          site: siteWithStatus
+          message: 'Site created successfully (partial)',
+          site: retrySite
         });
       }
 
       return res.status(500).json({
         message: 'Failed to create site',
-        error: insertError.message,
-        code: insertError.code,
-        details: insertError.details
+        error: insertError.message
       });
-    }
-
-    if (!newSite) {
-      console.error('No site returned after insert');
-      return res.status(500).json({ message: 'Failed to create site - no data returned' });
     }
 
     res.status(201).json({
@@ -867,11 +873,99 @@ router.post('/sites', verifyAdmin, async (req, res) => {
   }
 });
 
+// BULK CREATE SITES (Admin only)
+router.post('/sites/bulk', verifyAdmin, async (req, res) => {
+  try {
+    const { sites, client_type_id } = req.body;
+
+    if (!sites || !Array.isArray(sites) || sites.length === 0) {
+      return res.status(400).json({ message: 'No sites provided' });
+    }
+
+    if (!client_type_id) {
+      return res.status(400).json({ message: 'Client type is required' });
+    }
+
+    const { supabase } = require('../../config/supabase');
+
+    // Prepare data for bulk insert
+    const insertData = sites.map(name => ({
+      name: name.trim(),
+      client_type_id: client_type_id,
+      status: 'active',
+      description: name.includes(' - ') ? name.split(' - ')[1] : null // Optional: support "Name - Description" in bulk
+    }));
+
+    console.log(`Bulk inserting ${insertData.length} sites for client type ${client_type_id}`);
+
+    const { data: newSites, error: insertError } = await supabase
+      .from('sites')
+      .insert(insertData)
+      .select();
+
+    if (insertError) {
+      console.error('Bulk insert error:', insertError);
+
+      // Check if error is related to missing column (description or status)
+      const errorMsg = insertError.message?.toLowerCase() || '';
+      const isMissingCol =
+        (insertError.code === 'PGRST103' && (errorMsg.includes('description') || errorMsg.includes('status'))) ||
+        (insertError.code === 'PGRST204' && (errorMsg.includes('description') || errorMsg.includes('status'))) ||
+        (errorMsg.includes('does not exist') && (errorMsg.includes('description') || errorMsg.includes('status')));
+
+      if (isMissingCol) {
+        console.log('Retrying bulk insert without optional columns...');
+        const retryData = sites.map(name => {
+          const base = {
+            name: name.trim(),
+            client_type_id: client_type_id
+          };
+          // Only add columns if they weren't the cause of error (or just strip both for maximum safety)
+          return base;
+        });
+
+        const { data: retrySites, error: retryError } = await supabase
+          .from('sites')
+          .insert(retryData)
+          .select();
+
+        if (retryError) {
+          console.error('Retry insert failed:', retryError);
+          return res.status(500).json({
+            message: 'Failed to create sites (retry failed)',
+            error: retryError.message
+          });
+        }
+
+        return res.status(201).json({
+          message: `${retrySites.length} sites created successfully (without description/status)`,
+          sites: retrySites
+        });
+      }
+
+      return res.status(500).json({
+        message: 'Failed to create sites',
+        error: insertError.message,
+        details: insertError.details
+      });
+    }
+
+    res.status(201).json({
+      message: `${newSites.length} sites created successfully`,
+      sites: newSites
+    });
+  } catch (error) {
+    console.error('Bulk create sites error:', error);
+    res.status(500).json({ message: 'Failed to create sites', error: error.message });
+  }
+});
+
+
 // UPDATE SITE (Admin only)
 router.put('/sites/:id', verifyAdmin, async (req, res) => {
   try {
     const siteId = req.params.id;
-    const { name, location, status, client_type_id } = req.body;
+    const { name, location, description, status, client_type_id } = req.body;
 
     if (!name || name.trim() === '') {
       return res.status(400).json({ message: 'Site name is required' });
@@ -906,20 +1000,45 @@ router.put('/sites/:id', verifyAdmin, async (req, res) => {
     }
 
     // Update site
+    const updateData = {
+      name: name.trim(),
+      location: location || null,
+      description: description || null,
+      status: status || 'active',
+      client_type_id: client_type_id
+    };
+
     const { data: updated, error: updateError } = await supabase
       .from('sites')
-      .update({
-        name: name.trim(),
-        location: location ? location.trim() : null,
-        status: status || 'active',
-        client_type_id: client_type_id
-      })
+      .update(updateData)
       .eq('id', siteId)
       .select()
       .single();
 
-    if (updateError || !updated) {
-      return res.status(500).json({ message: 'Failed to update site' });
+    if (updateError) {
+      console.error('Update site error:', updateError);
+      const errorMsg = updateError.message?.toLowerCase() || '';
+      if (updateError.code === 'PGRST204' || errorMsg.includes('column') || errorMsg.includes('does not exist')) {
+        console.log('Retrying site update with minimum columns...');
+        const { data: retryUpdated, error: retryError } = await supabase
+          .from('sites')
+          .update({
+            name: name.trim(),
+            location: location || null,
+            client_type_id: client_type_id
+          })
+          .eq('id', siteId)
+          .select()
+          .single();
+
+        if (!retryError && retryUpdated) {
+          return res.json({
+            message: 'Site updated successfully (partial)',
+            site: retryUpdated
+          });
+        }
+      }
+      return res.status(500).json({ message: 'Failed to update site', error: updateError.message });
     }
 
     res.json({
