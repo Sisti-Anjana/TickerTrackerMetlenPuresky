@@ -1,8 +1,8 @@
 /* Top Header - Spans full width including over sidebar area */
 .top-header {
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-  border-bottom: 1px solid #e5e7eb;
+  background: #76AB3F;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-bottom: none;
   position: fixed;
   top: 0;
   left: 0;
@@ -42,17 +42,18 @@
 
 .header-main-title {
   font-size: 32px;
-  font-weight: 700;
-  color: #000000;
+  font-weight: 800;
+  color: #ffffff;
   margin: 0;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header-subtitle {
   font-size: 16px;
-  color: #666666;
+  color: rgba(255, 255, 255, 0.9);
   margin: 4px 0 0 0;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .header-logout-section {
@@ -63,7 +64,7 @@
 
 .header-user-info {
   text-align: right;
-  color: #333333;
+  color: #ffffff;
 }
 
 .header-user-name {
@@ -74,7 +75,7 @@
 
 .header-user-email {
   font-size: 14px;
-  color: #666666;
+  color: rgba(255, 255, 255, 0.8);
   margin: 2px 0 0 0;
 }
 
@@ -88,7 +89,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header-user-email {
@@ -98,8 +99,8 @@
 }
 
 .header-logout-btn {
-  background: #76ab3f;
-  color: white;
+  background: #ffffff;
+  color: #76ab3f;
   border: none;
   padding: 10px 24px;
   border-radius: 6px;
@@ -113,9 +114,9 @@
 }
 
 .header-logout-btn:hover {
-  background: #5d8a31;
+  background: rgba(255, 255, 255, 0.9);
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .header-logout-btn:active {
@@ -127,19 +128,19 @@
   .top-header {
     height: 100px;
   }
-  
+
   .top-header-content {
     padding: 15px 30px;
   }
-  
+
   .header-main-title {
     font-size: 26px;
   }
-  
+
   .header-subtitle {
     font-size: 14px;
   }
-  
+
   .header-logo {
     height: 60px;
   }
@@ -149,19 +150,19 @@
   .top-header {
     height: 90px;
   }
-  
+
   .top-header-content {
     padding: 12px 20px;
   }
-  
+
   .header-main-title {
     font-size: 22px;
   }
-  
+
   .header-subtitle {
     font-size: 12px;
   }
-  
+
   .header-logo {
     height: 50px;
   }
@@ -172,39 +173,39 @@
     height: auto;
     min-height: 140px;
   }
-  
+
   .top-header-content {
     flex-direction: column;
     gap: 10px;
     padding: 15px;
   }
-  
+
   .header-logo-section {
     width: 100%;
     justify-content: center;
   }
-  
+
   .header-title-section {
     width: 100%;
   }
-  
+
   .header-main-title {
     font-size: 20px;
   }
-  
+
   .header-subtitle {
     font-size: 11px;
   }
-  
+
   .header-logout-section {
     width: 100%;
     justify-content: center;
   }
-  
+
   .header-user-info {
     text-align: center;
   }
-  
+
   .header-logo {
     height: 45px;
   }
@@ -214,20 +215,20 @@
   .top-header {
     min-height: 130px;
   }
-  
+
   .header-main-title {
     font-size: 18px;
   }
-  
+
   .header-subtitle {
     font-size: 10px;
   }
-  
+
   .header-logout-btn {
     padding: 8px 16px;
     font-size: 13px;
   }
-  
+
   .header-logo {
     height: 40px;
   }

@@ -25,17 +25,7 @@ if (!process.env.SUPABASE_URL) {
 
   // Create Supabase client for server-side operations
   try {
-    supabase = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      },
-      global: {
-        headers: {
-          'x-application-name': 'ticket-management-server'
-        }
-      }
-    });
+    supabase = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey);
 
     // Create Supabase client for client-side operations  
     supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
@@ -66,25 +56,25 @@ async function testSupabaseConnection() {
 
     console.log('=== TESTING SUPABASE CONNECTION ===');
     console.log('🔗 Testing URL:', supabaseUrl.substring(0, 30) + '...');
-    
+
     // Test basic connectivity with timeout
     const connectionPromise = supabase
       .from('users')
-      .select('count')
+      .select('id', { count: 'exact', head: true })
       .limit(1);
-    
-    const timeoutPromise = new Promise((_, reject) => 
+
+    const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Connection timeout after 10 seconds')), 10000)
     );
-    
+
     const { data, error } = await Promise.race([connectionPromise, timeoutPromise]);
-    
+
     if (error) {
       console.error('❌ Connection failed:', error.message);
       console.error('Error details:', error);
       return false;
     }
-    
+
     console.log('✅ Supabase connected successfully!');
     return true;
   } catch (error) {
@@ -99,11 +89,11 @@ async function getDatabaseStats() {
     const { data: userCount } = await supabase
       .from('users')
       .select('id', { count: 'exact', head: true });
-      
+
     const { data: ticketCount } = await supabase
-      .from('tickets') 
+      .from('tickets')
       .select('id', { count: 'exact', head: true });
-      
+
     return {
       users: userCount || 0,
       tickets: ticketCount || 0

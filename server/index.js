@@ -1,6 +1,21 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+// Try loading .env from current dir for local overrides
 require('dotenv').config();
+
+// Always try to load from root .env with override to ensure we get the file values
+// unless specifically testing
+const rootEnvPath = path.join(__dirname, '../.env');
+console.log('Loading .env from:', rootEnvPath);
+const result = require('dotenv').config({ path: rootEnvPath, override: true });
+
+if (result.error) {
+  console.log('Error loading root .env:', result.error.message);
+}
+
+console.log('ENV PORT:', process.env.PORT);
+console.log('ENV SUPABASE_URL:', process.env.SUPABASE_URL ? 'Set' : 'Not Set');
 
 const authRoutes = require('./routes/auth');
 const ticketRoutes = require('./routes/tickets');
@@ -33,17 +48,17 @@ app.use((req, res, next) => {
 const { supabase } = require('../config/supabase');
 if (supabase) {
   supabase.from('users').select('count').limit(1).then(() => {
-  console.log('✅ Supabase connected successfully');
-}).catch(err => {
-  console.log('❌ Supabase connection error:', err.message);
-});
+    console.log('✅ Supabase connected successfully');
+  }).catch(err => {
+    console.log('❌ Supabase connection error:', err.message);
+  });
 } else {
   console.warn('⚠️ Supabase not initialized - check environment variables');
 }
 
 // Test endpoint for debugging
 app.get('/api/test', (req, res) => {
-  res.json({ 
+  res.json({
     message: 'Server is working!',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
@@ -56,7 +71,7 @@ app.post('/api/debug/create-ticket', async (req, res) => {
     console.log('=== DEBUG TICKET CREATION ===');
     console.log('Headers:', req.headers);
     console.log('Body:', req.body);
-    
+
     // Skip auth for debugging
     const testTicketData = {
       user_id: 1, // Use your user ID
@@ -87,7 +102,7 @@ app.post('/api/debug/create-ticket', async (req, res) => {
 
     console.log('Ticket created:', newTicket);
     res.json({ success: true, ticket: newTicket });
-    
+
   } catch (error) {
     console.error('Debug endpoint error:', error);
     res.status(500).json({ error: error.message, stack: error.stack });
@@ -98,39 +113,39 @@ app.post('/api/debug/create-ticket', async (req, res) => {
 app.get('/api/debug/database', async (req, res) => {
   try {
     console.log('=== DATABASE DEBUG TEST ===');
-    
+
     // Test users table
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('*')
       .limit(5);
-    
+
     if (usersError) {
       console.error('Users table error:', usersError);
       return res.status(500).json({ error: 'Users table error', details: usersError });
     }
-    
+
     // Test categories table
     const { data: categories, error: categoriesError } = await supabase
       .from('categories')
       .select('*');
-    
+
     if (categoriesError) {
       console.error('Categories table error:', categoriesError);
       return res.status(500).json({ error: 'Categories table error', details: categoriesError });
     }
-    
+
     // Test tickets table
     const { data: tickets, error: ticketsError } = await supabase
       .from('tickets')
       .select('*')
       .limit(5);
-    
+
     if (ticketsError) {
       console.error('Tickets table error:', ticketsError);
       return res.status(500).json({ error: 'Tickets table error', details: ticketsError });
     }
-    
+
     console.log('✅ Database debug test successful');
     res.json({
       message: 'Database connection successful',
@@ -148,8 +163,8 @@ app.get('/api/debug/database', async (req, res) => {
   } catch (error) {
     console.error('=== DATABASE DEBUG ERROR ===');
     console.error('Error:', error);
-    res.status(500).json({ 
-      error: 'Database debug failed', 
+    res.status(500).json({
+      error: 'Database debug failed',
       message: error.message,
       stack: error.stack
     });
@@ -170,7 +185,7 @@ app.get('/api/health', (req, res) => {
 
 // Root route for ngrok access
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: 'Ticket Management System Backend',
     status: 'running',
     timestamp: new Date().toISOString(),
@@ -200,14 +215,14 @@ app.use((err, req, res, next) => {
   console.error('=== GLOBAL ERROR HANDLER ===');
   console.error('Error:', err);
   console.error('Stack:', err.stack);
-  res.status(500).json({ 
+  res.status(500).json({
     message: 'Internal server error',
     error: err.message,
     details: process.env.NODE_ENV === 'development' ? err.stack : undefined
   });
 });
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5003;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Debug endpoint: http://localhost:${PORT}/api/debug/database`);

@@ -36,7 +36,9 @@ const CreateTicket: React.FC = () => {
     kwDown: '',
     caseNumber: '',
     issueDescription: '',
-    additionalNotes: ''
+    additionalNotes: '',
+    customerTypeDescription: '', // For helper text
+    siteDescription: ''        // For helper text
   });
 
   const [showSiteName, setShowSiteName] = useState(false);
@@ -46,8 +48,8 @@ const CreateTicket: React.FC = () => {
   const [showPreview, setShowPreview] = useState(false);
 
   // Client Types and Sites from API
-  const [clientTypes, setClientTypes] = useState<Array<{ id: number, name: string, sites: Array<{ id: number, name: string, location?: string, client_type_id?: number }> }>>([]);
-  const [siteOptions, setSiteOptions] = useState<Array<{ id: number, name: string, location?: string, client_type_id?: number }>>([]);
+  const [clientTypes, setClientTypes] = useState<Array<{ id: number, name: string, description?: string, sites: Array<{ id: number, name: string, location?: string, description?: string, client_type_id?: number }> }>>([]);
+  const [siteOptions, setSiteOptions] = useState<Array<{ id: number, name: string, location?: string, description?: string, client_type_id?: number }>>([]);
   const [loadingClients, setLoadingClients] = useState(true);
   const [errorCount, setErrorCount] = useState(0);
 
@@ -299,7 +301,8 @@ const CreateTicket: React.FC = () => {
       customerType: selectedClient.name,
       customerTypeId: selectedClientTypeId,
       siteName: '',
-      equipment: ''
+      equipment: '',
+      customerTypeDescription: selectedClient.description || '' // Add to state
     }));
     setSiteOptions(sites);
     setShowSiteName(selectedClientTypeId !== '');
@@ -308,10 +311,12 @@ const CreateTicket: React.FC = () => {
 
   const handleSiteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedSiteName = e.target.value;
+    const selectedSite = siteOptions.find(s => s.name === selectedSiteName);
     setFormData(prev => ({
       ...prev,
       siteName: selectedSiteName,
-      equipment: ''
+      equipment: '',
+      siteDescription: selectedSite?.description || '' // Add to state
     }));
     setShowEquipment(selectedSiteName !== '');
   };
@@ -516,10 +521,15 @@ const CreateTicket: React.FC = () => {
                       <option value="">SELECT CLIENT TYPE</option>
                       {clientTypes.map(clientType => (
                         <option key={clientType.id} value={clientType.id}>
-                          {clientType.name.toUpperCase()}
+                          {clientType.name.toUpperCase()}{clientType.description ? ` - ${clientType.description}` : ''}
                         </option>
                       ))}
                     </select>
+                  )}
+                  {formData.customerTypeDescription && (
+                    <div style={{ marginTop: '8px', fontSize: '13px', color: '#64748b', fontStyle: 'italic' }}>
+                      {formData.customerTypeDescription}
+                    </div>
                   )}
                   {!loadingClients && clientTypes.length === 0 && (
                     <div style={{ padding: '12px', color: '#ef4444', fontSize: '14px', marginTop: '8px' }}>
@@ -537,24 +547,32 @@ const CreateTicket: React.FC = () => {
                   <div className="form-group">
                     <label className="form-label">SITE <span className="required">*</span></label>
                     {siteOptions.length > 0 ? (
-                      <select
-                        className="form-select"
-                        value={formData.siteName}
-                        onChange={handleSiteChange}
-                        required
-                      >
-                        <option value="">Select Site</option>
-                        {siteOptions.map(site => {
-                          const siteDisplayName = site.location
-                            ? `${site.name} (${site.location})`
-                            : site.name;
-                          return (
-                            <option key={site.id} value={site.name}>
-                              {siteDisplayName.toUpperCase()}
-                            </option>
-                          );
-                        })}
-                      </select>
+                      <>
+                        <select
+                          className="form-select"
+                          value={formData.siteName}
+                          onChange={handleSiteChange}
+                          required
+                        >
+                          <option value="">Select Site</option>
+                          {siteOptions.map(site => {
+                            const siteDisplayName = site.location
+                              ? `${site.name} (${site.location})`
+                              : site.name;
+                            const siteDescription = site.description ? ` - ${site.description}` : '';
+                            return (
+                              <option key={site.id} value={site.name}>
+                                {siteDisplayName.toUpperCase()}{siteDescription}
+                              </option>
+                            );
+                          })}
+                        </select>
+                        {formData.siteDescription && (
+                          <div style={{ marginTop: '8px', fontSize: '13px', color: '#64748b', fontStyle: 'italic' }}>
+                            {formData.siteDescription}
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <div style={{ padding: '12px', color: '#ef4444', fontSize: '14px' }}>
                         No sites available for this client type.

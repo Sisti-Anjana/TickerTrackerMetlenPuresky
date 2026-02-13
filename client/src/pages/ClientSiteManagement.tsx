@@ -407,7 +407,7 @@ const ClientSiteManagement: React.FC = () => {
 
   return (
     <div className="client-site-management">
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '10px' }}>
         <BackButton label="Back to Dashboard" to="/dashboard" />
       </div>
       <div className="management-header">

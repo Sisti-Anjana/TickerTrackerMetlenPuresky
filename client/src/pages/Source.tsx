@@ -51,6 +51,7 @@ const Source: React.FC = () => {
     startDate: '',
     endDate: ''
   });
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -291,7 +292,9 @@ const Source: React.FC = () => {
           </div>
           <div className="client-selection-screen">
             <h1 className="selection-title">Select Client Type</h1>
-            <p className="selection-subtitle">Choose a client to view their site data and tickets</p>
+            <p className="selection-subtitle">
+              Access enterprise site data and ticket analytics. Choose a client below to proceed to their operational overview.
+            </p>
 
             <div className="client-options">
               {clientTypes.length === 0 ? (
@@ -308,7 +311,7 @@ const Source: React.FC = () => {
                     <div className="client-name">{clientType.name}</div>
                     <div className="client-divider"></div>
                     <div className="client-count">
-                      {getClientTicketCount(clientType.name)} tickets
+                      {getClientTicketCount(clientType.name)} TICKETS
                     </div>
                   </div>
                 ))
@@ -348,7 +351,7 @@ const Source: React.FC = () => {
         <div className="site-header">
           <h1 className="site-title">{selectedClient} - Site Overview</h1>
           <p className="site-subtitle">Select a site to view detailed ticket information</p>
-          <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'center' }}>
             <BackButton
               label="Back to Client Selection"
               onClick={() => {
@@ -364,35 +367,33 @@ const Source: React.FC = () => {
 
         {/* Date Filters */}
         <div className="filters-section">
-          <div className="filters-row">
-            <div className="filters-left-group">
-              <div className="filter-group">
-                <span className="filter-label">From Date</span>
-                <input
-                  type="date"
-                  className="filter-input"
-                  value={dateFilter.startDate}
-                  onChange={(e) => setDateFilter({ ...dateFilter, startDate: e.target.value })}
-                />
-              </div>
-              <div className="filter-group">
-                <span className="filter-label">To Date</span>
-                <input
-                  type="date"
-                  className="filter-input"
-                  value={dateFilter.endDate}
-                  onChange={(e) => setDateFilter({ ...dateFilter, endDate: e.target.value })}
-                />
-              </div>
-              {(dateFilter.startDate || dateFilter.endDate) && (
-                <button
-                  className="clear-filter-btn"
-                  onClick={() => setDateFilter({ startDate: '', endDate: '' })}
-                >
-                  ✕ Clear
-                </button>
-              )}
+          <div className="filters-left-group">
+            <div className="filter-group">
+              <span className="filter-label">From Date</span>
+              <input
+                type="date"
+                className="filter-input"
+                value={dateFilter.startDate}
+                onChange={(e) => setDateFilter({ ...dateFilter, startDate: e.target.value })}
+              />
             </div>
+            <div className="filter-group">
+              <span className="filter-label">To Date</span>
+              <input
+                type="date"
+                className="filter-input"
+                value={dateFilter.endDate}
+                onChange={(e) => setDateFilter({ ...dateFilter, endDate: e.target.value })}
+              />
+            </div>
+            {(dateFilter.startDate || dateFilter.endDate) && (
+              <button
+                className="clear-filter-btn"
+                onClick={() => setDateFilter({ startDate: '', endDate: '' })}
+              >
+                ✕ Clear
+              </button>
+            )}
 
             <div className="filter-group search-filter-group">
               <span className="filter-label">Search Sites</span>
@@ -404,93 +405,175 @@ const Source: React.FC = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-
               </div>
+            </div>
+          </div>
+
+          <div className="view-toggle-group">
+            <span className="filter-label">View Mode</span>
+            <div className="toggle-buttons">
+              <button
+                className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                onClick={() => setViewMode('grid')}
+                title="Grid View"
+              >
+                ⊞ Grid
+              </button>
+              <button
+                className={`toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
+                onClick={() => setViewMode('table')}
+                title="Table View"
+              >
+                ≣ Table
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Site Cards Grid */}
-        <div className="site-cards-grid">
-          {sitesData
-            .filter(site =>
-              searchQuery === '' ||
-              site.siteName.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-            .length === 0 ? (
-            <div className="no-results-message">
+        {/* Site Content Area - Only show if no site is selected */}
+        {!selectedSite && (
+          <>
+            {viewMode === 'grid' ? (
+              <div className="site-cards-grid">
+                {sitesData
+                  .filter(site =>
+                    searchQuery === '' ||
+                    site.siteName.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                  .length === 0 ? (
+                  <div className="no-results-message">
+                    <h3>No sites found</h3>
+                    <p>Try adjusting your search or date filters</p>
+                  </div>
+                ) : (
+                  sitesData
+                    .filter(site =>
+                      searchQuery === '' ||
+                      site.siteName.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                    .map(site => (
+                      <div
+                        key={site.siteName}
+                        className={`site-card ${selectedSite === site.siteName ? 'selected' : ''}`}
+                        onClick={() => {
+                          setSelectedSite(site.siteName);
+                          setStatusFilter('all');
+                        }}
+                      >
+                        <div className="site-card-header-new">
+                          <h3 className="site-name-display-new">{site.siteName}</h3>
+                        </div>
 
-              <h3>No sites found</h3>
-              <p>Try adjusting your search or date filters</p>
+                        <div className="site-card-stats-new">
+                          <div
+                            className="site-stat-clickable"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedSite(site.siteName);
+                              setStatusFilter('all');
+                            }}
+                          >
+                            <span className="site-stat-value-new">{site.tickets.length}</span>
+                            <span className="site-stat-label-new">Total</span>
+                          </div>
+                          <div
+                            className="site-stat-clickable"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedSite(site.siteName);
+                              setStatusFilter('open');
+                            }}
+                          >
+                            <span className="site-stat-value-new">{site.openTickets}</span>
+                            <span className="site-stat-label-new">Open</span>
+                          </div>
+                          <div
+                            className="site-stat-clickable"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedSite(site.siteName);
+                              setStatusFilter('closed');
+                            }}
+                          >
+                            <span className="site-stat-value-new">{site.closedTickets}</span>
+                            <span className="site-stat-label-new">Closed</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                )}
+              </div>
+            ) : (
+              <div className="sites-table-container">
+                <table className="sites-data-table">
+                  <thead>
+                    <tr>
+                      <th>Site Name</th>
+                      <th>Total Tickets</th>
+                      <th>Open</th>
+                      <th>Closed</th>
+                      <th>Last Update</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sitesData
+                      .filter(site =>
+                        searchQuery === '' ||
+                        site.siteName.toLowerCase().includes(searchQuery.toLowerCase())
+                      ).length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>
+                          No sites found matching your criteria.
+                        </td>
+                      </tr>
+                    ) : (
+                      sitesData
+                        .filter(site =>
+                          searchQuery === '' ||
+                          site.siteName.toLowerCase().includes(searchQuery.toLowerCase())
+                        )
+                        .map(site => (
+                          <tr key={site.siteName} className={selectedSite === site.siteName ? 'selected' : ''}>
+                            <td className="site-name-cell"><strong>{site.siteName}</strong></td>
+                            <td>{site.tickets.length}</td>
+                            <td><span className="count-badge open">{site.openTickets}</span></td>
+                            <td><span className="count-badge closed">{site.closedTickets}</span></td>
+                            <td>{site.lastUpdate}</td>
+                            <td>
+                              <button
+                                className="site-action-btn"
+                                onClick={() => {
+                                  setSelectedSite(site.siteName);
+                                  setStatusFilter('all');
+                                }}
+                              >
+                                View Details
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Bottom back button to return to client selection */}
+            <div style={{ marginTop: '24px', marginBottom: '24px', display: 'flex', justifyContent: 'center' }}>
+              <BackButton
+                label="Back to Client Selection"
+                onClick={() => {
+                  setSelectedClient(null);
+                  setSelectedSite(null);
+                  setDateFilter({ startDate: '', endDate: '' });
+                  setSearchQuery('');
+                }}
+                className="back-button-primary"
+              />
             </div>
-          ) : (
-            sitesData
-              .filter(site =>
-                searchQuery === '' ||
-                site.siteName.toLowerCase().includes(searchQuery.toLowerCase())
-              )
-              .map(site => (
-                <div
-                  key={site.siteName}
-                  className={`site-card ${selectedSite === site.siteName ? 'selected' : ''}`}
-                >
-                  <div className="site-card-header-new">
-                    <h3 className="site-name-display-new">{site.siteName}</h3>
-                  </div>
-
-                  <div className="site-card-stats-new">
-                    <div
-                      className="site-stat-clickable"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedSite(site.siteName);
-                        setStatusFilter('all');
-                      }}
-                    >
-                      <span className="site-stat-value-new">{site.tickets.length}</span>
-                      <span className="site-stat-label-new">Total</span>
-                    </div>
-                    <div
-                      className="site-stat-clickable"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedSite(site.siteName);
-                        setStatusFilter('open');
-                      }}
-                    >
-                      <span className="site-stat-value-new">{site.openTickets}</span>
-                      <span className="site-stat-label-new">Open</span>
-                    </div>
-                    <div
-                      className="site-stat-clickable"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedSite(site.siteName);
-                        setStatusFilter('closed');
-                      }}
-                    >
-                      <span className="site-stat-value-new">{site.closedTickets}</span>
-                      <span className="site-stat-label-new">Closed</span>
-                    </div>
-                  </div>
-                </div>
-              ))
-          )}
-        </div>
-
-        {/* Bottom back button to return to client selection */}
-        <div style={{ marginTop: '24px', marginBottom: '24px', display: 'flex', justifyContent: 'center' }}>
-          <BackButton
-            label="Back to Client Selection"
-            onClick={() => {
-              setSelectedClient(null);
-              setSelectedSite(null);
-              setDateFilter({ startDate: '', endDate: '' });
-              setSearchQuery('');
-            }}
-            className="back-button-primary"
-          />
-        </div>
+          </>
+        )}
 
         {/* Detailed View */}
         {filteredSiteData && (
@@ -585,7 +668,7 @@ const Source: React.FC = () => {
                             {ticket.issue_description || 'No description'}
                           </div>
                         </td>
-                        <td>{ticket.equipment || 'N/A'}</td>
+                        <td><span style={{ color: '#2563eb', fontWeight: 600 }}>{ticket.equipment || 'N/A'}</span></td>
                         <td>
                           <span className={`site-badge ${ticket.ticket_status?.toLowerCase()}`}>
                             {ticket.ticket_status}
@@ -598,7 +681,7 @@ const Source: React.FC = () => {
                         <td>{formatDate(ticket.created_at)}</td>
                         <td>
                           <button
-                            className="detail-arrow-btn"
+                            className="play-btn-circle"
                             onClick={() => setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)}
                             title="View Details"
                           >

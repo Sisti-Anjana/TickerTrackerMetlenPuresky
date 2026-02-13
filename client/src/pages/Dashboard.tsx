@@ -1572,7 +1572,7 @@ const Dashboard = (): JSX.Element => {
                 <div style={{ background: 'white', padding: '30px', borderRadius: '12px', marginBottom: '30px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                     <div>
-                      <h1 style={{ fontSize: '32px', color: '#1f2937', marginBottom: '8px' }}>AGS ROCC TEAM</h1>
+                      <h1 style={{ fontSize: '32px', color: '#1f2937', marginBottom: '8px' }}>AGS OPS</h1>
                       <p style={{ color: '#6b7280', fontSize: '16px' }}>Solar Asset Management System</p>
                     </div>
                     <div style={{ textAlign: 'right' }}>

@@ -34,16 +34,16 @@ const TopHeader: React.FC = () => {
       <div className="top-header-content">
         {/* Logo Section */}
         <div className="header-logo-section">
-          <img 
-            src={logo} 
-            alt="AGS Logo" 
+          <img
+            src={logo}
+            alt="AGS Logo"
             className="header-logo"
           />
         </div>
 
         {/* Title Section */}
         <div className="header-title-section">
-          <h1 className="header-main-title">AGS ROCC TEAM</h1>
+          <h1 className="header-main-title">AGS Ops</h1>
           <p className="header-subtitle">Solar Asset Management System</p>
         </div>
 
@@ -57,7 +57,7 @@ const TopHeader: React.FC = () => {
                 <p className="header-user-email">{user.email}</p>
               </div>
             )}
-            <button 
+            <button
               onClick={handleLogout}
               className="header-logout-btn"
               title="Logout"

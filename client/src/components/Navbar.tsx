@@ -56,7 +56,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
           </div>
 
           <div className="navbar-center">
-            <h1 className="navbar-main-title">AGS ROCC TEAM</h1>
+            <h1 className="navbar-main-title">AGS OPS</h1>
             <p className="navbar-subtitle">Solar Asset Management System</p>
           </div>
 
@@ -97,7 +97,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
               <div className="info-logo-container">
                 <img src={process.env.PUBLIC_URL + '/left.png'} alt="AGS Logo" />
               </div>
-              <h2>AGS ROCC TEAM</h2>
+              <h2>AGS OPS</h2>
               <h3>Solar Asset Management System</h3>
               <p>
                 A comprehensive monitoring and management platform for solar energy assets.
