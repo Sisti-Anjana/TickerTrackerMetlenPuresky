@@ -56,7 +56,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
           </div>
 
           <div className="navbar-center">
-            <h1 className="navbar-main-title">AGS OPS</h1>
+            <h1 className="navbar-main-title">AGS Ops</h1>
             <p className="navbar-subtitle">Solar Asset Management System</p>
           </div>
 
